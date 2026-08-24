@@ -1,0 +1,21 @@
+{
+  "stage": "instruction",
+  "instruction_dataset": "data\\instruction\\financial_instructions.jsonl",
+  "instruction_dataset_stats": {
+    "examples": 720,
+    "skipped": 0,
+    "avg_tokens": 179.7,
+    "min_tokens": 32,
+    "max_tokens": 256,
+    "total_tokens": 129403
+  },
+  "base_checkpoint": "checkpoints/base/checkpoint_100.pt",
+  "hyperparameters": {
+    "max_steps": 100,
+    "batch_size": 2,
+    "seq_len": 256,
+    "learning_rate": 0.0001,
+    "warmup_steps": 10,
+    "min_lr": 1e-05
+  }
+}

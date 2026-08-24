@@ -1,0 +1,7 @@
+{
+  "step": 100,
+  "train_loss": 9.039897537231445,
+  "val_loss": 8.920965766906738,
+  "tokens_processed": 51000,
+  "evaluation": "pending compare run"
+}
