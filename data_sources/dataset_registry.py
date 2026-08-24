@@ -16,6 +16,10 @@ from typing import Optional
 
 VERIFIED = "VERIFIED"
 UNVERIFIED = "REQUIRES DATASET VERIFICATION"
+# License is confirmed, but the dataset ships a Python loading script,
+# which `datasets` >= 3 refuses to execute. Kept for provenance; cannot
+# be prepared until an official Parquet conversion exists.
+UNSUPPORTED_LOADER = "UNSUPPORTED LOADER (dataset script)"
 
 
 @dataclass
@@ -31,6 +35,10 @@ class DatasetEntry:
     revision: Optional[str] = None
     fields_used: list = field(default_factory=list)
     notes: str = ""
+    # Set when the dataset ships a loading script (which datasets>=3 will
+    # not execute) but Hugging Face publishes an auto-converted Parquet
+    # branch. The loader then reads these files directly.
+    data_files: Optional[list] = None
 
 
 REGISTRY = {
@@ -72,7 +80,8 @@ REGISTRY = {
         license="cc-by-nc-4.0",
         source_url="https://huggingface.co/datasets/FinLang/investopedia-instruction-tuning-dataset",
         verification_status=VERIFIED,
-        fields_used=["context", "question", "answer"],
+        # Column names are capitalised in the actual dataset schema.
+        fields_used=["Context", "Question", "Answer"],
         notes="Non-commercial license (CC-BY-NC-4.0) - research/education use only.",
     ),
     # ------------------------------------------------------------------
@@ -92,30 +101,68 @@ REGISTRY = {
     # ------------------------------------------------------------------
     # Financial reports (real SEC filings)
     # ------------------------------------------------------------------
+    "financial_reports_edgar": DatasetEntry(
+        name="financial_reports_edgar",
+        hf_id="c3po-ai/edgar-corpus",
+        subset="year_2020",
+        split="train",
+        category="financial_reports",
+        license="apache-2.0",
+        source_url="https://huggingface.co/datasets/c3po-ai/edgar-corpus",
+        verification_status=VERIFIED,
+        # Business description, risk factors, and MD&A sections of real 10-K filings.
+        fields_used=["section_1", "section_1A", "section_7"],
+        # The repo ships a loading script, so read Hugging Face's
+        # auto-converted Parquet branch directly.
+        data_files=[
+            "hf://datasets/c3po-ai/edgar-corpus@refs%2Fconvert%2Fparquet/"
+            "year_2020/train/0000.parquet",
+        ],
+        notes="Real SEC EDGAR 10-K filings (2020), read from the Parquet conversion branch.",
+    ),
     "financial_reports_sec": DatasetEntry(
         name="financial_reports_sec",
         hf_id="JanosAudran/financial-reports-sec",
+        subset="large_lite",
         split="train",
         category="financial_reports",
         license="apache-2.0",
         source_url="https://huggingface.co/datasets/JanosAudran/financial-reports-sec",
-        verification_status=VERIFIED,
+        verification_status=UNSUPPORTED_LOADER,
         fields_used=["sentence"],
-        notes="Sentences extracted from real SEC EDGAR annual/quarterly filings.",
+        notes="License verified (Apache-2.0) but the dataset ships a loading script, "
+        "which datasets>=3 refuses to run. Superseded by financial_reports_edgar.",
     ),
     # ------------------------------------------------------------------
     # Financial reasoning / numerical finance
     # ------------------------------------------------------------------
     "financial_reasoning_finqa": DatasetEntry(
         name="financial_reasoning_finqa",
+        hf_id="Aiera/finqa-verified",
+        # This mirror publishes only a `test` split. It is used here as
+        # training TEXT for the reasoning bucket; the project's own
+        # evaluation items are authored separately and the leakage check
+        # confirms no overlap.
+        split="test",
+        category="financial_reasoning",
+        license="mit",
+        source_url="https://huggingface.co/datasets/Aiera/finqa-verified",
+        verification_status=VERIFIED,
+        fields_used=["question", "answer", "context"],
+        notes="Human-verified FinQA multi-step numerical reasoning over filings. "
+        "Only a 'test' split is published upstream.",
+    ),
+    "financial_reasoning_finqa_ibm": DatasetEntry(
+        name="financial_reasoning_finqa_ibm",
         hf_id="ibm-research/finqa",
         split="train",
         category="financial_reasoning",
         license="cc-by-4.0",
         source_url="https://huggingface.co/datasets/ibm-research/finqa",
-        verification_status=VERIFIED,
+        verification_status=UNSUPPORTED_LOADER,
         fields_used=["question", "answer", "gold_evidence"],
-        notes="Multi-step numerical reasoning questions over financial reports (FinQA).",
+        notes="License verified (CC-BY-4.0) but ships a loading script, which "
+        "datasets>=3 refuses to run. Superseded by financial_reasoning_finqa.",
     ),
     # ------------------------------------------------------------------
     # Financial instruction / chat

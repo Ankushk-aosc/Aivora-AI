@@ -7,7 +7,7 @@ import os
 
 from .tokenizer import get_encoding
 from .cleaning import clean_and_filter
-from .dataset_registry import get_entry
+from .dataset_registry import VERIFIED, get_entry
 from .huggingface_loader import stream_records
 from .manifest import record_preparation
 from .shard_writer import ShardWriter
@@ -26,8 +26,16 @@ def prepare_dataset(
     train_fraction: float = 0.95,
     seed: int = 42,
     min_text_length: int = 20,
+    allow_unverified: bool = False,
 ):
     entry = get_entry(name)
+
+    if entry.verification_status != VERIFIED and not allow_unverified:
+        raise RuntimeError(
+            f"Refusing to prepare '{name}': status is {entry.verification_status!r}. "
+            f"{entry.notes} Pass allow_unverified=True only if you have confirmed the "
+            f"license and loader yourself."
+        )
 
     raw_records = stream_records(entry, max_records=max_records, max_tokens=max_tokens)
 

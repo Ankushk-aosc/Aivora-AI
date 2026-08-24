@@ -43,17 +43,25 @@ def stream_records(
     None to leave it unconstrained (not recommended for fineweb_edu-scale
     sources).
     """
-    load_kwargs = {"split": entry.split, "streaming": True}
-    if entry.subset:
-        load_kwargs["name"] = entry.subset
-    if entry.revision:
-        load_kwargs["revision"] = entry.revision
+    if entry.data_files:
+        # Script-based repo with an auto-converted Parquet branch: read the
+        # Parquet files directly rather than executing the loading script.
+        logger.info("Streaming %s from Parquet files %s", entry.hf_id, entry.data_files)
+        dataset = load_dataset(
+            "parquet", data_files=entry.data_files, split="train", streaming=True
+        )
+    else:
+        load_kwargs = {"split": entry.split, "streaming": True}
+        if entry.subset:
+            load_kwargs["name"] = entry.subset
+        if entry.revision:
+            load_kwargs["revision"] = entry.revision
 
-    logger.info(
-        "Streaming %s (subset=%s, split=%s, revision=%s)",
-        entry.hf_id, entry.subset, entry.split, entry.revision,
-    )
-    dataset = load_dataset(entry.hf_id, **load_kwargs)
+        logger.info(
+            "Streaming %s (subset=%s, split=%s, revision=%s)",
+            entry.hf_id, entry.subset, entry.split, entry.revision,
+        )
+        dataset = load_dataset(entry.hf_id, **load_kwargs)
 
     enc = _get_encoding()
     records_seen = 0
