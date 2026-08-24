@@ -1,0 +1,17 @@
+{
+  "name": "full_mix_base_100",
+  "seed": 42,
+  "checkpoint": "checkpoints/base/checkpoint_100.pt",
+  "environment": {
+    "python": "3.14.5",
+    "torch": "2.13.0+cpu",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cuda_available": false,
+    "cuda_version": "Not available",
+    "repository_revision": "ce4d7dc",
+    "gpu": "Not available",
+    "gpu_memory_gb": "Not available"
+  },
+  "notes": "Full 6-bucket dataset mix, base stage, CPU-only",
+  "timestamp": "2026-08-24T06:05:04.891576Z"
+}

@@ -1,0 +1,39 @@
+{
+  "step": 100,
+  "train_loss": 9.992094039916992,
+  "val_loss": 10.21967887878418,
+  "tokens_processed": 51200,
+  "evaluation": {
+    "financial_qa": {
+      "total": 10,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "terminology": {
+      "total": 12,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "numerical": {
+      "total": 15,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "reasoning": {
+      "total": 8,
+      "correct": 0,
+      "accuracy": 0.0
+    }
+  },
+  "evaluation_overall": {
+    "total": 45,
+    "correct": 0,
+    "accuracy": 0.0
+  },
+  "leakage_check": {
+    "checked_shards": 7,
+    "eval_questions": 45,
+    "leaks": [],
+    "clean": true
+  }
+}
