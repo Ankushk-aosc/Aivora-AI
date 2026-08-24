@@ -36,6 +36,7 @@ STATE = {
     "config": None,
     "device": "cpu",
     "chat": None,
+    "orchestrator": None,
     "document_store": None,
     "load_error": None,
 }
@@ -58,6 +59,7 @@ def load_checkpoint(checkpoint_path):
             return {"loaded": False, "error": STATE["load_error"]}
 
         from app.backend.services.chat_service import FinancialChat
+        from ai_platform import AIOrchestrator
 
         STATE.update({
             "checkpoint": checkpoint_path,
@@ -69,6 +71,9 @@ def load_checkpoint(checkpoint_path):
         STATE["chat"] = FinancialChat(
             model=model, device=device,
             document_store=STATE.get("document_store"), max_new_tokens=40,
+        )
+        STATE["orchestrator"] = AIOrchestrator(
+            model=model, device=device, document_store=STATE.get("document_store"),
         )
         return {
             "loaded": True,
@@ -222,6 +227,8 @@ def h_rag_upload(payload, _query):
     info = STATE["document_store"].add_document(path)
     if STATE.get("chat") is not None:
         STATE["chat"].document_store = STATE["document_store"]
+    if STATE.get("orchestrator") is not None:
+        STATE["orchestrator"].document_store = STATE["document_store"]
     return {"added": info, "store": STATE["document_store"].stats()}
 
 
@@ -330,6 +337,84 @@ def h_colab_status(_payload, _query):
     }
 
 
+# ----------------------------------------------------------------------
+# AI Capability Platform (registry, orchestrator, health, and the
+# statistical capabilities that don't need a model or GPU)
+# ----------------------------------------------------------------------
+
+def h_ai_capabilities(_payload, _query):
+    from ai_platform import REGISTRY, summary
+    return {"capabilities": [c.to_dict() for c in REGISTRY.values()], "summary": summary()}
+
+
+def h_ai_health(_payload, _query):
+    from ai_platform.health import check_health
+    return check_health()
+
+
+def h_ai_orchestrate(payload, query):
+    text = (payload or {}).get("query") or query.get("query", [None])[0]
+    if not text:
+        raise ValueError('Provide {"query": "..."}')
+    if STATE.get("orchestrator") is None:
+        from ai_platform import AIOrchestrator
+        STATE["orchestrator"] = AIOrchestrator(
+            model=STATE.get("model"), device=STATE.get("device", "cpu"),
+            document_store=STATE.get("document_store"),
+        )
+    response = STATE["orchestrator"].handle(text)
+    return response.to_dict()
+
+
+def h_ai_forecast(payload, _query):
+    from ai_platform.forecasting import forecast
+    payload = payload or {}
+    history = payload.get("history")
+    if not history or len(history) < 2:
+        raise ValueError('Provide {"history": [numbers...], "periods_ahead": N, '
+                          '"method": "linear_trend"|"exponential_smoothing"}')
+    result = forecast(
+        [float(v) for v in history],
+        periods_ahead=int(payload.get("periods_ahead", 3)),
+        method=payload.get("method", "linear_trend"),
+    )
+    return result.to_dict()
+
+
+def h_ai_anomaly(payload, _query):
+    from ai_platform.anomaly import detect_transaction_anomalies, duplicate_invoices
+    payload = payload or {}
+    transactions = payload.get("transactions")
+    if not transactions:
+        raise ValueError('Provide {"transactions": [{"amount": N, ...}, ...]}')
+
+    result = detect_transaction_anomalies(
+        transactions, amount_field=payload.get("amount_field", "amount"),
+        method=payload.get("method", "iqr"),
+    )
+    if payload.get("check_duplicates"):
+        dups = duplicate_invoices(transactions, key_fields=payload.get(
+            "duplicate_key_fields", ("vendor", "amount", "date")))
+        result["duplicate_groups"] = [
+            {"hash": g.hash, "indices": g.indices, "records": g.records} for g in dups
+        ]
+    return result
+
+
+def h_ai_observability(_payload, query):
+    from ai_platform.observability import read_recent, stats
+    limit = int(query.get("limit", [50])[0])
+    return {"stats": stats(), "recent": read_recent(limit=limit)}
+
+
+def h_ai_security_check(payload, _query):
+    from ai_platform.security import check_input
+    text = (payload or {}).get("text")
+    if not text:
+        raise ValueError('Provide {"text": "..."}')
+    return check_input(text).to_dict()
+
+
 ROUTES = {
     ("GET", "/api/health"): h_health,
     ("GET", "/api/model/status"): h_model_status,
@@ -357,6 +442,14 @@ ROUTES = {
     ("GET", "/api/evaluation"): h_evaluation,
     ("GET", "/api/experiments"): h_experiments,
     ("GET", "/api/colab/status"): h_colab_status,
+    ("GET", "/api/ai/capabilities"): h_ai_capabilities,
+    ("GET", "/api/ai/health"): h_ai_health,
+    ("POST", "/api/ai/orchestrate"): h_ai_orchestrate,
+    ("GET", "/api/ai/orchestrate"): h_ai_orchestrate,
+    ("POST", "/api/ai/forecast"): h_ai_forecast,
+    ("POST", "/api/ai/anomaly"): h_ai_anomaly,
+    ("GET", "/api/ai/observability"): h_ai_observability,
+    ("POST", "/api/ai/security-check"): h_ai_security_check,
 }
 
 

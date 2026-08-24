@@ -70,6 +70,7 @@
 
 <nav id="tabs">
   <button data-tab="dashboard" class="active">Dashboard</button>
+  <button data-tab="platform">AI Platform</button>
   <button data-tab="datasets">Datasets</button>
   <button data-tab="training">Training</button>
   <button data-tab="chat">Financial Chat</button>
@@ -96,6 +97,46 @@
   <div class="card">
     <h2 style="margin-top:0">Google Colab / GPU</h2>
     <div class="kv" id="colabKv">Loading...</div>
+  </div>
+</section>
+
+<!-- AI PLATFORM -->
+<section id="platform">
+  <h2>AI Capability Platform</h2>
+  <div class="card">
+    <div class="row" style="margin-bottom:10px;">
+      <span class="muted" id="platformSummary">Loading...</span>
+    </div>
+    <table><thead><tr><th>Capability</th><th>Status</th><th>Health</th><th>Model</th><th>Reason</th></tr></thead>
+    <tbody id="capabilityTable"><tr><td colspan="5" class="muted">Loading...</td></tr></tbody></table>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">Orchestrator</h2>
+    <div class="row">
+      <input id="orchQuery" placeholder='Try: "analyze this chart image", "forecast next quarter revenue", "detect fraud in these transactions"...' style="flex:1; min-width:320px;">
+      <button class="btn primary" id="orchSend">Route</button>
+    </div>
+    <div id="orchOut" style="margin-top:10px;"></div>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">Forecasting AI (real statistical forecast)</h2>
+    <div class="row">
+      <input id="forecastHistory" value="420,445,460,470,500" style="flex:1; min-width:220px;" placeholder="comma-separated history">
+      <select id="forecastMethod">
+        <option value="linear_trend">linear trend</option>
+        <option value="exponential_smoothing">exponential smoothing</option>
+      </select>
+      <button class="btn" id="forecastRun">Forecast</button>
+    </div>
+    <div id="forecastOut" style="margin-top:10px;"></div>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">Anomaly Detection AI (real statistical detection)</h2>
+    <div class="row">
+      <input id="anomalyAmounts" value="200,210,195,205,199,15000,201,198" style="flex:1; min-width:280px;" placeholder="comma-separated amounts">
+      <button class="btn" id="anomalyRun">Detect</button>
+    </div>
+    <div id="anomalyOut" style="margin-top:10px;"></div>
   </div>
 </section>
 
@@ -284,6 +325,82 @@ async function loadCheckpoint(path) {
     await loadDashboard();
   } catch (e) { alert('Failed to load checkpoint: ' + e.message); await loadDashboard(); }
 }
+
+// ---------------- AI platform ----------------
+const STATUS_BADGE = {
+  TESTED: 'ok', IMPLEMENTED: 'ok', HEALTHY: 'ok',
+  PARTIAL: 'warn', DEGRADED: 'warn', BLOCKED: 'bad',
+  NOT_IMPLEMENTED: 'bad', UNAVAILABLE: 'bad',
+};
+function badge(status) {
+  const cls = STATUS_BADGE[status] || '';
+  return `<span class="badge ${cls}">${esc(status)}</span>`;
+}
+
+async function loadPlatform() {
+  try {
+    const [caps, health] = await Promise.all([
+      api('GET', '/api/ai/capabilities'), api('GET', '/api/ai/health'),
+    ]);
+    const s = caps.summary;
+    $('#platformSummary').textContent =
+      `${Object.entries(s).map(([k,v]) => `${v} ${k}`).join(' · ')}`;
+    $('#capabilityTable').innerHTML = caps.capabilities.map(c => {
+      const h = health.capabilities[c.route] || {};
+      return `<tr><td>${esc(c.name)}</td><td>${badge(c.status)}</td>
+        <td>${badge(h.status || '-')}</td><td class="mono">${esc(c.model)}</td>
+        <td class="muted" style="max-width:340px;">${esc(c.reason)}</td></tr>`;
+    }).join('');
+  } catch (e) {
+    $('#capabilityTable').innerHTML = `<tr><td colspan="5" class="bad">${esc(e.message)}</td></tr>`;
+  }
+}
+
+$('#orchSend').addEventListener('click', async () => {
+  const q = $('#orchQuery').value.trim();
+  if (!q) return;
+  $('#orchOut').innerHTML = 'Routing...';
+  try {
+    const r = await api('POST', '/api/ai/orchestrate', { query: q });
+    $('#orchOut').innerHTML = `
+      <div class="kv">
+        <div>capability</div><div class="mono">${esc(r.capability)} ${badge(r.status)}</div>
+        <div>reason</div><div class="muted">${esc(r.reason)}</div>
+        <div>answer</div><div style="white-space:pre-wrap;">${esc(r.answer)}</div>
+        ${r.verification ? `<div>verification</div><div class="mono">${esc(JSON.stringify(r.verification))}</div>` : ''}
+        ${r.security ? `<div>security</div><div class="mono">${esc(JSON.stringify(r.security))}</div>` : ''}
+      </div>`;
+  } catch (e) { $('#orchOut').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+});
+
+$('#forecastRun').addEventListener('click', async () => {
+  const history = $('#forecastHistory').value.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+  const method = $('#forecastMethod').value;
+  $('#forecastOut').innerHTML = 'Computing...';
+  try {
+    const r = await api('POST', '/api/ai/forecast', { history, periods_ahead: 3, method });
+    $('#forecastOut').innerHTML = `<div class="kv">
+      <div>method</div><div class="mono">${esc(r.method)}</div>
+      <div>history</div><div class="mono">${esc(JSON.stringify(r.history))}</div>
+      <div>forecast (next 3)</div><div class="mono">${esc(JSON.stringify(r.forecast.map(v=>Math.round(v*100)/100)))}</div>
+      <div>backtested MAE</div><div class="mono">${r.mae}</div>
+      <div>backtested RMSE</div><div class="mono">${r.rmse}</div>
+      <div>params</div><div class="mono">${esc(JSON.stringify(r.params))}</div>
+    </div>`;
+  } catch (e) { $('#forecastOut').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+});
+
+$('#anomalyRun').addEventListener('click', async () => {
+  const amounts = $('#anomalyAmounts').value.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+  const transactions = amounts.map((a, i) => ({ amount: a, id: i }));
+  $('#anomalyOut').innerHTML = 'Computing...';
+  try {
+    const r = await api('POST', '/api/ai/anomaly', { transactions });
+    $('#anomalyOut').innerHTML = `<div class="muted" style="margin-bottom:6px;">${r.note}</div>
+      <div>${r.flagged_count} / ${r.total_transactions} flagged (method: ${esc(r.method)})</div>
+      ${r.flagged.map(f => `<div class="mono" style="margin-top:4px;">amount=${f.transaction.amount} - ${esc(f.reason)}</div>`).join('')}`;
+  } catch (e) { $('#anomalyOut').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+});
 
 // ---------------- datasets ----------------
 async function loadDatasets() {
@@ -498,8 +615,9 @@ async function loadArchitecture() {
 
 // ---------------- router ----------------
 function loadTab(tab) {
-  ({ dashboard: loadDashboard, datasets: loadDatasets, training: loadTraining,
-     evaluation: loadEvaluation, architecture: loadArchitecture })[tab]?.();
+  ({ dashboard: loadDashboard, platform: loadPlatform, datasets: loadDatasets,
+     training: loadTraining, evaluation: loadEvaluation,
+     architecture: loadArchitecture })[tab]?.();
 }
 
 loadDashboard();
