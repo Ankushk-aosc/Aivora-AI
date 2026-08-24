@@ -38,6 +38,7 @@ STATE = {
     "chat": None,
     "orchestrator": None,
     "document_store": None,
+    "knowledge_graph": None,
     "load_error": None,
 }
 _LOCK = threading.Lock()
@@ -415,6 +416,131 @@ def h_ai_security_check(payload, _query):
     return check_input(text).to_dict()
 
 
+def h_ai_research(payload, query):
+    from ai_platform.research import ResearchError, search
+    text = (payload or {}).get("query") or query.get("query", [None])[0]
+    if not text:
+        raise ValueError('Provide {"query": "..."}')
+    try:
+        report = search(text, max_results=int((payload or {}).get("max_results", 5)))
+    except ResearchError as e:
+        return {"error": str(e)}
+    return report.to_dict()
+
+
+def h_ai_fraud(payload, _query):
+    from ai_platform.fraud import load_model
+    payload = payload or {}
+    transactions = payload.get("transactions")
+    if not transactions:
+        raise ValueError('Provide {"transactions": [{"amt": N, "category": "...", '
+                          '"trans_date_trans_time": "YYYY-MM-DD HH:MM:SS", "city_pop": N}, ...]}')
+    model = load_model()
+    scores = model.score(transactions)
+    return {
+        "scores": scores,
+        "model_meta": {k: model.meta[k] for k in ("dataset_id", "dataset_license",
+                                                    "dataset_note", "algorithm", "metrics")},
+    }
+
+
+def h_ai_code_execute(payload, _query):
+    from ai_platform.code_sandbox import run_python
+    payload = payload or {}
+    code = payload.get("code")
+    if not code:
+        raise ValueError('Provide {"code": "..."}')
+    result = run_python(code, timeout=float(payload.get("timeout", 5.0)))
+    return {"stdout": result.stdout, "stderr": result.stderr,
+            "returncode": result.returncode, "timed_out": result.timed_out,
+            "rejected_reason": result.rejected_reason, "success": result.success}
+
+
+def h_ai_database_query(payload, _query):
+    from ai_platform.database_ai import answer_question
+    payload = payload or {}
+    question = payload.get("question")
+    table = payload.get("table", "transactions")
+    if not question:
+        raise ValueError('Provide {"question": "...", "table": "..."}')
+    return answer_question(question, table)
+
+
+def h_ai_database_schema(_payload, _query):
+    from ai_platform.database_ai import discover_schema
+    return {"schema": discover_schema()}
+
+
+def h_ai_kg_add(payload, _query):
+    payload = payload or {}
+    text = payload.get("text")
+    if not text:
+        raise ValueError('Provide {"text": "..."}')
+    kg = _get_kg()
+    triples = kg.add_text(text, source=payload.get("source"))
+    return {"triples_added": [{"subject": s, "relation": r, "object": o} for s, r, o in triples],
+            "stats": kg.stats()}
+
+
+def h_ai_kg_relationships(payload, query):
+    entity = (payload or {}).get("entity") or query.get("entity", [None])[0]
+    if not entity:
+        raise ValueError('Provide {"entity": "..."}')
+    kg = _get_kg()
+    return {"entity": entity, "relationships": kg.relationships(entity)}
+
+
+def h_ai_kg_path(payload, query):
+    payload = payload or {}
+    a = payload.get("a") or query.get("a", [None])[0]
+    b = payload.get("b") or query.get("b", [None])[0]
+    if not a or not b:
+        raise ValueError('Provide {"a": "...", "b": "..."}')
+    kg = _get_kg()
+    return {"a": a, "b": b, "path": kg.path_between(a, b)}
+
+
+def h_ai_kg_all(_payload, _query):
+    return _get_kg().to_dict()
+
+
+def h_ai_language_detect(payload, query):
+    from ai_platform.multilingual import detect_language
+    text = (payload or {}).get("text") or query.get("text", [None])[0]
+    if not text:
+        raise ValueError('Provide {"text": "..."}')
+    d = detect_language(text)
+    return {"text": d.text, "language_code": d.language_code,
+            "language_name": d.language_name, "confidence": d.confidence,
+            "all_candidates": d.all_candidates}
+
+
+def h_ai_speech_synthesize(payload, _query):
+    from ai_platform.speech import SpeechError, synthesize
+    payload = payload or {}
+    text = payload.get("text")
+    if not text:
+        raise ValueError('Provide {"text": "..."}')
+    try:
+        path = synthesize(text, voice=payload.get("voice"))
+    except SpeechError as e:
+        return {"error": str(e)}
+    return {"wav_path": path, "size_bytes": os.path.getsize(path)}
+
+
+def h_ai_recommend(_payload, _query):
+    from ai_platform.recommendation import get_recommendations
+    recs = get_recommendations()
+    return {"recommendations": [r.to_dict() for r in recs]}
+
+
+def _get_kg():
+    if STATE.get("knowledge_graph") is None:
+        from ai_platform.knowledge_graph import KnowledgeGraph
+        STATE["knowledge_graph"] = KnowledgeGraph()
+    return STATE["knowledge_graph"]
+
+
 ROUTES = {
     ("GET", "/api/health"): h_health,
     ("GET", "/api/model/status"): h_model_status,
@@ -450,6 +576,22 @@ ROUTES = {
     ("POST", "/api/ai/anomaly"): h_ai_anomaly,
     ("GET", "/api/ai/observability"): h_ai_observability,
     ("POST", "/api/ai/security-check"): h_ai_security_check,
+    ("GET", "/api/ai/research"): h_ai_research,
+    ("POST", "/api/ai/research"): h_ai_research,
+    ("POST", "/api/ai/fraud"): h_ai_fraud,
+    ("POST", "/api/ai/code/execute"): h_ai_code_execute,
+    ("POST", "/api/ai/database"): h_ai_database_query,
+    ("GET", "/api/ai/database/schema"): h_ai_database_schema,
+    ("POST", "/api/ai/knowledge-graph/add"): h_ai_kg_add,
+    ("GET", "/api/ai/knowledge-graph/relationships"): h_ai_kg_relationships,
+    ("POST", "/api/ai/knowledge-graph/relationships"): h_ai_kg_relationships,
+    ("GET", "/api/ai/knowledge-graph/path"): h_ai_kg_path,
+    ("POST", "/api/ai/knowledge-graph/path"): h_ai_kg_path,
+    ("GET", "/api/ai/knowledge-graph"): h_ai_kg_all,
+    ("GET", "/api/ai/language/detect"): h_ai_language_detect,
+    ("POST", "/api/ai/language/detect"): h_ai_language_detect,
+    ("POST", "/api/ai/speech/synthesize"): h_ai_speech_synthesize,
+    ("GET", "/api/ai/recommend"): h_ai_recommend,
 }
 
 

@@ -169,6 +169,10 @@ class AIOrchestrator:
             return self._handle_numerical(query, reason)
         if capability == "RAG":
             return self._handle_rag(query, reason)
+        if capability == "LIVE_DATA":
+            return self._handle_live_data(query, reason)
+        if capability == "RESEARCH_AI":
+            return self._handle_research(query, reason)
         if capability == "ANOMALY_AI":
             return OrchestratorResponse(
                 capability=capability, status=cap_entry.status.value,
@@ -176,6 +180,78 @@ class AIOrchestrator:
                 "with a list of transactions - it needs structured data, not a "
                 "chat question.",
                 reason=reason, tools_used=["ai_platform.anomaly"],
+            )
+        if capability == "FRAUD_AI":
+            return OrchestratorResponse(
+                capability=capability, status=cap_entry.status.value,
+                answer="Fraud scoring is available via POST /api/ai/fraud with "
+                "a list of transactions ({amt, category, trans_date_trans_time, "
+                "city_pop}) - it needs structured data, not a chat question. "
+                f"Model: {cap_entry.model}, recall 0.938 / precision 0.393 on "
+                "held-out synthetic test data.",
+                reason=reason, tools_used=["ai_platform.fraud"],
+            )
+        if capability == "CODE_AI":
+            return OrchestratorResponse(
+                capability=capability, status=cap_entry.status.value,
+                answer="Code execution is available via POST /api/ai/code/execute "
+                "with {\"code\": \"...\"} - runs in a sandboxed subprocess with a "
+                "timeout and restricted builtins (process isolation, not "
+                "container-level - see the registry entry for exact scope).",
+                reason=reason, tools_used=["ai_platform.code_sandbox"],
+            )
+        if capability == "SPEECH_AI":
+            return OrchestratorResponse(
+                capability=capability, status=cap_entry.status.value,
+                answer="Text-to-speech is available via POST "
+                "/api/ai/speech/synthesize with {\"text\": \"...\"} (returns a "
+                "WAV file). Speech-to-text is not implemented.",
+                reason=reason, tools_used=["ai_platform.speech"],
+            )
+        if capability == "KNOWLEDGE_GRAPH":
+            return OrchestratorResponse(
+                capability=capability, status=cap_entry.status.value,
+                answer="Knowledge graph queries are available via POST "
+                "/api/ai/knowledge-graph/{add,relationships,path} - it needs "
+                "structured text ingestion and entity names, not a single "
+                "chat question.",
+                reason=reason, tools_used=["ai_platform.knowledge_graph"],
+            )
+        if capability == "RECOMMENDATION_AI":
+            from ai_platform.recommendation import get_recommendations
+            recs = get_recommendations()
+            if not recs:
+                answer = "No recommendations triggered by the current data."
+            else:
+                answer = "\n\n".join(f"- {r.recommendation}\n  {r.reason}" for r in recs)
+            return OrchestratorResponse(
+                capability=capability, status=cap_entry.status.value, answer=answer,
+                reason=reason, tools_used=["ai_platform.recommendation"],
+                knowledge_sources=[{"citation": s, "score": None}
+                                    for r in recs for s in r.data_sources],
+            )
+        if capability == "MULTILINGUAL_AI":
+            from ai_platform.multilingual import detect_language
+            try:
+                d = detect_language(query)
+                answer = (f"Detected language: {d.language_name} ({d.language_code}), "
+                          f"confidence {d.confidence}. Translation is not implemented "
+                          "(see registry for why) - only detection is available.")
+            except ValueError as e:
+                answer = f"Language detection failed: {e}"
+            return OrchestratorResponse(
+                capability=capability, status=cap_entry.status.value, answer=answer,
+                reason=reason, tools_used=["ai_platform.multilingual"],
+            )
+        if capability == "DATABASE_AI":
+            return OrchestratorResponse(
+                capability=capability, status=cap_entry.status.value,
+                answer="Database queries are available via POST /api/ai/database "
+                "with {\"question\": \"...\", \"table\": \"...\"} - handles "
+                "'total by X', 'top N', 'total', 'average' against a local "
+                "SQLite database (read-only, template-matched, not free-form "
+                "NL2SQL). See GET /api/ai/database/schema for available tables.",
+                reason=reason, tools_used=["ai_platform.database_ai"],
             )
         if capability == "FORECASTING_AI":
             return OrchestratorResponse(
@@ -246,6 +322,53 @@ class AIOrchestrator:
             reason=reason, tools_used=[chosen], verification=verification.to_dict(),
         )
 
+    def _handle_live_data(self, query: str, reason: str) -> OrchestratorResponse:
+        from ai_platform.live_data import LiveDataError, extract_symbol, get_quote
+
+        symbol = extract_symbol(query)
+        if symbol is None:
+            return OrchestratorResponse(
+                capability="LIVE_DATA", status=Status.TESTED.value,
+                answer="Current market data is not available: could not "
+                "identify a ticker symbol or company name in the request.",
+                reason=reason,
+            )
+        try:
+            quote = get_quote(symbol)
+        except LiveDataError as e:
+            return OrchestratorResponse(
+                capability="LIVE_DATA", status=Status.TESTED.value,
+                answer="Current market data is not available.",
+                reason=f"{reason}; fetch failed: {e}",
+            )
+
+        answer = (f"{quote['symbol']}: {quote['price']} {quote['currency']} "
+                  f"({quote['exchange']}). Previous close: {quote['previous_close']}.")
+        return OrchestratorResponse(
+            capability="LIVE_DATA", status=Status.TESTED.value, answer=answer,
+            reason=reason, tools_used=["ai_platform.live_data"],
+            knowledge_sources=[{"citation": quote["source"], "score": 1.0}],
+        )
+
+    def _handle_research(self, query: str, reason: str) -> OrchestratorResponse:
+        from ai_platform.research import ResearchError, format_report, search
+
+        try:
+            report = search(query, max_results=5)
+        except ResearchError as e:
+            return OrchestratorResponse(
+                capability="RESEARCH_AI", status=Status.PARTIAL.value,
+                answer=f"Search failed: {e}", reason=reason,
+            )
+
+        sources = [{"citation": r.citation(), "score": None} for r in report.results]
+        return OrchestratorResponse(
+            capability="RESEARCH_AI", status=Status.PARTIAL.value,
+            answer=format_report(report), reason=reason,
+            tools_used=["ai_platform.research (DuckDuckGo HTML)"],
+            knowledge_sources=sources,
+        )
+
     def _handle_rag(self, query: str, reason: str) -> OrchestratorResponse:
         if self.document_store is None or not self.document_store.chunks:
             return OrchestratorResponse(
@@ -254,7 +377,23 @@ class AIOrchestrator:
                 reason=reason,
             )
         from rag.retriever import build_context
-        retrieved = self.document_store.search(query, top_k=3)
+        from ai_platform.reranking import rerank
+
+        # Over-fetch from the first-stage retriever, then let BM25 re-rank
+        # down to the final top-3 (Part 6's pipeline). BM25 determines
+        # ORDER only - the sufficient_evidence() threshold was calibrated
+        # against the first-stage TF-IDF cosine scale (~0-1), and BM25
+        # scores are unbounded (~0-5+ in testing); substituting one for the
+        # other would silently break the threshold, so `retrieved` keeps
+        # each candidate's original TF-IDF score for the gate and citations.
+        candidates = self.document_store.search(query, top_k=8)
+        retrieved = [r.chunk for r in rerank(query, candidates, top_k=3)] if candidates else []
+        # Re-attach original scores by chunk identity for the gate/citations.
+        score_by_chunk = {id(c.chunk): c.score for c in candidates}
+        retrieved = [
+            type(candidates[0])(chunk=chunk, score=score_by_chunk.get(id(chunk), 0.0))
+            for chunk in retrieved
+        ] if candidates else []
         top_score = retrieved[0].score if retrieved else None
 
         if not sufficient_evidence(top_score):

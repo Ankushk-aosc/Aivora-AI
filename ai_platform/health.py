@@ -46,11 +46,104 @@ def _probe_device():
     return "DEGRADED", "No GPU - running on CPU only"
 
 
+def _probe_live_data():
+    from .live_data import LiveDataError, get_quote
+    try:
+        q = get_quote("AAPL", timeout=5.0)
+        return "HEALTHY", f"live fetch OK: AAPL={q['price']} {q['currency']}"
+    except LiveDataError as e:
+        return "DEGRADED", f"unofficial endpoint unreachable right now: {e}"
+
+
+def _probe_fraud():
+    from .fraud import load_model
+    try:
+        model = load_model()
+        scores = model.score([{"amt": 5000.0, "category": "misc_net",
+                               "trans_date_trans_time": "2026-01-01 03:00:00",
+                               "city_pop": 500}])
+        return "HEALTHY", f"self-test scored transaction: risk={scores[0]}"
+    except FileNotFoundError as e:
+        return "UNAVAILABLE", str(e)
+
+
+def _probe_code_sandbox():
+    from .code_sandbox import run_python
+    r = run_python("print(1+1)")
+    return ("HEALTHY", "self-test executed correctly") if r.success and r.stdout.strip() == "2" \
+        else ("DEGRADED", f"self-test unexpected result: {r.stdout!r} {r.stderr!r}")
+
+
+def _probe_database():
+    from .database_ai import discover_schema
+    try:
+        schema = discover_schema()
+        return "HEALTHY", f"schema discovery OK: {len(schema)} table(s)"
+    except Exception as e:
+        return "DEGRADED", str(e)
+
+
+def _probe_speech():
+    from .speech import SpeechError, list_voices
+    try:
+        voices = list_voices()
+        return ("HEALTHY", f"{len(voices)} voice(s) available") if voices \
+            else ("DEGRADED", "no voices installed")
+    except SpeechError as e:
+        return "UNAVAILABLE", str(e)
+
+
+def _probe_reranking():
+    from .reranking import bm25_score
+    score = bm25_score(["test"], ["this", "is", "a", "test"], 4.0, {"test": 1}, 1)
+    return ("HEALTHY", "self-test OK") if score > 0 else ("DEGRADED", "self-test unexpected result")
+
+
+def _probe_recommendation():
+    from .recommendation import get_recommendations
+    try:
+        recs = get_recommendations()
+        return "HEALTHY", f"generated {len(recs)} recommendation(s) from current data"
+    except Exception as e:
+        return "DEGRADED", str(e)
+
+
+def _probe_multilingual():
+    from .multilingual import detect_language
+    d = detect_language("This is a test sentence in English.")
+    return ("HEALTHY", "self-test OK") if d.language_code == "en" else ("DEGRADED", f"unexpected: {d.language_code}")
+
+
+def _probe_knowledge_graph():
+    from .knowledge_graph import extract_relations
+    triples = extract_relations("Acme Corp owns Beta Logistics.")
+    return ("HEALTHY", "self-test OK") if triples else ("DEGRADED", "self-test extracted nothing")
+
+
+def _probe_research():
+    from .research import ResearchError, search
+    try:
+        r = search("test", max_results=1, timeout=5.0)
+        return "HEALTHY", f"live search OK: {len(r.results)} result(s)"
+    except ResearchError as e:
+        return "DEGRADED", f"unofficial endpoint unreachable right now: {e}"
+
+
 _PROBES = {
     "GENERAL_LLM": _probe_llm,
     "FINANCIAL_LLM": _probe_llm,
     "CALCULATOR": _probe_calculator,
     "RAG": _probe_rag,
+    "LIVE_DATA": _probe_live_data,
+    "RESEARCH_AI": _probe_research,
+    "FRAUD_AI": _probe_fraud,
+    "CODE_AI": _probe_code_sandbox,
+    "DATABASE_AI": _probe_database,
+    "SPEECH_AI": _probe_speech,
+    "RERANKING_AI": _probe_reranking,
+    "RECOMMENDATION_AI": _probe_recommendation,
+    "MULTILINGUAL_AI": _probe_multilingual,
+    "KNOWLEDGE_GRAPH": _probe_knowledge_graph,
 }
 
 

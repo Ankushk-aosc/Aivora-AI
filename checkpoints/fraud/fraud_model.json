@@ -1,0 +1,38 @@
+{
+  "dataset_id": "pointe77/credit-card-transaction",
+  "dataset_license": "apache-2.0",
+  "dataset_note": "Synthetic data (Sparkov simulator), not real cardholders.",
+  "records_used": 60000,
+  "seed": 42,
+  "test_size": 0.25,
+  "algorithm": "sklearn.ensemble.RandomForestClassifier(n_estimators=100, max_depth=10, class_weight='balanced')",
+  "features": [
+    "amount",
+    "log1p(amount)",
+    "hour",
+    "day_of_week",
+    "log1p(city_pop)",
+    "category (one-hot)"
+  ],
+  "metrics": {
+    "precision": 0.3931,
+    "recall": 0.9379,
+    "f1": 0.554,
+    "roc_auc": 0.9921,
+    "confusion_matrix": [
+      [
+        14645,
+        210
+      ],
+      [
+        9,
+        136
+      ]
+    ],
+    "test_size": 15000,
+    "test_fraud_count": 145,
+    "train_size": 45000,
+    "train_fraud_count": 435
+  },
+  "trained_at": "2026-08-24T08:57:34.684455Z"
+}

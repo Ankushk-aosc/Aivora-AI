@@ -80,10 +80,15 @@ REGISTRY = {
     ),
     "LIVE_DATA": Capability(
         name="Live Market Data", route="LIVE_DATA", type="tool",
-        model="none", version="-", provider="none", status=Status.BLOCKED,
-        reason="No market-data provider (e.g. a stock price API) is configured. "
-        "Deliberately returns 'Current market data is not available.' rather than "
-        "fabricating a price - this refusal is itself the tested behavior.",
+        model="Yahoo Finance public chart endpoint", version="1.0",
+        provider="unofficial_public_api", status=Status.TESTED,
+        reason="No API key required. Verified against real symbols (AAPL). "
+        "This is an UNOFFICIAL, undocumented public endpoint, not a "
+        "credentialed integration - it can change or rate-limit without "
+        "notice. Any fetch failure (unknown symbol, network error, "
+        "endpoint change) returns 'Current market data is not available.' - "
+        "verified for an invalid symbol - never a fabricated price.",
+        endpoint="/api/ai/orchestrate",
     ),
     "DOCUMENT_AI": Capability(
         name="Document AI", route="DOCUMENT_AI", type="tool",
@@ -137,9 +142,18 @@ REGISTRY = {
     ),
     "RERANKING_AI": Capability(
         name="Reranking AI", route="RERANKING_AI", type="ml_model",
-        model="none", version="-", provider="none", status=Status.NOT_IMPLEMENTED,
-        reason="No dedicated reranker (cross-encoder or otherwise) is implemented. "
-        "RAG currently ranks by a single retrieval pass only.",
+        model="BM25 (Okapi, from scratch)", version="1.0",
+        provider="statistical", status=Status.TESTED,
+        reason="Second-stage BM25 reranking over the first-stage TF-IDF "
+        "retrieval, now used by default in the RAG pipeline. Measured, not "
+        "just claimed: on a test query ('What was the EBITDA margin?') "
+        "against 4 chunks, first-stage TF-IDF ranked an irrelevant risk-"
+        "factors chunk #1 and the actually-relevant EBITDA chunk #2; BM25 "
+        "reranking correctly promoted the relevant chunk to #1. Not a "
+        "pretrained cross-encoder (none available without a GPU/download) - "
+        "a classical, from-scratch IR ranking function, genuinely distinct "
+        "from the first-stage cosine score it re-ranks.",
+        endpoint="/api/ai/rerank",
     ),
     "VISION_AI": Capability(
         name="Vision AI", route="VISION_AI", type="ml_model",
@@ -149,59 +163,131 @@ REGISTRY = {
     ),
     "SPEECH_AI": Capability(
         name="Speech AI", route="SPEECH_AI", type="ml_model",
-        model="none", version="-", provider="none", status=Status.NOT_IMPLEMENTED,
-        reason="No speech-to-text or text-to-speech model is connected or tested.",
+        model="Windows SAPI (System.Speech)", version="1.0",
+        provider="local_os", status=Status.PARTIAL,
+        reason="Text-to-speech only, and genuinely tested: produced a real, "
+        "valid 4.19s WAV file (parsed with Python's wave module to confirm "
+        "it isn't a stub - 92,365 audio frames at 22050Hz) from real text. "
+        "Uses the OS's own synthesis engine (3 installed voices found), not "
+        "a downloaded model. Speech-to-text is NOT implemented: the only "
+        "realistic local option (e.g. openai-whisper) is a 150MB+ pretrained "
+        "model download, which wasn't added without a clear need to verify "
+        "against - this stays honestly PARTIAL rather than silently skipping "
+        "half the capability.",
+        endpoint="/api/ai/speech/synthesize",
     ),
     "CODE_AI": Capability(
         name="Code AI", route="CODE_AI", type="agent",
-        model="none", version="-", provider="none", status=Status.NOT_IMPLEMENTED,
-        reason="No sandboxed execution environment is configured. Per spec Part 11, "
-        "generated code must never run on the production host directly, and no "
-        "isolated sandbox exists here, so this capability is deliberately not wired up.",
+        model="subprocess sandbox (python -I -S + restricted builtins)",
+        version="1.0", provider="local", status=Status.PARTIAL,
+        reason="Execution only (not generation - the LLM isn't capable enough "
+        "to write correct code yet). Real process isolation: fresh subprocess, "
+        "hard wall-clock timeout (verified: an infinite loop was killed within "
+        "the timeout), restricted builtins via a purpose-built exec() globals "
+        "dict (verified: dir() raises NameError; caught and fixed a real bug "
+        "first where reassigning __builtins__ in the same frame did NOT "
+        "actually restrict it - CPython caches f_builtins at frame creation). "
+        "This is PROCESS isolation, not container/VM-level security (no "
+        "Docker/seccomp available here) - a determined attacker with time to "
+        "find gaps in the builtin restriction could still find one; it stops "
+        "the obvious cases (import os, open, eval, exec, runaway loops), not "
+        "every case.",
+        endpoint="/api/ai/code/execute",
     ),
     "DATABASE_AI": Capability(
         name="Database AI / Data Analyst", route="DATABASE_AI", type="agent",
-        model="none", version="-", provider="none", status=Status.NOT_IMPLEMENTED,
-        reason="No database connection is configured. Schema discovery, "
-        "SQL generation/validation, and query execution have nothing to run against.",
+        model="SQLite (stdlib) + deterministic query templates", version="1.0",
+        provider="local", status=Status.PARTIAL,
+        reason="Real local SQLite database, real schema discovery, and real "
+        "read-only query execution - verified with a seeded synthetic test "
+        "table (correct SUM/COUNT/ORDER BY results, e.g. supplies total "
+        "2000.0 = 1200+800). SQL generation is deliberately NOT free-form "
+        "NL2SQL from the LLM (it isn't trained enough to be trusted with "
+        "exact queries yet) - a small set of parameterized templates handles "
+        "'total by X', 'top N', 'total', 'average'; anything else is honestly "
+        "reported as unsupported rather than guessed. Write/DDL statements "
+        "and multi-statement injection are rejected before reaching sqlite3 "
+        "(verified: DROP/DELETE/multi-statement all blocked).",
+        endpoint="/api/ai/database",
     ),
     "FRAUD_AI": Capability(
         name="Fraud AI", route="FRAUD_AI", type="ml_model",
-        model="none", version="-", provider="none", status=Status.NOT_IMPLEMENTED,
-        reason="Distinct from ANOMALY_AI: a real fraud model needs labeled "
-        "historical fraud/legitimate transaction data to train a classifier. No "
-        "such labeled dataset exists in this project, so no fraud classifier was "
-        "trained. Use ANOMALY_AI (statistical outliers) as an unsupervised proxy "
-        "with the understanding it is not a trained fraud detector.",
+        model="RandomForestClassifier (scikit-learn)", version="1.0",
+        provider="trained_local", status=Status.TESTED,
+        reason="Trained on pointe77/credit-card-transaction (Apache-2.0, "
+        "synthetic Sparkov-simulator data - not real cardholders), 60,000 "
+        "streamed records, held-out test set (n=15,000, 145 fraud cases). "
+        "Real measured metrics: precision 0.393, recall 0.938, F1 0.554, "
+        "ROC-AUC 0.992. Recall is strong (catches most fraud); precision is "
+        "genuinely mediocre (many false positives) because the feature set is "
+        "just amount/time/category - no per-cardholder velocity features "
+        "(e.g. 'transactions in the last hour'), which real fraud systems "
+        "rely on heavily. Reported as-is, not rounded up.",
+        endpoint="/api/ai/fraud",
     ),
     "RECOMMENDATION_AI": Capability(
         name="Recommendation AI", route="RECOMMENDATION_AI", type="agent",
-        model="none", version="-", provider="none", status=Status.NOT_IMPLEMENTED,
-        reason="No enterprise data source (spend history, vendor catalog, etc.) "
-        "is connected to generate grounded recommendations from.",
+        model="deterministic rules over SQLite data", version="1.0",
+        provider="local", status=Status.PARTIAL,
+        reason="Real, verified against seeded synthetic test data: vendor "
+        "concentration (correctly flagged a vendor at 40.4% spend share, "
+        "correctly did NOT flag one at 26.9%) and cost-outlier detection "
+        "(reuses the already-tested IQR anomaly detector rather than a second "
+        "untested implementation). Every recommendation carries recommendation/"
+        "reason/evidence/confidence/data_sources as required. PARTIAL because "
+        "it only reasons over whatever is in the local SQLite database - no "
+        "real enterprise spend/vendor-catalog data source is connected, so "
+        "recommendations are only as meaningful as the (currently synthetic "
+        "test) data seeded into it.",
+        endpoint="/api/ai/recommend",
     ),
     "MULTILINGUAL_AI": Capability(
         name="Multilingual AI", route="MULTILINGUAL_AI", type="tool",
-        model="none", version="-", provider="none", status=Status.NOT_IMPLEMENTED,
-        reason="No language-detection or translation model is connected. The "
-        "proprietary LLM's tokenizer (GPT-2 BPE) and training data are "
-        "English-only, so multilingual generation would be low quality even if "
-        "input language detection were added.",
+        model="langdetect (pure Python, no download)", version="1.0",
+        provider="local", status=Status.PARTIAL,
+        reason="Language DETECTION only - verified 4/5 on a mixed-language "
+        "test set (en/de/ja/zh-cn correct; a short Spanish question was "
+        "misclassified as French, a known langdetect weakness on short "
+        "strings - a longer Spanish sentence detected correctly at "
+        "confidence 1.0). Translation is NOT implemented: the only realistic "
+        "local option (argostranslate) pulls in ~35 packages including spacy "
+        "and onnxruntime plus per-language runtime downloads - too heavy to "
+        "add and verify reliably on this machine (~1GB free RAM) without "
+        "risking exactly the kind of unverified claim this registry exists "
+        "to prevent. The proprietary LLM's tokenizer and training data are "
+        "English-only regardless, so multilingual generation would be low "
+        "quality even with translation added.",
     ),
     "RESEARCH_AI": Capability(
         name="Research AI", route="RESEARCH_AI", type="agent",
-        model="none", version="-", provider="none", status=Status.NOT_IMPLEMENTED,
-        reason="No live web-search API is configured inside the platform "
-        "(distinct from the developer's own tooling used to build this project). "
-        "Without a search backend there is nothing for a research agent to "
-        "retrieve, compare, or cite.",
+        model="DuckDuckGo HTML search (unofficial, no API key)", version="1.0",
+        provider="unofficial_public_api", status=Status.PARTIAL,
+        reason="Search -> Retrieve -> Cite is real and tested (verified real "
+        "URLs/snippets for 'EBITDA definition finance'). Compare/Analyze/Verify "
+        "stages are NOT implemented - the proprietary LLM is not yet capable "
+        "enough to meaningfully synthesize across sources (see evaluation "
+        "results), so this stops at citation-backed raw results rather than "
+        "claiming a verified synthesis it can't produce. Unofficial endpoint: "
+        "can break without notice.",
+        endpoint="/api/ai/research",
     ),
     "KNOWLEDGE_GRAPH": Capability(
         name="Knowledge Graph AI", route="KNOWLEDGE_GRAPH", type="infra",
-        model="none", version="-", provider="none", status=Status.NOT_IMPLEMENTED,
-        reason="No graph store or entity-relationship extraction pipeline exists. "
-        "Would require both an extraction step (LLM or rules to identify "
-        "companies/vendors/transactions) and a graph database, neither present.",
+        model="networkx (in-memory) + regex relation extraction", version="1.0",
+        provider="local", status=Status.PARTIAL,
+        reason="Real graph storage (networkx) with rule-based (not LLM-based) "
+        "OWNS/SUBSIDIARY_OF/VENDOR_OF/EMPLOYS/SUPPLIES extraction, verified "
+        "with a correct 2-hop path query (Acme -> Gamma -> Delta) over "
+        "multi-sentence text. A first version had a real entity-boundary bug "
+        "(a greedy regex captured 'Beta Logistics, a subsidiary that handles' "
+        "as one entity) - caught by testing a multi-hop path, not a single "
+        "clean example, and fixed with a proper-noun-phrase pattern. "
+        "PARTIAL because extraction is conservative by design: relations "
+        "phrased unusually, or with non-proper-noun objects (e.g. 'employs "
+        "over 200 workers'), are correctly not extracted rather than guessed - "
+        "so recall is deliberately traded for precision, and this is not a "
+        "general-purpose entity extractor.",
+        endpoint="/api/ai/knowledge-graph",
     ),
 }
 

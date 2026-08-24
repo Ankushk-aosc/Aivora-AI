@@ -14,11 +14,19 @@ from evaluation.financial_metrics import extract_numbers, normalize
 INSUFFICIENT_EVIDENCE_MESSAGE = "Insufficient information available."
 
 # Below this retrieval score, treat the evidence as too weak to answer from.
-# Tuned against the TF-IDF retriever: genuinely relevant queries scored
-# 0.15-0.40 in testing, while queries sharing only incidental/generic
-# vocabulary with a document scored ~0.05. This is a real, tunable
-# threshold, not a guarantee - a short document with little vocabulary
-# can still produce false-positive overlap above this line.
+# Tuned against the TF-IDF retriever's DEFAULT chunk_tokens=256: genuinely
+# relevant queries scored 0.15-0.40 in testing, while queries sharing only
+# incidental/generic vocabulary with a document scored ~0.05.
+#
+# KNOWN DEPENDENCY (found by testing, not by inspection): this threshold is
+# chunk-size sensitive. Smaller chunks (e.g. chunk_tokens=40) have a
+# smaller vocabulary per chunk, so a single incidentally-shared term
+# produces a disproportionately high cosine score - re-verified with
+# chunk_tokens=40, an irrelevant query scored 0.22, well above this
+# threshold, a false positive that did not occur at the default chunk
+# size. If you change DocumentStore's default chunk_tokens, re-verify (or
+# re-tune) this threshold against the new chunk size rather than assuming
+# it still holds.
 MIN_RAG_SCORE = 0.10
 
 

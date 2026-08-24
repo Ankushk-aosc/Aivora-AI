@@ -12,8 +12,12 @@ data/instruction/*.jsonl
 
 # Checkpoints (large binaries)
 checkpoints/**/*.pt
+checkpoints/**/*.pkl
 *.bin
 checkpoints.zip
+
+# Local SQLite test database (regenerate via ai_platform.database_ai seeding)
+data/financial_data.db
 
 # Experiment outputs
 eval_*.json
