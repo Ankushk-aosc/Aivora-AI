@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Financial LLM Studio</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --border: #2a2f3a; --text: #e6e8eb;
+    --muted: #8b93a3; --accent: #4f8cff; --good: #3ecf8e; --bad: #ef5972;
+    --warn: #e0a94f; --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family: -apple-system, Segoe UI, Roboto, sans-serif; }
+  header { padding: 14px 20px; border-bottom: 1px solid var(--border); display:flex; align-items:center; gap:16px; }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  #statusPill { font-size:12px; padding:3px 9px; border-radius:12px; background:#222633; color:var(--muted); }
+  #statusPill.ok { color:var(--good); }
+  #statusPill.bad { color:var(--bad); }
+  nav { display:flex; gap:2px; padding: 0 16px; border-bottom:1px solid var(--border); overflow-x:auto; }
+  nav button { background:none; border:none; color:var(--muted); padding:10px 14px; font-size:13px; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
+  nav button:hover { color:var(--text); }
+  nav button.active { color:var(--text); border-bottom-color:var(--accent); }
+  main { padding: 18px 20px 60px; max-width: 1100px; margin:0 auto; }
+  section { display:none; }
+  section.active { display:block; }
+  h2 { font-size:15px; margin: 4px 0 12px; color: var(--text); }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:14px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  input, select, textarea, button.btn {
+    background:#0c0e13; border:1px solid var(--border); color:var(--text);
+    border-radius:6px; padding:7px 10px; font-size:13px; font-family:inherit;
+  }
+  textarea { width:100%; min-height:64px; resize:vertical; }
+  button.btn { cursor:pointer; background:#1b2030; }
+  button.btn:hover { background:#232a3d; }
+  button.btn.primary { background: var(--accent); border-color:var(--accent); color:white; }
+  button.btn.primary:hover { filter:brightness(1.1); }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { color:var(--muted); font-weight:500; }
+  pre { background:#0c0e13; border:1px solid var(--border); border-radius:6px; padding:10px; overflow:auto; font-size:12px; max-height:420px; }
+  code, .mono { font-family: var(--mono); }
+  .muted { color:var(--muted); }
+  .good { color:var(--good); }
+  .bad { color:var(--bad); }
+  .warn { color:var(--warn); }
+  .chat-log { display:flex; flex-direction:column; gap:10px; margin-bottom:12px; }
+  .msg { padding:10px 12px; border-radius:8px; max-width: 85%; white-space:pre-wrap; }
+  .msg.user { background:#1c2740; align-self:flex-end; }
+  .msg.model { background:#171c28; align-self:flex-start; border:1px solid var(--border); }
+  .msg .meta { font-size:11px; color:var(--muted); margin-top:6px; }
+  .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  .badge { display:inline-block; padding:1px 7px; border-radius:10px; font-size:11px; background:#222633; color:var(--muted); }
+  .badge.ok { background:#123527; color:var(--good); }
+  .badge.bad { background:#3a1a22; color:var(--bad); }
+  .badge.warn { background:#3a2f14; color:var(--warn); }
+  .kv { display:grid; grid-template-columns: 180px 1fr; gap:4px 12px; font-size:13px; }
+  .kv div:nth-child(odd) { color:var(--muted); }
+  .expertbar { height:8px; background:#0c0e13; border-radius:4px; overflow:hidden; }
+  .expertbar span { display:block; height:100%; background:var(--accent); }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Financial LLM Studio</h1>
+  <span id="statusPill">connecting...</span>
+</header>
+
+<nav id="tabs">
+  <button data-tab="dashboard" class="active">Dashboard</button>
+  <button data-tab="datasets">Datasets</button>
+  <button data-tab="training">Training</button>
+  <button data-tab="chat">Financial Chat</button>
+  <button data-tab="rag">RAG / Documents</button>
+  <button data-tab="inspector">Model Inspector</button>
+  <button data-tab="evaluation">Evaluation</button>
+  <button data-tab="architecture">Architecture</button>
+</nav>
+
+<main>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="active">
+  <h2>System Status</h2>
+  <div class="grid2">
+    <div class="card"><div class="kv" id="healthKv">Loading...</div></div>
+    <div class="card"><div class="kv" id="modelKv">Loading...</div></div>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">Checkpoints</h2>
+    <table><thead><tr><th>Stage</th><th>Step</th><th>Train Loss</th><th>Val Loss</th><th>Tokens</th><th>Timestamp</th><th></th></tr></thead>
+    <tbody id="ckptTable"><tr><td colspan="7" class="muted">Loading...</td></tr></tbody></table>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">Google Colab / GPU</h2>
+    <div class="kv" id="colabKv">Loading...</div>
+  </div>
+</section>
+
+<!-- DATASETS -->
+<section id="datasets">
+  <h2>Dataset Registry &amp; Provenance</h2>
+  <div class="card">
+    <table><thead><tr><th>Name</th><th>Category</th><th>License</th><th>Status</th><th>HF ID</th></tr></thead>
+    <tbody id="registryTable"><tr><td colspan="5" class="muted">Loading...</td></tr></tbody></table>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">Prepared (measured)</h2>
+    <table><thead><tr><th>Name</th><th>Records used</th><th>Removed</th><th>Train tok</th><th>Val tok</th><th>Prepared</th></tr></thead>
+    <tbody id="preparedTable"><tr><td colspan="6" class="muted">Loading...</td></tr></tbody></table>
+  </div>
+</section>
+
+<!-- TRAINING -->
+<section id="training">
+  <h2>Training Status (from checkpoint metadata)</h2>
+  <div class="card">
+    <div class="kv" id="trainKv">Loading...</div>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">Loss History</h2>
+    <table><thead><tr><th>Step</th><th>Train Loss</th><th>Val Loss</th><th>Tokens</th></tr></thead>
+    <tbody id="lossHistory"><tr><td colspan="4" class="muted">Loading...</td></tr></tbody></table>
+  </div>
+</section>
+
+<!-- CHAT -->
+<section id="chat">
+  <h2>Financial Chat</h2>
+  <div class="card">
+    <div class="chat-log" id="chatLog"></div>
+    <div class="row">
+      <input id="chatInput" placeholder="Ask a financial question..." style="flex:1; min-width:240px;">
+      <button class="btn primary" id="chatSend">Send</button>
+    </div>
+    <div class="muted" style="font-size:11px; margin-top:8px;">
+      Try: "What is EBITDA?" &middot; "Revenue is 500 crore and EBITDA is 100 crore. Calculate EBITDA margin."
+      &middot; "What's the current stock price?"
+    </div>
+  </div>
+</section>
+
+<!-- RAG -->
+<section id="rag">
+  <h2>RAG / Documents</h2>
+  <div class="card">
+    <div class="row">
+      <input id="ragPath" placeholder="Absolute path to a .txt/.pdf/.docx/.csv/.json file" style="flex:1; min-width:320px;">
+      <button class="btn primary" id="ragUpload">Load Document</button>
+    </div>
+    <div id="ragStatus" class="muted" style="margin-top:8px;"></div>
+  </div>
+  <div class="card">
+    <div class="row">
+      <input id="ragQuery" placeholder="Search the loaded document..." style="flex:1; min-width:240px;">
+      <button class="btn" id="ragSearch">Search</button>
+    </div>
+    <div id="ragResults" style="margin-top:10px;"></div>
+  </div>
+</section>
+
+<!-- INSPECTOR -->
+<section id="inspector">
+  <h2>Model Inspector</h2>
+  <div class="card">
+    <div class="row">
+      <input id="inspectText" value="What is EBITDA?" style="flex:1; min-width:240px;">
+      <select id="inspectLayer"></select>
+      <button class="btn" id="inspectTokensBtn">Tokens</button>
+      <button class="btn" id="inspectMoeBtn">MoE Routing</button>
+      <button class="btn" id="inspectForwardBtn">Forward Pass</button>
+    </div>
+  </div>
+  <div class="card" id="inspectorOut"><span class="muted">Choose an inspector above.</span></div>
+</section>
+
+<!-- EVALUATION -->
+<section id="evaluation">
+  <h2>Financial LLM POC Evaluation</h2>
+  <div class="card" id="evalOut"><span class="muted">Loading...</span></div>
+  <div class="card">
+    <h2 style="margin-top:0">Experiments</h2>
+    <table><thead><tr><th>Name</th><th>Checkpoint</th><th>Repo rev</th><th>Timestamp</th></tr></thead>
+    <tbody id="expTable"><tr><td colspan="4" class="muted">Loading...</td></tr></tbody></table>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <h2>Model Architecture</h2>
+  <div class="card"><div class="kv" id="archKv">Loading model status...</div></div>
+</section>
+
+</main>
+
+<script>
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+async function api(method, path, body) {
+  const opts = { method, headers: {} };
+  if (body !== undefined) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  const res = await fetch(path, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+// ---------------- tabs ----------------
+$$('#tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('#tabs button').forEach(b => b.classList.remove('active'));
+    $$('main > section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    $('#' + btn.dataset.tab).classList.add('active');
+    loadTab(btn.dataset.tab);
+  });
+});
+
+function kv(obj) {
+  return Object.entries(obj).map(([k, v]) =>
+    `<div>${esc(k)}</div><div class="mono">${typeof v === 'object' ? esc(JSON.stringify(v)) : esc(v)}</div>`
+  ).join('');
+}
+
+// ---------------- dashboard ----------------
+async function loadDashboard() {
+  try {
+    const h = await api('GET', '/api/health');
+    $('#statusPill').textContent = h.status === 'ok' ? 'backend online' : 'error';
+    $('#statusPill').className = h.status === 'ok' ? 'ok' : 'bad';
+    $('#healthKv').innerHTML = kv({
+      status: h.status, torch: h.torch, cuda_available: h.cuda_available,
+      gpu: h.gpu, checkpoint_loaded: h.checkpoint_loaded || 'None',
+    });
+  } catch (e) {
+    $('#statusPill').textContent = 'backend offline';
+    $('#statusPill').className = 'bad';
+    $('#healthKv').innerHTML = `<div class="bad">Cannot reach backend: ${esc(e.message)}</div>`;
+  }
+
+  try {
+    const m = await api('GET', '/api/model/status');
+    if (m.loaded) {
+      $('#modelKv').innerHTML = kv({
+        checkpoint: m.checkpoint,
+        parameters: m.architecture.total_parameters.toLocaleString(),
+        layers: m.architecture.layers, experts: m.architecture.n_experts,
+        device: m.architecture.device,
+      });
+    } else {
+      $('#modelKv').innerHTML = `<div class="warn">No checkpoint loaded</div><div></div>` + kv({
+        note: m.error || 'Load one from the Training tab or via POST /api/model/load',
+      });
+    }
+  } catch (e) { $('#modelKv').innerHTML = `<div class="bad">${esc(e.message)}</div>`; }
+
+  try {
+    const c = await api('GET', '/api/checkpoints');
+    $('#ckptTable').innerHTML = c.checkpoints.length ? c.checkpoints.map(ck => `
+      <tr><td>${esc(ck.stage)}</td><td>${ck.step}</td>
+      <td class="mono">${ck.train_loss?.toFixed(4) ?? '-'}</td>
+      <td class="mono">${ck.val_loss?.toFixed(4) ?? '-'}</td>
+      <td>${(ck.tokens_processed||0).toLocaleString()}</td>
+      <td class="muted">${esc(ck.timestamp||'')}</td>
+      <td><button class="btn" onclick="loadCheckpoint('${esc(ck.path)}')">Load</button></td></tr>
+    `).join('') : '<tr><td colspan="7" class="muted">No checkpoints found</td></tr>';
+  } catch (e) { $('#ckptTable').innerHTML = `<tr><td colspan="7" class="bad">${esc(e.message)}</td></tr>`; }
+
+  try {
+    const c = await api('GET', '/api/colab/status');
+    $('#colabKv').innerHTML = kv(c);
+  } catch (e) { $('#colabKv').innerHTML = `<div class="bad">${esc(e.message)}</div>`; }
+}
+
+async function loadCheckpoint(path) {
+  $('#statusPill').textContent = 'loading checkpoint...';
+  try {
+    const r = await api('POST', '/api/model/load', { checkpoint: path });
+    if (!r.loaded) throw new Error(r.error);
+    await loadDashboard();
+  } catch (e) { alert('Failed to load checkpoint: ' + e.message); await loadDashboard(); }
+}
+
+// ---------------- datasets ----------------
+async function loadDatasets() {
+  try {
+    const d = await api('GET', '/api/datasets');
+    $('#registryTable').innerHTML = d.registry.map(e => `
+      <tr><td class="mono">${esc(e.name)}</td><td>${esc(e.category)}</td>
+      <td>${esc(e.license)}</td>
+      <td><span class="badge ${e.status==='VERIFIED'?'ok':'warn'}">${esc(e.status)}</span></td>
+      <td class="muted mono">${esc(e.hf_id)}</td></tr>`).join('');
+    $('#preparedTable').innerHTML = d.prepared.length ? d.prepared.map(p => `
+      <tr><td class="mono">${esc(p.name)}</td>
+      <td>${(p.train_records_used + p.validation_records_used).toLocaleString()}</td>
+      <td>${p.records_removed_invalid + p.records_removed_duplicate}</td>
+      <td>${p.train_tokens_used.toLocaleString()}</td>
+      <td>${p.validation_tokens_used.toLocaleString()}</td>
+      <td class="muted">${esc(p.download_date)}</td></tr>`).join('')
+      : '<tr><td colspan="6" class="muted">Nothing prepared yet</td></tr>';
+  } catch (e) {
+    $('#registryTable').innerHTML = `<tr><td colspan="5" class="bad">${esc(e.message)}</td></tr>`;
+  }
+}
+
+// ---------------- training ----------------
+async function loadTraining() {
+  try {
+    const t = await api('GET', '/api/training/status');
+    if (t.status === 'Not available') {
+      $('#trainKv').innerHTML = `<div class="warn">${esc(t.note)}</div>`;
+      $('#lossHistory').innerHTML = '<tr><td colspan="4" class="muted">No checkpoints</td></tr>';
+      return;
+    }
+    $('#trainKv').innerHTML = kv({
+      latest_checkpoint: t.latest_checkpoint, stage: t.stage, step: t.step,
+      train_loss: t.train_loss, val_loss: t.val_loss, best_val_loss: t.best_val_loss,
+      tokens_processed: (t.tokens_processed||0).toLocaleString(),
+      device: t.runtime?.device, timestamp: t.timestamp,
+    });
+    $('#lossHistory').innerHTML = t.history.map(h => `
+      <tr><td>${h.step}</td><td class="mono">${h.train_loss?.toFixed(4)??'-'}</td>
+      <td class="mono">${h.val_loss?.toFixed(4)??'-'}</td>
+      <td>${(h.tokens_processed||0).toLocaleString()}</td></tr>`).join('');
+  } catch (e) { $('#trainKv').innerHTML = `<div class="bad">${esc(e.message)}</div>`; }
+}
+
+// ---------------- chat ----------------
+function addMsg(role, text, meta) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = esc(text) + (meta ? `<div class="meta">${esc(meta)}</div>` : '');
+  $('#chatLog').appendChild(div);
+  $('#chatLog').scrollTop = $('#chatLog').scrollHeight;
+}
+
+async function sendChat() {
+  const q = $('#chatInput').value.trim();
+  if (!q) return;
+  addMsg('user', q);
+  $('#chatInput').value = '';
+  try {
+    const r = await api('POST', '/api/chat', { query: q });
+    addMsg('model', r.answer, `Route: ${r.route}  |  Source: ${r.source}`);
+  } catch (e) { addMsg('model', 'Error: ' + e.message); }
+}
+$('#chatSend').addEventListener('click', sendChat);
+$('#chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
+
+// ---------------- RAG ----------------
+$('#ragUpload').addEventListener('click', async () => {
+  const path = $('#ragPath').value.trim();
+  if (!path) return;
+  $('#ragStatus').textContent = 'Loading...';
+  try {
+    const r = await api('POST', '/api/rag/upload', { path });
+    $('#ragStatus').innerHTML = `<span class="good">Loaded</span> ${esc(r.added.format)} - ${r.added.chunks_added} chunks. Store total: ${r.store.total_chunks} chunks across ${r.store.documents.length} document(s), embedder: ${esc(r.store.embedder)}`;
+  } catch (e) { $('#ragStatus').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+});
+$('#ragSearch').addEventListener('click', async () => {
+  const q = $('#ragQuery').value.trim();
+  if (!q) return;
+  $('#ragResults').textContent = 'Searching...';
+  try {
+    const r = await api('POST', '/api/rag/search', { query: q, top_k: 4 });
+    $('#ragResults').innerHTML = r.results.length ? r.results.map(res => `
+      <div class="card" style="margin-bottom:8px;">
+        <div class="mono muted" style="font-size:11px;">${esc(res.citation)} - score ${res.score}</div>
+        <div style="margin-top:6px;">${esc(res.text)}</div>
+      </div>`).join('') : `<span class="muted">${esc(r.note || 'No results')}</span>`;
+  } catch (e) { $('#ragResults').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+});
+
+// ---------------- inspector ----------------
+for (let i = 0; i < 8; i++) {
+  const opt = document.createElement('option'); opt.value = i; opt.textContent = `Layer ${i}`;
+  $('#inspectLayer').appendChild(opt);
+}
+
+$('#inspectTokensBtn').addEventListener('click', async () => {
+  const text = $('#inspectText').value;
+  $('#inspectorOut').innerHTML = 'Loading...';
+  try {
+    const r = await api('POST', '/api/inspect/tokens', { text });
+    $('#inspectorOut').innerHTML = `<div class="muted" style="margin-bottom:8px;">${r.token_count} tokens</div>
+      <table><thead><tr><th>#</th><th>Token ID</th><th>Piece</th></tr></thead><tbody>
+      ${r.tokens.map(t => `<tr><td>${t.position}</td><td class="mono">${t.id}</td><td class="mono">${esc(JSON.stringify(t.piece))}</td></tr>`).join('')}
+      </tbody></table>`;
+  } catch (e) { $('#inspectorOut').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+});
+
+$('#inspectMoeBtn').addEventListener('click', async () => {
+  const text = $('#inspectText').value;
+  const layer = $('#inspectLayer').value;
+  $('#inspectorOut').innerHTML = 'Loading...';
+  try {
+    const r = await api('POST', '/api/inspect/moe', { text, layer: Number(layer) });
+    if (r.error) { $('#inspectorOut').innerHTML = `<span class="bad">${esc(r.error)}</span>`; return; }
+    $('#inspectorOut').innerHTML = `<div class="muted" style="margin-bottom:8px;">Layer ${r.layer} - ${r.n_experts} experts, top-${r.experts_per_token} routing</div>` +
+      r.tokens.map(t => `
+        <div style="margin-bottom:10px;">
+          <div class="mono">${esc(JSON.stringify(t.piece))} <span class="muted">selected: [${t.selected_experts.join(', ')}]</span></div>
+          ${Object.entries(t.expert_scores).map(([e,v]) => `
+            <div class="row" style="gap:6px; margin:2px 0;">
+              <span class="mono muted" style="width:70px; font-size:11px;">${e}</span>
+              <div class="expertbar" style="flex:1;"><span style="width:${(v*100).toFixed(1)}%"></span></div>
+              <span class="mono" style="width:44px; font-size:11px;">${v.toFixed(3)}</span>
+            </div>`).join('')}
+        </div>`).join('');
+  } catch (e) { $('#inspectorOut').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+});
+
+$('#inspectForwardBtn').addEventListener('click', async () => {
+  const text = $('#inspectText').value;
+  $('#inspectorOut').innerHTML = 'Loading...';
+  try {
+    const r = await api('POST', '/api/inspect/forward', { text });
+    if (r.error) { $('#inspectorOut').innerHTML = `<span class="bad">${esc(r.error)}</span>`; return; }
+    $('#inspectorOut').innerHTML = `
+      <h2 style="margin-top:0">Forward pass stages (real activations)</h2>
+      <table><thead><tr><th>Stage</th><th>Shape</th><th>Mean</th><th>Std</th><th>Finite</th></tr></thead><tbody>
+      ${r.stages.map(s => `<tr><td class="mono">${esc(s.stage)}</td><td class="mono">${esc(JSON.stringify(s.shape))}</td>
+        <td class="mono">${s.mean}</td><td class="mono">${s.std}</td>
+        <td class="${s.finite?'good':'bad'}">${s.finite}</td></tr>`).join('')}
+      </tbody></table>
+      <h2>Next-token probabilities</h2>
+      <table><thead><tr><th>Rank</th><th>Token ID</th><th>Piece</th><th>Probability</th></tr></thead><tbody>
+      ${r.next_token_probabilities.map(p => `<tr><td>${p.rank}</td><td class="mono">${p.token_id}</td>
+        <td class="mono">${esc(JSON.stringify(p.piece))}</td><td class="mono">${p.probability}</td></tr>`).join('')}
+      </tbody></table>`;
+  } catch (e) { $('#inspectorOut').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+});
+
+// ---------------- evaluation ----------------
+async function loadEvaluation() {
+  try {
+    const e = await api('GET', '/api/evaluation');
+    if (e.status === 'Not available') {
+      $('#evalOut').innerHTML = `<span class="warn">${esc(e.note)}</span>`;
+    } else {
+      let html = '<h2 style="margin-top:0">Financial LLM POC Evaluation</h2>';
+      for (const [label, data] of Object.entries(e)) {
+        const results = data.results || data[Object.keys(data)[0]] || data;
+        html += `<div style="margin-bottom:14px;"><div class="muted mono">${esc(label)}</div>`;
+        html += `<table><thead><tr><th>Category</th><th>Correct</th><th>Total</th><th>Accuracy</th></tr></thead><tbody>`;
+        const walk = (obj) => {
+          if (obj && obj.categories) {
+            for (const [cat, stats] of Object.entries(obj.categories)) {
+              html += `<tr><td>${esc(cat)}</td><td>${stats.correct}</td><td>${stats.total}</td><td>${stats.accuracy===null?'Not available':stats.accuracy+'%'}</td></tr>`;
+            }
+          } else if (typeof obj === 'object') {
+            for (const [k, v] of Object.entries(obj)) {
+              if (v && v.categories) walk(v);
+            }
+          }
+        };
+        walk(data);
+        html += '</tbody></table></div>';
+      }
+      $('#evalOut').innerHTML = html;
+    }
+  } catch (err) { $('#evalOut').innerHTML = `<span class="bad">${esc(err.message)}</span>`; }
+
+  try {
+    const ex = await api('GET', '/api/experiments');
+    $('#expTable').innerHTML = ex.experiments.length ? ex.experiments.map(e => `
+      <tr><td class="mono">${esc(e.name)}</td><td class="mono">${esc(e.checkpoint||'-')}</td>
+      <td class="mono">${esc(e.environment?.repository_revision||'-')}</td>
+      <td class="muted">${esc(e.timestamp||'')}</td></tr>`).join('')
+      : '<tr><td colspan="4" class="muted">No experiments recorded</td></tr>';
+  } catch (e) { $('#expTable').innerHTML = `<tr><td colspan="4" class="bad">${esc(e.message)}</td></tr>`; }
+}
+
+// ---------------- architecture ----------------
+async function loadArchitecture() {
+  try {
+    const m = await api('GET', '/api/model/status');
+    if (!m.loaded) { $('#archKv').innerHTML = `<div class="warn">No checkpoint loaded - load one from the Dashboard tab</div>`; return; }
+    const a = m.architecture;
+    $('#archKv').innerHTML = kv({
+      model: a.model,
+      total_parameters: a.total_parameters.toLocaleString(),
+      vocab_size: a.vocab_size, context_length: a.context_length,
+      embedding_size: a.embedding_size, layers: a.layers,
+      attention_heads: a.attention_heads, kv_lora_rank: a.kv_lora_rank,
+      q_lora_rank: a.q_lora_rank, rope_dim: a.rope_dim,
+      n_experts: a.n_experts, experts_per_token: a.experts_per_token,
+      mtp_heads: a.mtp_heads, weight_tying: a.weight_tying,
+      device: a.device, gpu: a.gpu,
+      parameters_by_component: a.parameters_by_component,
+    });
+  } catch (e) { $('#archKv').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+}
+
+// ---------------- router ----------------
+function loadTab(tab) {
+  ({ dashboard: loadDashboard, datasets: loadDatasets, training: loadTraining,
+     evaluation: loadEvaluation, architecture: loadArchitecture })[tab]?.();
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
