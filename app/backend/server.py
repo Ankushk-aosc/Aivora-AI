@@ -16,12 +16,18 @@ every endpoint returns real runtime data or an explicit "Not available".
 
 import json
 import os
+import sys
 import threading
 import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if ROOT not in sys.path:
+    # Allows `python app/backend/server.py` to import the repo's top-level
+    # packages (models, training, data_sources, ...) the same way
+    # `python main.py` does.
+    sys.path.insert(0, ROOT)
 
 # Lazily-populated process state.
 STATE = {
