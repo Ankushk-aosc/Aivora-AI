@@ -1,0 +1,17 @@
+{
+  "name": "tiny_debug_base_100",
+  "seed": 42,
+  "checkpoint": "checkpoints/base/checkpoint_100.pt",
+  "environment": {
+    "python": "3.14.5",
+    "torch": "2.13.0+cpu",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cuda_available": false,
+    "cuda_version": "Not available",
+    "repository_revision": "cd9a8d8",
+    "gpu": "Not available",
+    "gpu_memory_gb": "Not available"
+  },
+  "notes": "CPU-only tiny_debug pipeline verification run",
+  "timestamp": "2026-08-24T03:13:21.660386Z"
+}

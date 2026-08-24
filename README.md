@@ -1,270 +1,223 @@
-# DeepSeek V3 from Scratch
+# DeepSeek-V3-Inspired Financial LLM From Scratch
 
-A complete implementation of the DeepSeek V3 architecture with modern transformer innovations including Multi-Head Latent Attention (MLA), Mixture of Experts (MoE), and Multi-Token Prediction (MTP). This project demonstrates the implementation of a 100+ million parameter language model trained on the FineWeb-Edu dataset.
+A **101.7M-parameter DeepSeek-V3-inspired educational/research implementation**, built
+from scratch in PyTorch and specialized toward financial language using selected,
+license-verified financial datasets.
 
-## Architecture Overview
+> This is **not** the full-scale DeepSeek-V3 model, and it does not use DeepSeek's
+> pretrained weights. It is a small educational/research implementation of the same
+> architectural ideas. All text generation comes from the PyTorch model in this
+> repository — no OpenAI, Claude, Gemini, DeepSeek API, Ollama, Llama, Mistral, or
+> other pretrained model is used for generation. Hugging Face is used **only as a
+> dataset source**.
 
+## Architecture
 
-![DeepSeek architecture](https://github.com/user-attachments/assets/8751e031-61e8-4ef2-9823-5e4316bd6356)
+Implemented from scratch:
 
-DeepSeek V3 introduces several key architectural improvements over traditional transformer models:
+- **Multi-Head Latent Attention (MLA)** — compresses K/V into a shared latent space
+  (`kv_lora_rank`), with a separate RoPE component concatenated onto the content heads
+- **Mixture of Experts (MoE)** — 8 experts, top-2 routing, a shared always-on expert,
+  and auxiliary-loss-free load balancing via a learned per-expert bias
+- **Multi-Token Prediction (MTP)** — an extra head predicting the token after next
+- **RoPE**, **RMSNorm**, **SwiGLU**
 
-### Core Innovations
+### Model configuration
 
-**Multi-Head Latent Attention (MLA)**
- ![Multi-Head-Latent-Attention](https://github.com/user-attachments/assets/564a2bf0-ab76-4a50-ae91-2f3eadef337d)
-- Compresses key-value pairs into shared latent representations
-- Dramatically reduces memory usage compared to traditional multi-head attention
-- Maintains the expressiveness of multiple attention heads while using significantly less memory
-- Critical for handling longer sequences efficiently
+There is exactly **one** authoritative configuration: [`configs/model_config.yaml`](configs/model_config.yaml),
+loaded via `DeepSeekConfig.default()`. Training, validation, inference, evaluation, and
+inspection all read it, and every checkpoint stores a full copy of the config it was
+trained with.
 
+| Parameter | Value |
+|---|---|
+| Total parameters | **101,723,264** (measured) |
+| Vocabulary | 50,257 (GPT-2 / tiktoken) |
+| Context length | 1,024 |
+| Embedding dim | 512 |
+| Layers | 8 |
+| Attention heads | 8 |
+| KV LoRA rank | 128 |
+| Q LoRA rank | 192 |
+| RoPE dim | 32 |
+| Experts | 8 (top-2 per token) |
+| Expert hidden / shared expert hidden | 512 / 768 |
+| MTP heads | 1 |
+| Weight tying | `wte.weight is lm_head.weight` |
 
+<details>
+<summary><b>Note on the previously documented 109,032,032 figure</b></summary>
 
+An earlier version of this README stated 109,032,032 parameters. The model as committed
+instantiates **101,723,264** — a difference of 7,308,768 (6.70%).
 
+The README documents 9 architecture parameters, and the code matches all 9 exactly. The
+only undocumented free knobs are `expert_intermediate_size`, `shared_expert_intermediate_size`,
+and `rope_dim`. The 109M target is provably unreachable through them: achievable totals
+form a lattice of spacing `gcd(110736, 13842) = 13842`, and `7,308,768 mod 13,842 = 192 ≠ 0`
+(including `rope_dim` still leaves a residual of 12). The nearest reachable value is
+109,031,840 — 192 short.
 
+The older figure therefore came from a model instance whose configuration is not in this
+repository. The architecture has **not** been altered to chase the number; the measured
+count is reported instead.
+</details>
 
-**Mixture of Experts (MoE)**
- ![Mixture of Experts](https://github.com/user-attachments/assets/d7a4196d-753f-4aa5-9534-067c2a84c0ae)
-- Replaces dense feed-forward networks with sparse expert networks
-- Uses 8 experts but only activates 2 per token
-- Achieves 4x model capacity with only 25% computational overhead
-- Each expert specializes in different domains (numbers, language, code, etc.)
+## Quick start
 
-**Multi-Token Prediction (MTP)**
- ![Multi Token prediction](https://github.com/user-attachments/assets/52051bc1-641e-44f4-af4e-63f64f133a64)
-- Predicts multiple tokens simultaneously during training
-- Improves training efficiency by providing more learning signals per forward pass
-- Enables faster inference through speculative decoding
-
-**Additional Components**
-- **RoPE (Rotary Positional Encoding)**: Better handling of longer sequences and relative positions
-- **RMS Norm**: Computationally simpler normalization without mean centering
-- **SwiGLU Activation**: Gated activation function for improved information flow control
-
-
-Final Model Weights 
-
-https://huggingface.co/Mayank022/DeepSeek-V3-from-Scratch/tree/main
-
-
-## Model Configuration
-
-<img width="1920" height="1080" alt="Model Summary" src="https://github.com/user-attachments/assets/7613bf81-55da-47ff-a31b-21fd46fbae19" />
-
-### Training Parameters
-
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| Model Parameters | 109,032,032 | Total trainable parameters |
-| Vocabulary Size | 50,257 | Number of unique tokens |
-| Block Size | 1,024 | Maximum sequence length |
-| Embedding Dimension | 512 | Hidden dimension size |
-| Number of Layers | 8 | Transformer blocks |
-| Attention Heads | 8 | Multi-head attention |
-| Batch Size | 32 | Training batch size |
-| Learning Rate | 0.0003 | Initial learning rate |
-| Min Learning Rate | 0.00001 | Minimum learning rate |
-| Warmup Steps | 2,000 | Learning rate warmup |
-| Max Iterations | 20,000 | Maximum training steps |
-| Dropout | 0.1 | Dropout probability |
-| Gradient Accumulation | 8 | Steps before optimizer update |
-
-### MoE Configuration
-
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| Number of Experts | 8 | Total expert networks |
-| Experts per Token | 2 | Active experts per forward pass |
-| Expert Efficiency | 25% | Computation vs full dense model |
-| Capacity Multiplier | 4x | Model capacity increase |
-
-### Attention Configuration
-
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| KV LoRA Rank | 128 | Key-Value compression rank |
-| Q LoRA Rank | 192 | Query compression rank |
-| MTP Heads | 1 | Multi-token prediction heads |
-
-## Dataset
-
-**Primary Dataset**: FineWeb-Edu (CC-MAIN-2024 subset)
-
-https://huggingface.co/spaces/HuggingFaceFW/blogpost-fineweb-v1
-
-https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu 
-
-- Total available records: 13 million
-- Used for training: 2 million records
-- Training tokens: 2.5 billion
-- Validation tokens: 132.8 million
-- Format: Educational web content optimized for language model training
-
-**Fallback Dataset**: TinyStories
-
-https://huggingface.co/datasets/roneneldan/TinyStories
-
-- Used for initial prototyping and architecture validation
-- Simpler content for testing basic functionality
-
-Paper
-
-https://arxiv.org/pdf/2412.19437
-
-
-## Project Structure
-
-```
-DeepSeek-from-Scratch/
-├── models/
-│   ├── attention.py          # Multi-Head Latent Attention implementation
-│   ├── config.py            # Model configuration parameters
-│   ├── layers.py            # RoPE, RMS Norm, SwiGLU implementations
-│   ├── model.py             # Main DeepSeek transformer block
-│   ├── moe.py               # Mixture of Experts implementation
-│   └── mtp.py               # Multi-Token Prediction implementation
-├── training/
-│   ├── data_loader.py       # Dataset loading and preprocessing
-│   └── trainer.py           # Training loop and optimization
-├── inference/
-│   ├── generator.py         # Text generation utilities
-│   └── run_inference.py     # Inference script
-├── notebooks/
-│   ├── Mixture_of_Experts_from_Scratch.ipynb
-│   ├── Multi_Head_Latent_Attention_From_Scratch.ipynb
-│   └── Multi_Token_Prediction_from_Scratch.ipynb
-├── prepare_data_fineweb.py  # FineWeb dataset preparation
-├── prepare_data_tiny_stories.py  # TinyStories dataset preparation
-└── main.py                  # Main training script
-```
-
-## Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/username/DeepSeek-from-Scratch.git
-cd DeepSeek-from-Scratch
-```
-
-2. Create and activate virtual environment:
-```bash
-python -m venv deepseek_env
-source deepseek_env/bin/activate  # Linux/Mac
-# or
-deepseek_env\Scripts\activate     # Windows
-```
-
-3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Training
-
-### Data Preparation
-
-Prepare the FineWeb-Edu dataset:
 ```bash
-python prepare_data_fineweb.py
+python main.py dataset list
 ```
 
-Or use TinyStories for testing:
 ```bash
-python prepare_data_tiny_stories.py
+python main.py dataset prepare --name fineweb_edu --max-tokens 1000000
 ```
 
-### Start Training
-
 ```bash
-python main.py train
+python main.py train --preset tiny_debug
 ```
 
-Training configurations can be modified in `models/config.py`.
-
-### Monitoring
-
-Training progress is tracked using Weights & Biases:
-- Model checkpoints are saved automatically
-- Loss curves and metrics are logged in real-time
-- Training time: Approximately 7 hours on A100 80GB
-- Cost: $9.53 for full training run
-
-## Inference
-
-Update the test prompts in `inference/run_inference.py` and run:
-
 ```bash
-python inference/run_inference.py
+python main.py evaluate --checkpoint checkpoints/base/checkpoint_100.pt
 ```
 
-The model will generate text completions based on your input prompts.
+```bash
+python main.py chat --checkpoint checkpoints/base/checkpoint_100.pt
+```
 
-## Key Implementation Details
+## CLI
 
-### Multi-Head Latent Attention
+| Command | Purpose |
+|---|---|
+| `dataset list` | Registered datasets with HF ids, licenses, verification status |
+| `dataset download --name X` | Probe a source without materializing it |
+| `dataset prepare --name X --max-tokens N` | Stream → clean → dedup → split → tokenize → shard |
+| `dataset stats [--name X]` | Real tokenizer statistics from prepared shards |
+| `train --preset tiny_debug\|small\|financial_poc` | Stage A pretraining |
+| `train --resume <ckpt.pt>` | Restore model/optimizer/step/best-val/token count |
+| `train --stage instruction --checkpoint <ckpt.pt>` | Stage B instruction tuning |
+| `evaluate --checkpoint <ckpt.pt>` | Financial LLM POC Evaluation |
+| `chat --checkpoint <ckpt.pt> [--document F]` | Financial chat (router + calculator + RAG) |
+| `inspect tokens\|architecture\|moe\|forward` | Real model internals |
 
-Traditional multi-head attention stores separate key-value pairs for each head, leading to significant memory overhead. MLA compresses these into shared latent representations:
+## Training presets
 
-- Memory reduction: Proportional to number of attention heads
-- Performance maintenance: Retains expressiveness of full multi-head attention
-- Scalability: Enables training with longer sequences
+Budgets are configurable; **`financial_poc` is never the default** — it must be selected
+explicitly.
 
-### Mixture of Experts
+| Preset | Train tokens | Val tokens | Steps | Batch × seq |
+|---|---|---|---|---|
+| `tiny_debug` | 1M | 100K | 100 | 2 × 256 |
+| `small` | 10M | 500K | 2,000 | 16 × 512 |
+| `financial_poc` | 50M | 2M | 8,000 | 16 × 1024 |
 
-Instead of processing every token through the same large feed-forward network, MoE routes tokens to specialized experts:
+`seq_len` may be shorter than the model's 1024 `block_size` (the architecture supports any
+`t <= block_size`). `tiny_debug` uses 2 × 256 because batch 8 × seq 1024 exhausts memory
+on CPU.
 
-- Sparse activation: Only 25% of the model is active per token
-- Specialization: Different experts learn different types of patterns
-- Efficiency: 4x capacity increase with minimal computational overhead
+## Dataset sources
 
-### Multi-Token Prediction
+All entries are license-verified against the Hugging Face dataset card. Anything that
+cannot be verified is marked `REQUIRES DATASET VERIFICATION` and excluded from default mixes.
 
-Enhances training by predicting multiple future tokens simultaneously:
+| Name | Hugging Face ID | Category | License |
+|---|---|---|---|
+| `fineweb_edu` | `HuggingFaceFW/fineweb-edu` (CC-MAIN-2024-51) | general | ODC-BY |
+| `tinystories` | `roneneldan/TinyStories` | general | CDLA-Sharing-1.0 |
+| `financial_text_investopedia` | `FinLang/investopedia-instruction-tuning-dataset` | financial_text | CC-BY-NC-4.0 |
+| `financial_qa_sujet` | `sujet-ai/Sujet-Finance-Instruct-177k` | financial_qa | Apache-2.0 |
+| `financial_reports_sec` | `JanosAudran/financial-reports-sec` | financial_reports | Apache-2.0 |
+| `financial_reasoning_finqa` | `ibm-research/finqa` | financial_reasoning | CC-BY-4.0 |
+| `financial_instruction_alpaca` | `gbharti/finance-alpaca` | financial_instruction | MIT |
+| `financial_sentiment_phrasebank` | `takala/financial_phrasebank` | news_sentiment | CC-BY-NC-SA-3.0 |
 
-- Training efficiency: More learning signals per forward pass
-- Inference optimization: Enables speculative decoding techniques
-- Performance improvement: Better gradient flow during training
+⚠️ Two sources are **non-commercial** (CC-BY-NC-4.0, CC-BY-NC-SA-3.0). Research/education use only.
 
-## Performance Metrics
+Provenance for every prepare run — records seen/used/removed, tokens, revision, license,
+date — is appended to [`data/dataset_manifest.json`](data/dataset_manifest.json) and embedded
+in every checkpoint.
 
-### Training Results
+### Default mixture
 
-- **Final Loss**: Achieved convergence after 20,000 iterations
-- **Training Time**: 7 hours 1 minute on NVIDIA A100 80GB
-- **Memory Usage**: Efficient memory utilization with MLA compression
-- **Convergence**: Stable training with proper learning rate scheduling
+| Bucket | Weight |
+|---|---|
+| FineWeb-Edu | 40% |
+| Financial text | 20% |
+| Financial QA | 15% |
+| Financial reports | 10% |
+| Financial reasoning | 10% |
+| Financial instruction | 5% |
 
-### Model Efficiency
+Weights are validated to sum to 1.0. Buckets without prepared shards are dropped and the
+remainder renormalized.
 
-- **Parameter Efficiency**: 109M parameters with MoE sparse activation
-- **Memory Efficiency**: Reduced KV cache through latent attention
-- **Computational Efficiency**: 25% active parameters per forward pass
+## Data pipeline
 
-## Technical Challenges Addressed
+```
+HF stream (bounded by max_tokens/max_records)
+  → clean (HTML, Unicode, boilerplate, whitespace)
+  → filter (empty, malformed, min length)
+  → dedup (exact SHA-256 + shingle near-dup)
+  → deterministic hash split (seeded; duplicates land in the same split)
+  → tokenize (tiktoken GPT-2)
+  → shards (data/shards/<name>/{train,validation}/shard_NNN.bin + index.json)
+```
 
-### Dataset Selection
+Financial notation (`₹ $ € % EPS P/E EBITDA ROE ROIC FCF YoY QoQ FY2025 Q4 10.5%`) is
+explicitly preserved by the cleaner.
 
-The choice of dataset was critical for demonstrating the architecture's benefits:
+**Leakage prevention:** evaluation sets live in `data/evaluation/` and are *never* written
+into `data/shards/`, so they cannot enter the training mixture. `evaluate` runs an explicit
+substring check of every eval question against every training shard before scoring.
 
-- **TinyStories**: Too simple, didn't justify advanced architecture components
-- **Raw Web Data**: Too complex for resource-constrained training
-- **FineWeb-Edu**: Perfect balance of complexity and educational content quality
+## Financial chat architecture
 
-### Architecture Decisions
+```
+USER → QUERY ROUTER → { LLM | CALCULATOR | RAG } → ANSWER + SOURCE
+```
 
-Careful consideration was given to which components to include:
+The router classifies into `GENERAL`, `FINANCIAL_KNOWLEDGE`, `NUMERICAL`, `DOCUMENT`,
+`LIVE_DATA`, `UNKNOWN`.
 
-- **Essential Components**: MLA, MoE, MTP all included for comprehensive implementation
-- **Training Constraints**: Context length limited to 1024 tokens due to compute budget
-- **Resource Management**: Balanced model size with available GPU memory
+- **Arithmetic is never left to the model.** [`tools/financial_calculator.py`](tools/financial_calculator.py)
+  computes 15 metrics deterministically (margins, CAGR, ROE/ROA/ROIC, D/E, current ratio,
+  FCF, EPS, P/E, EV/EBITDA); the model only explains the result.
+- **Live market data is never fabricated.** With no provider configured, `LIVE_DATA`
+  returns `"Current market data is not available."`
+- **RAG citations are never invented.** Page numbers are recorded only when the parser
+  actually reports them (PDFs); a `.txt` source cites the filename only.
 
-## Future Enhancements
+## Repository layout
 
-### Planned Improvements
+```
+configs/            model_config.yaml (single source of truth) + training presets
+models/             config, model, attention (MLA), layers, moe, mtp
+data_sources/       registry, HF loader, cleaning, splitter, shards, mixer, manifest
+training/           trainer, data_loader, instruction_dataset, instruction_trainer
+evaluation/         evaluator, financial_metrics
+tools/              financial_calculator
+rag/                document_loader, chunker, embeddings, retriever
+app/backend/services/  financial_router, chat_service, inspector
+data/               raw/ processed/ shards/ evaluation/ instruction/
+checkpoints/        base/ financial/ instruction/
+```
 
-- **Dataset Expansion**: Experiment with larger subsets of FineWeb-Edu
-- **Evaluation Metrics**: Implement comprehensive benchmarking suite
-- **Architecture Extensions**: Additional transformer innovations and optimizations
-- **Scaling Studies**: Analysis of performance across different model sizes
+## Checkpoints
 
+Every checkpoint saves weights, optimizer state, step, train/val loss, best val loss,
+tokens processed, the full model config, the dataset config and manifest snapshot, the
+seed, runtime info (Python/PyTorch/CUDA/GPU), and a timestamp — as
+`checkpoint_<step>.pt` plus a readable `checkpoint_<step>.json`.
 
+## Limitations
+
+- Runs verified here are **CPU-only**; no GPU was available in this environment.
+- `tiny_debug` (100 steps, ~51K tokens) is a **pipeline test, not a trained model**.
+  Generated text at that scale is incoherent, and evaluation accuracy reflects that.
+- Not a licensed financial advisor. Educational/research use only; outputs must not be
+  treated as personalized financial advice.
+- Two datasets carry non-commercial licenses.

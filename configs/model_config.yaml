@@ -1,0 +1,28 @@
+# Authoritative model architecture configuration.
+# This is the ONLY place the model architecture should be defined.
+# training, inference, evaluation, and checkpoint save/load must all
+# read this file (via models.config.DeepSeekConfig.default()) instead
+# of hardcoding their own values.
+
+vocab_size: 50257
+block_size: 1024
+n_layer: 8
+n_embd: 512
+n_head: 8
+
+kv_lora_rank: 128
+q_lora_rank: 192
+rope_dim: 32
+
+n_experts: 8
+n_experts_per_token: 2
+expert_intermediate_size: 512
+shared_expert_intermediate_size: 768
+use_shared_expert: true
+
+mtp_num_heads: 1
+
+dropout: 0.1
+bias: true
+aux_loss_weight: 0.0
+mtp_loss_weight: 0.3

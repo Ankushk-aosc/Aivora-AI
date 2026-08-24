@@ -1,0 +1,92 @@
+{
+  "dataset_config": {
+    "preset": "tiny_debug",
+    "dataset_mix": {
+      "fineweb_edu": 0.4,
+      "financial_text": 0.2,
+      "financial_qa": 0.15,
+      "financial_reports": 0.1,
+      "financial_reasoning": 0.1,
+      "financial_instruction": 0.05
+    },
+    "batch_size": 2,
+    "seq_len": 256,
+    "gradient_accumulation_steps": 1,
+    "learning_rate": 0.0003
+  },
+  "dataset_manifest": {
+    "datasets": [
+      {
+        "name": "tinystories",
+        "source": "Hugging Face",
+        "dataset_id": "roneneldan/TinyStories",
+        "subset": null,
+        "revision": null,
+        "license": "cdla-sharing-1.0",
+        "source_url": "https://huggingface.co/datasets/roneneldan/TinyStories",
+        "verification_status": "VERIFIED",
+        "split_requested": "train",
+        "train_fraction": 0.95,
+        "seed": 42,
+        "records_seen": 2746,
+        "records_removed_invalid": 0,
+        "records_removed_duplicate": 0,
+        "train_records_used": 2590,
+        "validation_records_used": 156,
+        "train_tokens_used": 566085,
+        "validation_tokens_used": 33892,
+        "max_tokens_requested": 600000,
+        "max_records_requested": null,
+        "download_date": "2026-08-21T09:02:26.179028Z"
+      },
+      {
+        "name": "financial_instruction_alpaca",
+        "source": "Hugging Face",
+        "dataset_id": "gbharti/finance-alpaca",
+        "subset": null,
+        "revision": null,
+        "license": "mit",
+        "source_url": "https://huggingface.co/datasets/gbharti/finance-alpaca",
+        "verification_status": "VERIFIED",
+        "split_requested": "train",
+        "train_fraction": 0.95,
+        "seed": 42,
+        "records_seen": 1242,
+        "records_removed_invalid": 0,
+        "records_removed_duplicate": 0,
+        "train_records_used": 1189,
+        "validation_records_used": 53,
+        "train_tokens_used": 284325,
+        "validation_tokens_used": 11292,
+        "max_tokens_requested": 300000,
+        "max_records_requested": null,
+        "download_date": "2026-08-21T09:03:27.178946Z"
+      },
+      {
+        "name": "fineweb_edu",
+        "source": "Hugging Face",
+        "dataset_id": "HuggingFaceFW/fineweb-edu",
+        "subset": "CC-MAIN-2024-51",
+        "revision": null,
+        "license": "odc-by",
+        "source_url": "https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu",
+        "verification_status": "VERIFIED",
+        "split_requested": "train",
+        "train_fraction": 0.95,
+        "seed": 42,
+        "records_seen": 1046,
+        "records_removed_invalid": 0,
+        "records_removed_duplicate": 0,
+        "train_records_used": 993,
+        "validation_records_used": 53,
+        "train_tokens_used": 963935,
+        "validation_tokens_used": 39390,
+        "max_tokens_requested": 1000000,
+        "max_records_requested": null,
+        "download_date": "2026-08-24T02:31:38.851561Z"
+      }
+    ]
+  },
+  "train_tokens_budget": 1000000,
+  "validation_tokens_budget": 100000
+}

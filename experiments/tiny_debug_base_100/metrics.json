@@ -1,0 +1,29 @@
+{
+  "step": 100,
+  "train_loss": 9.679876327514648,
+  "val_loss": 9.420166015625,
+  "best_val_loss": 9.420166015625,
+  "tokens_processed": 51200,
+  "evaluation": {
+    "financial_qa": {
+      "total": 10,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "terminology": {
+      "total": 12,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "numerical": {
+      "total": 15,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "reasoning": {
+      "total": 8,
+      "correct": 0,
+      "accuracy": 0.0
+    }
+  }
+}

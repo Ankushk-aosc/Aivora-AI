@@ -1,74 +1,28 @@
-# Data files (large binary files)
-train.bin
-validation.bin
+# Virtual environment
+deepseek_env/
+
+# Tokenizer cache
+.tiktoken_cache/
+
+# Prepared data (regenerate with `python main.py dataset prepare`)
+data/shards/*/
+data/raw/*/*
+data/processed/*/*
+data/instruction/*.jsonl
+
+# Checkpoints (large binaries)
+checkpoints/**/*.pt
 *.bin
+checkpoints.zip
 
-input_output_pairs.csv
-training_samples.csv
+# Experiment outputs
+eval_*.json
 
-myenv/
-
-
-# Model weights (large files)
-best_deepseek_v3.pt
-*.pt
-*.pth
-
-# Weights & Biases
-wandb/
-*.wandb
-wandb-metadata.json
-wandb-summary.json
-
-# Common ML artifacts
-
-checkpoints/
-logs/
-outputs/
-
-
-
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-
-# Environment
 .env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# PyTorch
-*.pth.tar
 
 # Logs
 *.log
-logs/
-
-# Temporary files
-tmp/
-temp/
+wandb/

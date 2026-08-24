@@ -1,0 +1,29 @@
+# FINANCIAL POC preset — the actual financial specialization experiment.
+# Never selected by default; the CLI requires --preset financial_poc explicitly.
+
+name: financial_poc
+description: "Actual financial specialization experiment."
+
+train_tokens: 50000000
+validation_tokens: 2000000
+max_steps: 8000
+
+# Sized for a GPU. Reduce batch_size / seq_len if you hit OOM.
+batch_size: 16
+seq_len: 1024
+gradient_accumulation_steps: 8
+
+learning_rate: 3.0e-4
+warmup_steps: 500
+min_lr: 1.0e-5
+
+eval_interval: 500
+eval_iters: 100
+
+dataset_mix:
+  fineweb_edu: 0.40
+  financial_text: 0.20
+  financial_qa: 0.15
+  financial_reports: 0.10
+  financial_reasoning: 0.10
+  financial_instruction: 0.05
