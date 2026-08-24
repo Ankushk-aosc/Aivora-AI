@@ -58,6 +58,12 @@ def demo():
     print("Demo completed!")
 
 
+def cmd_runtime(args):
+    from tools.runtime_detect import detect_runtime, print_report
+    report = detect_runtime()
+    print_report(report)
+
+
 def cmd_dataset_list(args):
     from data_sources import list_entries
 
@@ -369,6 +375,7 @@ def build_parser():
     subparsers = parser.add_subparsers(dest="command")
 
     subparsers.add_parser("demo", help="Run a quick forward-pass demo with the unified config")
+    subparsers.add_parser("runtime", help="Detect the actually accessible compute runtime")
 
     dataset_parser = subparsers.add_parser("dataset", help="Dataset operations")
     dataset_sub = dataset_parser.add_subparsers(dest="dataset_command")
@@ -441,6 +448,8 @@ def main():
 
     if args.command == "demo":
         demo()
+    elif args.command == "runtime":
+        cmd_runtime(args)
     elif args.command == "dataset":
         if args.dataset_command == "list":
             cmd_dataset_list(args)
