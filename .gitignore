@@ -16,6 +16,9 @@ checkpoints/**/*.pkl
 *.bin
 checkpoints.zip
 
+# Trained-but-rejected embedding model (kept: the .json evidence of the
+# negative result; not kept: the actual weights, since they are not used)
+
 # Local SQLite test/runtime databases (regenerated on demand)
 data/financial_data.db
 data/vector_store.db

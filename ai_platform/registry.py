@@ -178,13 +178,34 @@ REGISTRY = {
     # ------------------------------------------------------------------
     "EMBEDDING_AI": Capability(
         name="Embedding AI", route="EMBEDDING_AI", type="ml_model",
-        model="TF-IDF (fallback) / FinLLM hidden states", version="1.0",
-        provider="proprietary", status=Status.PARTIAL,
-        reason="rag/embeddings.py provides two embedders, but there is no "
-        "dedicated pretrained embedding model (e.g. a sentence-transformer) - by "
-        "design (Part 45 of the earlier spec forbids importing pretrained "
-        "external models). TF-IDF is lexical, not semantic; the model-hidden-state "
-        "embedder inherits the LLM's undertrained quality.",
+        model="TF-IDF (production) / FinLLM hidden states / trained skip-gram (rejected)",
+        version="1.0", provider="proprietary", status=Status.PARTIAL,
+        reason="rag/embeddings.py provides TF-IDF (used in production) and "
+        "model-hidden-state embedders; no dedicated pretrained embedding model "
+        "(e.g. a sentence-transformer) - by design (Part 45 forbids importing "
+        "pretrained external models). TF-IDF is lexical, not semantic; the "
+        "model-hidden-state embedder inherits the LLM's undertrained quality. "
+        "A genuine attempt was made at a real, locally-trained alternative: "
+        "rag/word_embeddings.py, a from-scratch skip-gram model (2 epochs, "
+        "15.7M training pairs from 2M real corpus tokens, loss 2.261->2.233). "
+        "It FAILED its own acceptance test (nearest-neighbor sanity check) - "
+        "'revenue' neighbors were semantically meaningless subword fragments, "
+        "and common words like 'profit'/'company'/'growth' fell outside the "
+        "5000-word vocabulary entirely because this project's prepared corpus "
+        "is small and only partly financial. Per the explicit rule against "
+        "claiming something works when it can't be verified: this was NOT "
+        "wired into RAG. The code is kept (reusable if a larger/more focused "
+        "corpus becomes available) but TF-IDF remains the production embedder.",
+        known_bugs=["word_embeddings.py training genuinely ran and losses "
+                    "genuinely decreased, but the resulting embeddings are "
+                    "not semantically meaningful - documented as a real "
+                    "negative result, not a code defect (verified the empty "
+                    "neighbor results were a small/imbalanced vocabulary "
+                    "effect, not a bug in the lookup)."],
+        next_action="Would need a much larger and/or more financially-"
+        "concentrated corpus (word2vec typically wants corpora orders of "
+        "magnitude larger than the ~3M tokens currently prepared) before "
+        "attempting to wire this in again - do not re-attempt without more data.",
     ),
     "RERANKING_AI": Capability(
         name="Reranking AI", route="RERANKING_AI", type="ml_model",
@@ -205,7 +226,18 @@ REGISTRY = {
         name="Vision AI", route="VISION_AI", type="ml_model",
         model="none", version="-", provider="none", status=Status.NOT_IMPLEMENTED,
         reason="No vision model is connected or tested. Image/chart/table "
-        "understanding, scanned-document OCR, and visual QA are not available.",
+        "understanding, scanned-document OCR, and visual QA are not available. "
+        "Re-checked (not assumed from memory): no `tesseract` binary on PATH. "
+        "`easyocr` installs cleanly as a package but downloads a genuine "
+        "pretrained CV model (CRAFT detector + recognizer, 100MB+) at first "
+        "use - the same category of external-pretrained-model risk already "
+        "declined for speech-to-text (openai-whisper) and translation "
+        "(argos-translate) earlier in this project, for consistency. Not "
+        "treating OCR as an exception to that judgment.",
+        next_action="If OCR specifically becomes a hard requirement, the "
+        "most consistent path is a system-level tesseract install (a real "
+        "OCR *engine*, not a downloaded neural net, same category as "
+        "Windows SAPI for speech) rather than a pretrained CV model.",
     ),
     "SPEECH_AI": Capability(
         name="Speech AI", route="SPEECH_AI", type="ml_model",
@@ -281,8 +313,18 @@ REGISTRY = {
         "genuinely mediocre (many false positives) because the feature set is "
         "just amount/time/category - no per-cardholder velocity features "
         "(e.g. 'transactions in the last hour'), which real fraud systems "
-        "rely on heavily. Reported as-is, not rounded up.",
+        "rely on heavily. Reported as-is, not rounded up. Validated against "
+        "an alternative on the identical split: HistGradientBoostingClassifier "
+        "scored WORSE on every metric (precision 0.325, recall 0.931, F1 "
+        "0.482, ROC-AUC 0.989) - RandomForest was kept because it's actually "
+        "better here, not by default.",
         endpoint="/api/ai/fraud",
+        next_action="Real velocity features (transactions/hour per card) "
+        "would likely help precision more than switching algorithms did, "
+        "but require redesigning /api/ai/fraud to accept per-card recent-"
+        "transaction history rather than isolated transactions - a genuine "
+        "API contract change, not a small addition, so not attempted without "
+        "a clear need for it.",
     ),
     "RECOMMENDATION_AI": Capability(
         name="Recommendation AI", route="RECOMMENDATION_AI", type="agent",
