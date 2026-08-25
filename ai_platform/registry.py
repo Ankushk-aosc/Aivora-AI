@@ -110,6 +110,28 @@ REGISTRY = {
         "verified for an invalid symbol - never a fabricated price.",
         endpoint="/api/ai/orchestrate",
     ),
+    "PRODUCTION_DEPLOYMENT": Capability(
+        name="Production Deployment", route="PRODUCTION_DEPLOYMENT", type="infra",
+        model="Dockerfile + docker-compose.yml", version="1.0",
+        provider="local", status=Status.NOT_IMPLEMENTED,
+        reason="Authored a Dockerfile and docker-compose.yml reusing the "
+        "exact pip-install and server-start commands already verified "
+        "working directly on this machine, and validated the docker-compose "
+        "YAML syntax + the Dockerfile's CMD shell-substitution logic "
+        "(confirmed --host/--port/--checkpoint flags exist in "
+        "app/backend/server.py's actual argparse setup, and tested the "
+        "conditional --checkpoint substitution both with and without it set). "
+        "Deliberately NOT_IMPLEMENTED, not PARTIAL like CI/CD: no Docker "
+        "daemon is available here (`docker` is not on PATH), so this has "
+        "genuinely never been built or run - weaker evidence than CI/CD, "
+        "where at least every embedded command was individually run and "
+        "confirmed passing on this machine. A real deployment TARGET "
+        "(cloud VM, PaaS, etc.) is separately and completely BLOCKED - no "
+        "credentials or access to any hosting provider exist here.",
+        next_action="Build and run this Dockerfile somewhere Docker is "
+        "actually available before trusting it; that is the actual test, "
+        "not this authoring step.",
+    ),
     "LOAD_TESTING": Capability(
         name="Load / Performance Testing", route="LOAD_TESTING", type="infra",
         model="ai_platform/load_test.py - real concurrent HTTP against the live server",

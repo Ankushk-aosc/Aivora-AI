@@ -1,0 +1,20 @@
+# See Dockerfile's honesty note: authored, not built or run (no Docker
+# daemon available in the environment that wrote this). Reuses volumes
+# for checkpoints/data/experiments so container restarts don't lose
+# trained weights, prepared datasets, or the SQLite-backed capabilities
+# (RAG persistence, auth, approvals, model registry).
+
+services:
+  finllm-backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - CHECKPOINT_PATH=checkpoints/instruction/checkpoint_100.pt
+    volumes:
+      - ./checkpoints:/app/checkpoints
+      - ./data:/app/data
+      - ./experiments:/app/experiments
+    restart: unless-stopped
