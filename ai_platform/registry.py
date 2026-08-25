@@ -213,6 +213,42 @@ REGISTRY = {
         "actually run on GitHub's runners - genuinely blocked on that "
         "authorization, not on more local engineering.",
     ),
+    "GPU_TRAINING_COLAB": Capability(
+        name="Google Colab GPU Training", route="GPU_TRAINING_COLAB", type="infra",
+        model="training/colab/FinLLM_GPU_Training.ipynb", version="1.0",
+        provider="local", status=Status.BLOCKED,
+        reason="A full 20-step Colab GPU training notebook was authored: env/"
+        "GPU/CUDA/VRAM verification with a hard gate (raises before any "
+        "training claim if torch.cuda.is_available() is False) -> repo "
+        "transfer + integrity check -> dependency install -> dataset "
+        "acquisition/validation (reuses the same tested data_sources."
+        "prepare_dataset and evaluation.check_leakage used elsewhere in "
+        "this project) -> tokenizer round-trip -> model config -> checkpoint "
+        "discovery with real tensor-shape/architecture compatibility "
+        "checking -> VRAM-aware batch/seq auto-config -> training with real "
+        "torch.cuda.OutOfMemoryError capture-and-retry -> an actually-"
+        "executed resume test -> evaluation -> inference on 3 required "
+        "prompts -> checksummed export -> independent hash re-verification. "
+        "Validated locally: nbformat.validate() passed with zero warnings, "
+        "all 20 code cells syntax-checked via compile(), and every "
+        "referenced function signature (prepare_dataset, check_leakage, "
+        "train_model, evaluate_model, load_model_for_inference, "
+        "generate_text, register_checkpoint, verify_integrity, get_encoding) "
+        "cross-checked against current source via grep. BLOCKED, not "
+        "TESTED or PARTIAL, because the notebook has never actually been "
+        "run: no authenticated Google session exists anywhere in this "
+        "environment, verified fresh via 3 independent checks (MCP registry "
+        "search for colab/kaggle/gpu connectors: empty; "
+        "list_connected_browsers: []; direct navigation to "
+        "colab.research.google.com showing a bare 'Sign in' page). No "
+        "credentials were entered or requested. Zero GPU training has "
+        "occurred - no loss curve, checkpoint, or evaluation from this "
+        "notebook is real until it is actually executed on a GPU runtime.",
+        next_action="User needs to open training/colab/FinLLM_GPU_Training."
+        "ipynb in an authenticated Google Colab session with a GPU runtime "
+        "and run it; only then can this move to TESTED with real measured "
+        "values (loss, VRAM, step time, artifact hash) reported back.",
+    ),
     "AI_AGENTS": Capability(
         name="AI Agent Framework", route="AI_AGENTS", type="agent",
         model="capability-scoped wrappers over AIOrchestrator", version="1.0",
