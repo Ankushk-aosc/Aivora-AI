@@ -110,6 +110,23 @@ REGISTRY = {
         "verified for an invalid symbol - never a fabricated price.",
         endpoint="/api/ai/orchestrate",
     ),
+    "CI_CD": Capability(
+        name="CI/CD Pipeline", route="CI_CD", type="infra",
+        model="GitHub Actions workflow (.github/workflows/ci.yml)", version="1.0",
+        provider="local", status=Status.PARTIAL,
+        reason="A real workflow file was authored (import regression across "
+        "33 modules, model smoke test, calculator/registry/code-sandbox "
+        "self-tests) and every embedded command was run VERBATIM on this "
+        "machine to confirm it actually passes - not just written and hoped. "
+        "PARTIAL, not TESTED, because it has never run on an actual GitHub "
+        "Actions runner: that requires pushing to the repository's real "
+        "remote (origin, a shared/visible action), which needs the user's "
+        "go-ahead, not something to do unprompted. The workflow is not yet "
+        "enabled/triggered.",
+        next_action="Push .github/workflows/ci.yml (or open a PR) to see it "
+        "actually run on GitHub's runners - genuinely blocked on that "
+        "authorization, not on more local engineering.",
+    ),
     "AI_AGENTS": Capability(
         name="AI Agent Framework", route="AI_AGENTS", type="agent",
         model="capability-scoped wrappers over AIOrchestrator", version="1.0",
