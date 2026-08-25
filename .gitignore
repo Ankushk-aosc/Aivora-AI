@@ -22,6 +22,9 @@ checkpoints.zip
 # Local SQLite test/runtime databases (regenerated on demand)
 data/financial_data.db
 data/vector_store.db
+data/auth.db
+data/.session_secret
+data/approvals.db
 
 # Experiment outputs
 eval_*.json

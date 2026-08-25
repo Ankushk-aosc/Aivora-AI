@@ -83,6 +83,35 @@ def _probe_database():
         return "DEGRADED", str(e)
 
 
+def _probe_auth():
+    from .auth import (
+        AuthError, authenticate, create_user, delete_user,
+        issue_session_token, verify_session_token,
+    )
+    import secrets
+    probe_user = f"_healthcheck_{secrets.token_hex(4)}"
+    try:
+        create_user(probe_user, "healthcheck-probe-pw", role="viewer")
+        session = authenticate(probe_user, "healthcheck-probe-pw")
+        token = issue_session_token(session["username"], session["role"])
+        verify_session_token(token)
+        return "HEALTHY", "self-test: create/authenticate/issue/verify all succeeded"
+    except AuthError as e:
+        return "DEGRADED", str(e)
+    finally:
+        # A health probe must not leave permanent state behind on every call.
+        delete_user(probe_user)
+
+
+def _probe_approval():
+    from .approval import list_requests
+    try:
+        reqs = list_requests()
+        return "HEALTHY", f"{len(reqs)} total approval request(s) on record"
+    except Exception as e:
+        return "DEGRADED", str(e)
+
+
 def _probe_model_registry():
     from .model_registry import registry_status
     try:
@@ -154,6 +183,8 @@ _PROBES = {
     "MULTILINGUAL_AI": _probe_multilingual,
     "KNOWLEDGE_GRAPH": _probe_knowledge_graph,
     "MODEL_REGISTRY": _probe_model_registry,
+    "AUTH_RBAC": _probe_auth,
+    "HUMAN_APPROVAL": _probe_approval,
 }
 
 

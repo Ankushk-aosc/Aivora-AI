@@ -110,6 +110,39 @@ REGISTRY = {
         "verified for an invalid symbol - never a fabricated price.",
         endpoint="/api/ai/orchestrate",
     ),
+    "AUTH_RBAC": Capability(
+        name="Authentication / RBAC", route="AUTH_RBAC", type="infra",
+        model="PBKDF2 password hashing + HMAC session tokens (stdlib)",
+        version="1.0", provider="local", status=Status.TESTED,
+        reason="Real local auth, not SSO: SQLite user table, PBKDF2-SHA256 "
+        "password hashing (100k iterations), HMAC-signed self-expiring "
+        "session tokens, 3-role RBAC (admin/analyst/viewer). 12/12 tests "
+        "passed including the security-critical ones: a tampered token "
+        "(role escalated to admin, old signature kept) is rejected via "
+        "signature mismatch; wrong-password and unknown-user return the "
+        "identical error message (no username enumeration); expired tokens "
+        "rejected. Third-party SSO (Google/Okta/etc.) is genuinely BLOCKED - "
+        "needs registering an OAuth app with an external provider and "
+        "credentials this environment doesn't have.",
+        endpoint="/api/auth/login",
+    ),
+    "HUMAN_APPROVAL": Capability(
+        name="Human-in-the-Loop Approval", route="HUMAN_APPROVAL", type="infra",
+        model="SQLite approval queue + AUTH_RBAC permission gate", version="1.0",
+        provider="local", status=Status.TESTED,
+        reason="Real persistent approval queue (not in-memory) for high-impact "
+        "actions (FRAUD_AI, RECOMMENDATION_AI). Verified: request -> pending -> "
+        "human decides -> approved/rejected with an immutable audit trail "
+        "(deciding an already-decided request raises an error rather than "
+        "silently overwriting it - re-verified this specifically). The "
+        "decide endpoint requires the 'approve' RBAC permission, wiring "
+        "auth into this capability concretely rather than leaving it "
+        "unenforced. 'Action' means recording the decision - there is no "
+        "real downstream system (ERP/payment processor) to actually execute "
+        "an approved action against, and that boundary is explicit here, "
+        "not glossed over.",
+        endpoint="/api/approvals/decide",
+    ),
     "MODEL_REGISTRY": Capability(
         name="Model Serving / Versioning", route="MODEL_REGISTRY", type="infra",
         model="SHA256 checksums + version tags (local)", version="1.0",

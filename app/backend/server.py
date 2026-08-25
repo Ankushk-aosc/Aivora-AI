@@ -528,6 +528,67 @@ def h_ai_speech_synthesize(payload, _query):
     return {"wav_path": path, "size_bytes": os.path.getsize(path)}
 
 
+def h_auth_register(payload, _query):
+    from ai_platform.auth import AuthError, create_user
+    payload = payload or {}
+    try:
+        return create_user(payload.get("username"), payload.get("password"),
+                            role=payload.get("role", "viewer"))
+    except AuthError as e:
+        return {"error": str(e)}
+
+
+def h_auth_login(payload, _query):
+    from ai_platform.auth import AuthError, authenticate, issue_session_token
+    payload = payload or {}
+    try:
+        session = authenticate(payload.get("username"), payload.get("password"))
+        token = issue_session_token(session["username"], session["role"])
+        return {"token": token, "username": session["username"], "role": session["role"]}
+    except AuthError as e:
+        return {"error": str(e)}
+
+
+def h_approvals_list(_payload, query):
+    from ai_platform.approval import list_requests
+    status = query.get("status", [None])[0]
+    return {"requests": list_requests(status=status)}
+
+
+def h_approvals_request(payload, _query):
+    from ai_platform.approval import request_approval
+    payload = payload or {}
+    for field in ("capability", "action", "evidence", "confidence"):
+        if field not in payload:
+            raise ValueError(f'Provide "{field}"')
+    return request_approval(payload["capability"], payload["action"], payload["evidence"],
+                             payload["confidence"], requested_by=payload.get("requested_by", "system"))
+
+
+def h_approvals_decide(payload, _query):
+    from ai_platform.approval import decide
+    from ai_platform.auth import AuthError, require_permission
+    payload = payload or {}
+    token = payload.get("token")
+    if not token:
+        return {"error": "Authentication required: provide a 'token' in the request body "
+                "(obtained from POST /api/auth/login)"}
+    try:
+        session = require_permission(token, "approve")
+    except AuthError as e:
+        return {"error": str(e)}
+
+    request_id = payload.get("request_id")
+    approved = payload.get("approved")
+    if request_id is None or approved is None:
+        raise ValueError('Provide {"request_id": N, "approved": true|false, "reason": "..."}')
+    try:
+        return decide(int(request_id), bool(approved), decided_by=session["username"],
+                      reason=payload.get("reason", ""))
+    except (KeyError, ValueError) as e:
+        return {"error": str(e)}
+
+
 def h_ai_model_registry(_payload, _query):
     from ai_platform.model_registry import registry_status
     return registry_status()
@@ -643,6 +704,11 @@ ROUTES = {
     ("GET", "/api/ai/model-registry/verify"): h_ai_model_verify,
     ("GET", "/api/rag/documents"): h_rag_documents,
     ("POST", "/api/rag/delete"): h_rag_delete,
+    ("POST", "/api/auth/register"): h_auth_register,
+    ("POST", "/api/auth/login"): h_auth_login,
+    ("GET", "/api/approvals"): h_approvals_list,
+    ("POST", "/api/approvals/request"): h_approvals_request,
+    ("POST", "/api/approvals/decide"): h_approvals_decide,
 }
 
 
