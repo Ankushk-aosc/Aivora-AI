@@ -16,8 +16,9 @@ checkpoints/**/*.pkl
 *.bin
 checkpoints.zip
 
-# Local SQLite test database (regenerate via ai_platform.database_ai seeding)
+# Local SQLite test/runtime databases (regenerated on demand)
 data/financial_data.db
+data/vector_store.db
 
 # Experiment outputs
 eval_*.json

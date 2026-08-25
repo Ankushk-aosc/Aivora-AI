@@ -1,0 +1,30 @@
+{
+  "versions": [
+    {
+      "version": "base-v1",
+      "stage": "base",
+      "path": "checkpoints/base/checkpoint_100.pt",
+      "checksum": "9d2535660f1fb1fb49d0261634373825d6296b10bb190f8f3894a35f11537d43",
+      "size_bytes": 1259165459,
+      "step": 100,
+      "train_loss": 10.194218635559082,
+      "val_loss": 10.230181694030762,
+      "registered_at": "2026-08-25T02:46:21.095602Z"
+    },
+    {
+      "version": "instruction-v1",
+      "stage": "instruction",
+      "path": "checkpoints/instruction/checkpoint_100.pt",
+      "checksum": "35fb33ae4e91c5dec16ebac2ccefa0cc7bec8f112100978f65ada0c7e143a0d0",
+      "size_bytes": 1259165395,
+      "step": 100,
+      "train_loss": 9.053876686096192,
+      "val_loss": 9.000874900817871,
+      "registered_at": "2026-08-25T02:46:30.114394Z"
+    }
+  ],
+  "active": {
+    "base": "base-v1",
+    "instruction": "instruction-v1"
+  }
+}

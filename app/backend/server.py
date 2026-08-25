@@ -224,7 +224,7 @@ def h_rag_upload(payload, _query):
     if not os.path.exists(path):
         raise ValueError(f"File not found: {path}")
     if STATE.get("document_store") is None:
-        STATE["document_store"] = DocumentStore()
+        STATE["document_store"] = DocumentStore(persist=True)
     info = STATE["document_store"].add_document(path)
     if STATE.get("chat") is not None:
         STATE["chat"].document_store = STATE["document_store"]
@@ -528,6 +528,51 @@ def h_ai_speech_synthesize(payload, _query):
     return {"wav_path": path, "size_bytes": os.path.getsize(path)}
 
 
+def h_ai_model_registry(_payload, _query):
+    from ai_platform.model_registry import registry_status
+    return registry_status()
+
+
+def h_ai_model_register(payload, _query):
+    from ai_platform.model_registry import register_checkpoint
+    payload = payload or {}
+    path = payload.get("path")
+    stage = payload.get("stage")
+    if not path or not stage:
+        raise ValueError('Provide {"path": "...", "stage": "base|financial|instruction"}')
+    return register_checkpoint(path, stage, set_active=payload.get("set_active", True))
+
+
+def h_ai_model_verify(payload, query):
+    from ai_platform.model_registry import verify_integrity
+    version = (payload or {}).get("version") or query.get("version", [None])[0]
+    if not version:
+        raise ValueError('Provide {"version": "..."}')
+    return verify_integrity(version)
+
+
+def h_rag_documents(_payload, _query):
+    from rag import persistent_store
+    return {"documents": persistent_store.list_documents()}
+
+
+def h_rag_delete(payload, _query):
+    from rag import persistent_store
+    path = (payload or {}).get("path")
+    if not path:
+        raise ValueError('Provide {"path": "..."}')
+    persistent_store.delete_document(path)
+    # Rebuild the in-memory store from what's left so it stays consistent
+    # with what was just deleted.
+    from rag import DocumentStore
+    STATE["document_store"] = DocumentStore(persist=True)
+    if STATE.get("chat") is not None:
+        STATE["chat"].document_store = STATE["document_store"]
+    if STATE.get("orchestrator") is not None:
+        STATE["orchestrator"].document_store = STATE["document_store"]
+    return {"deleted": path, "store": STATE["document_store"].stats()}
+
+
 def h_ai_recommend(_payload, _query):
     from ai_platform.recommendation import get_recommendations
     recs = get_recommendations()
@@ -592,6 +637,12 @@ ROUTES = {
     ("POST", "/api/ai/language/detect"): h_ai_language_detect,
     ("POST", "/api/ai/speech/synthesize"): h_ai_speech_synthesize,
     ("GET", "/api/ai/recommend"): h_ai_recommend,
+    ("GET", "/api/ai/model-registry"): h_ai_model_registry,
+    ("POST", "/api/ai/model-registry/register"): h_ai_model_register,
+    ("POST", "/api/ai/model-registry/verify"): h_ai_model_verify,
+    ("GET", "/api/ai/model-registry/verify"): h_ai_model_verify,
+    ("GET", "/api/rag/documents"): h_rag_documents,
+    ("POST", "/api/rag/delete"): h_rag_delete,
 }
 
 
@@ -676,6 +727,17 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def serve(host="127.0.0.1", port=8000, checkpoint=None):
+    from rag import DocumentStore
+
+    # Load any persisted documents from a previous run up front, rather
+    # than only on the next upload - otherwise "survives a restart" is
+    # only true after the first post-restart upload, not actually true
+    # at startup.
+    STATE["document_store"] = DocumentStore(persist=True)
+    if STATE["document_store"].chunks:
+        print(f"Restored {len(STATE['document_store'].chunks)} chunk(s) from "
+              f"{len(STATE['document_store'].documents)} persisted document(s)")
+
     if checkpoint:
         print(f"Loading checkpoint {checkpoint} ...")
         print(f"  {load_checkpoint(checkpoint)}")

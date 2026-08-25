@@ -32,6 +32,11 @@ class Capability:
     endpoint: str = ""
     tools: list = field(default_factory=list)
     permissions: str = "none required"
+    # Populated as capabilities are iterated on (spec Part 53.15). Not
+    # every entry has these filled in yet - absence means "not yet
+    # recorded", not "none exist".
+    known_bugs: list = field(default_factory=list)  # bugs found+fixed, kept for history
+    next_action: str = ""
 
     def to_dict(self):
         d = {**self.__dict__}
@@ -71,12 +76,27 @@ REGISTRY = {
     ),
     "RAG": Capability(
         name="Retrieval-Augmented Generation", route="RAG", type="tool",
-        model="TF-IDF retriever + FinLLM", version="1.0", provider="proprietary",
-        status=Status.TESTED,
+        model="TF-IDF retriever + BM25 reranker + FinLLM", version="1.1",
+        provider="proprietary", status=Status.TESTED,
         reason="Ingest -> parse -> chunk -> embed (TF-IDF, or model hidden-states "
-        "when a checkpoint is loaded) -> retrieve -> LLM -> citations. Verified "
-        "against real TXT/PDF/DOCX/CSV/JSON files with correct page citations.",
+        "when a checkpoint is loaded) -> retrieve -> BM25 rerank -> LLM -> "
+        "citations. Verified against real TXT/PDF/DOCX/CSV/JSON files with "
+        "correct page citations. v1.1: now backed by a real SQLite persistent "
+        "store (rag/persistent_store.py) - verified surviving an ACTUAL backend "
+        "process restart (killed and relaunched the process, not simulated), "
+        "printed 'Restored 1 chunk(s) from 1 persisted document(s)' at "
+        "startup, and search returned identical results post-restart.",
         endpoint="/api/rag/search",
+        known_bugs=["v1.1 persistence: an early design persisted per-chunk "
+                    "embedding VECTORS, which would have silently produced "
+                    "wrong scores because TF-IDF's vector space depends on "
+                    "the whole corpus, not fixed per chunk - caught before "
+                    "implementing the reload path, not after; fixed by "
+                    "persisting text/metadata only and re-running _reindex() "
+                    "once after reload."],
+        next_action="Persistence covers TXT/PDF/DOCX/CSV/JSON already tested "
+        "formats; email and cloud-storage ingestion (spec Part 7) remain "
+        "NOT_IMPLEMENTED - no mail/cloud-storage connector exists.",
     ),
     "LIVE_DATA": Capability(
         name="Live Market Data", route="LIVE_DATA", type="tool",
@@ -89,6 +109,32 @@ REGISTRY = {
         "endpoint change) returns 'Current market data is not available.' - "
         "verified for an invalid symbol - never a fabricated price.",
         endpoint="/api/ai/orchestrate",
+    ),
+    "MODEL_REGISTRY": Capability(
+        name="Model Serving / Versioning", route="MODEL_REGISTRY", type="infra",
+        model="SHA256 checksums + version tags (local)", version="1.0",
+        provider="local", status=Status.TESTED,
+        reason="Adds what checkpoint saving alone didn't have: content-"
+        "addressed integrity verification and an explicit active/serving "
+        "version per stage. Verified: registered real checkpoints, computed "
+        "real SHA256 hashes, confirmed an unmodified file verifies valid, "
+        "and confirmed a genuinely corrupted file (tested on a disposable "
+        "copy, never the original after the first test taught that lesson "
+        "the hard way) is detected via checksum mismatch. Training's own "
+        "checkpoint metadata (step/loss/optimizer state/resume) is reused "
+        "as-is, not reimplemented.",
+        endpoint="/api/ai/model-registry",
+        known_bugs=["First integrity test corrupted a REAL, non-gitignored-"
+                    "content checkpoint file in place, because a `/tmp` "
+                    "backup path silently didn't exist for this Windows "
+                    "Python process - the corruption was real and required "
+                    "recovering via --resume from the last good checkpoint "
+                    "(step 50 -> re-trained to 100). Rewrote the test to "
+                    "copy to a Python tempfile.mkdtemp() path and corrupt "
+                    "only the copy."],
+        next_action="No rollback/promotion workflow yet - set_active() "
+        "exists but there's no UI/CLI wrapper for 'promote version X to "
+        "serving' beyond calling the API directly.",
     ),
     "DOCUMENT_AI": Capability(
         name="Document AI", route="DOCUMENT_AI", type="tool",
@@ -193,6 +239,19 @@ REGISTRY = {
         "the obvious cases (import os, open, eval, exec, runaway loops), not "
         "every case.",
         endpoint="/api/ai/code/execute",
+        known_bugs=["Initial implementation reassigned __builtins__ inside "
+                    "the SAME already-running frame, which does NOT restrict "
+                    "anything in CPython (f_builtins is cached at frame "
+                    "creation, not re-read on assignment) - found via a "
+                    "dir() test that leaked full builtin access. Fixed by "
+                    "running user code through exec() with a purpose-built "
+                    "globals dict, so the NEW frame exec() creates derives "
+                    "its builtins from that dict at creation time. Re-verified "
+                    "dir() now correctly raises NameError."],
+        next_action="Consider a real OS-level sandbox (e.g. Windows Job "
+        "Objects for memory/CPU limits) if this capability needs to run "
+        "less-trusted code than it currently does - the static blocklist "
+        "can still be bypassed by a sufficiently creative encoding.",
     ),
     "DATABASE_AI": Capability(
         name="Database AI / Data Analyst", route="DATABASE_AI", type="agent",
@@ -273,21 +332,36 @@ REGISTRY = {
     ),
     "KNOWLEDGE_GRAPH": Capability(
         name="Knowledge Graph AI", route="KNOWLEDGE_GRAPH", type="infra",
-        model="networkx (in-memory) + regex relation extraction", version="1.0",
+        model="networkx (in-memory) + regex relation extraction", version="1.1",
         provider="local", status=Status.PARTIAL,
         reason="Real graph storage (networkx) with rule-based (not LLM-based) "
         "OWNS/SUBSIDIARY_OF/VENDOR_OF/EMPLOYS/SUPPLIES extraction, verified "
         "with a correct 2-hop path query (Acme -> Gamma -> Delta) over "
-        "multi-sentence text. A first version had a real entity-boundary bug "
-        "(a greedy regex captured 'Beta Logistics, a subsidiary that handles' "
-        "as one entity) - caught by testing a multi-hop path, not a single "
-        "clean example, and fixed with a proper-noun-phrase pattern. "
-        "PARTIAL because extraction is conservative by design: relations "
-        "phrased unusually, or with non-proper-noun objects (e.g. 'employs "
-        "over 200 workers'), are correctly not extracted rather than guessed - "
-        "so recall is deliberately traded for precision, and this is not a "
-        "general-purpose entity extractor.",
+        "multi-sentence text, and re-verified after two real bugs were found "
+        "and fixed (see known_bugs). PARTIAL because extraction is "
+        "conservative by design: relations phrased unusually, or with "
+        "non-proper-noun objects (e.g. 'employs over 200 workers'), are "
+        "correctly not extracted rather than guessed - recall is "
+        "deliberately traded for precision, and this is not a general-"
+        "purpose entity extractor.",
         endpoint="/api/ai/knowledge-graph",
+        known_bugs=[
+            "Entity-boundary bug: a greedy character class captured "
+            "trailing connector words ('Beta Logistics, a subsidiary that "
+            "handles') into the entity name - found by testing a multi-hop "
+            "path query, not a single clean example. Fixed with a proper-"
+            "noun-phrase pattern.",
+            "Sentence-boundary bleed: allowing '.' inside tokens (for "
+            "abbreviations like 'Inc.') let a match run through a sentence-"
+            "ending period into the next sentence's capitalized word "
+            "('Beta Logistics. Beta Logistics' became one entity) - found "
+            "via live HTTP testing with real multi-sentence input, not the "
+            "single-paragraph unit test. Fixed by dropping '.' from the "
+            "token class (accepted tradeoff: 'Inc.' -> 'Inc').",
+        ],
+        next_action="No graph persistence yet - the graph is in-memory per "
+        "backend process, unlike RAG's now-persistent SQLite store. Add "
+        "persistence for triples if this capability sees real use.",
     ),
 }
 

@@ -24,11 +24,30 @@ class RetrievedChunk:
 
 
 class DocumentStore:
-    def __init__(self, embedder=None, model=None, device="cpu"):
+    def __init__(self, embedder=None, model=None, device="cpu", persist=False):
         self.embedder = embedder or get_embedder(model=model, device=device)
         self.chunks = []
         self.matrix = None
         self.documents = []
+        self.persist = persist
+        if persist:
+            self._load_persisted()
+
+    def _load_persisted(self):
+        """Reload chunk text/metadata from SQLite (priority #4: persistent
+        vector store) and rebuild the embedding space in one _reindex()
+        call, so the vector space stays internally consistent rather than
+        mixing stale per-chunk vectors from a previous corpus/vocabulary."""
+        from . import persistent_store
+        chunks = persistent_store.load_all_chunks()
+        if not chunks:
+            return
+        self.chunks = chunks
+        self.documents = [
+            {"path": d["path"], "format": d["format"], "chunks": d["n_chunks"]}
+            for d in persistent_store.list_documents()
+        ]
+        self._reindex()
 
     def add_document(self, path, chunk_tokens=256, overlap_tokens=32):
         document = load_document(path)
@@ -41,6 +60,9 @@ class DocumentStore:
         self.chunks.extend(chunks)
         self.documents.append({"path": path, "format": document.format, "chunks": len(chunks)})
         self._reindex()
+        if self.persist:
+            from . import persistent_store
+            persistent_store.save_document(path, document.format, chunks)
         return {"path": path, "format": document.format, "chunks_added": len(chunks)}
 
     def _reindex(self):

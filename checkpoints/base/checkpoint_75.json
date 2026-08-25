@@ -1,9 +1,9 @@
 {
-  "step": 100,
-  "train_loss": 10.194218635559082,
-  "val_loss": 10.230181694030762,
+  "step": 75,
+  "train_loss": 9.901363372802734,
+  "val_loss": 10.105131149291992,
   "best_val_loss": 10.105131149291992,
-  "tokens_processed": 51200,
+  "tokens_processed": 38400,
   "model_config": {
     "vocab_size": 50257,
     "block_size": 1024,
@@ -216,5 +216,5 @@
     "gpu_name": "Not available",
     "gpu_memory_gb": "Not available"
   },
-  "timestamp": "2026-08-25T02:45:08.499960Z"
+  "timestamp": "2026-08-25T02:37:17.969252Z"
 }

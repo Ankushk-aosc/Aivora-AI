@@ -83,6 +83,15 @@ def _probe_database():
         return "DEGRADED", str(e)
 
 
+def _probe_model_registry():
+    from .model_registry import registry_status
+    try:
+        status = registry_status()
+        return "HEALTHY", f"{len(status['versions'])} version(s) registered"
+    except Exception as e:
+        return "DEGRADED", str(e)
+
+
 def _probe_speech():
     from .speech import SpeechError, list_voices
     try:
@@ -144,6 +153,7 @@ _PROBES = {
     "RECOMMENDATION_AI": _probe_recommendation,
     "MULTILINGUAL_AI": _probe_multilingual,
     "KNOWLEDGE_GRAPH": _probe_knowledge_graph,
+    "MODEL_REGISTRY": _probe_model_registry,
 }
 
 
