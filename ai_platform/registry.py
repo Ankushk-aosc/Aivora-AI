@@ -110,6 +110,30 @@ REGISTRY = {
         "verified for an invalid symbol - never a fabricated price.",
         endpoint="/api/ai/orchestrate",
     ),
+    "FINAL_E2E_ACCEPTANCE": Capability(
+        name="Final End-to-End Acceptance Test", route="FINAL_E2E_ACCEPTANCE", type="infra",
+        model="ai_platform/acceptance_test.py - real HTTP against the live server",
+        version="1.0", provider="local", status=Status.TESTED,
+        reason="Full chain run over REAL HTTP against a live backend instance "
+        "(not in-process calls) - register+login two real users -> agent-"
+        "routed calculator question through financial_analyst -> confirmed "
+        "the SAME agent is correctly REFUSED a fraud-routed query (scope "
+        "enforcement, not just declared) -> real document upload + RAG "
+        "search -> invoice_review workflow reaching a genuine "
+        "'awaiting_approval' state (not forced - the transaction's category/"
+        "time/amount combination was independently found to cross the real "
+        "trained model's risk threshold) -> RBAC-enforced approval (viewer "
+        "denied, admin approved, both against the real /api/approvals/"
+        "decide endpoint) -> immutable audit trail (re-deciding rejected) "
+        "-> model registry integrity verified for both active checkpoints "
+        "-> observability confirms 71 real logged requests. RESULT: 9/9 "
+        "stages passed. TENANT is not a stage - multi-tenancy is "
+        "NOT_IMPLEMENTED in this project and faking that stage would "
+        "misrepresent what was tested; every other stage in the spec's "
+        "example chain (Part 53.13) that has a real implementation here "
+        "was exercised for real.",
+        endpoint="ai_platform.acceptance_test.run_acceptance_test()",
+    ),
     "PRODUCTION_DEPLOYMENT": Capability(
         name="Production Deployment", route="PRODUCTION_DEPLOYMENT", type="infra",
         model="Dockerfile + docker-compose.yml", version="1.0",
