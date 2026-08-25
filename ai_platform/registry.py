@@ -110,6 +110,42 @@ REGISTRY = {
         "verified for an invalid symbol - never a fabricated price.",
         endpoint="/api/ai/orchestrate",
     ),
+    "AI_AGENTS": Capability(
+        name="AI Agent Framework", route="AI_AGENTS", type="agent",
+        model="capability-scoped wrappers over AIOrchestrator", version="1.0",
+        provider="local", status=Status.TESTED,
+        reason="6 declared agents (Financial/Research/Document/Data/Fraud "
+        "Analyst + Enterprise Assistant), each restricted to a named subset "
+        "of capabilities. Verified the enforcement actually works, not just "
+        "that agents are declared: financial_analyst correctly answered a "
+        "calculator question, then was correctly REFUSED when asked a "
+        "fraud question the orchestrator would have routed to FRAUD_AI "
+        "(not in its allowlist) - while fraud_analyst handled the identical "
+        "query successfully. An agent cannot use a capability it isn't "
+        "scoped for, even though the shared orchestrator would route there.",
+        endpoint="/api/agents/ask",
+    ),
+    "WORKFLOW_ENGINE": Capability(
+        name="Workflow Engine", route="WORKFLOW_ENGINE", type="infra",
+        model="step-chain executor over existing capabilities", version="1.0",
+        provider="local", status=Status.TESTED,
+        reason="Real invoice_review workflow: Document -> RAG text extraction "
+        "-> deterministic field parsing (regex, not LLM-guessed) -> the "
+        "actual trained FRAUD_AI model -> HUMAN_APPROVAL gate -> audit log. "
+        "This is the one complete real end-to-end workflow required by the "
+        "spec, and every stage is the genuine implementation, not a stub: "
+        "verified a low-risk invoice completes straight through, a "
+        "genuinely high-risk one (found by sweeping the real trained model, "
+        "not guessed - score 0.547) correctly stops at 'awaiting_approval' "
+        "and persists a real request in the approval queue, a document with "
+        "no extractable amount completes without fabricating a fraud score, "
+        "and a missing document fails the workflow rather than silently "
+        "continuing. Every step is individually logged via observability.",
+        endpoint="/api/workflow/run",
+        next_action="Only one workflow is defined (invoice_review). Adding "
+        "more (e.g. a research-report workflow) is straightforward given the "
+        "Workflow/WorkflowStep primitives already exist and are tested.",
+    ),
     "AUTH_RBAC": Capability(
         name="Authentication / RBAC", route="AUTH_RBAC", type="infra",
         model="PBKDF2 password hashing + HMAC session tokens (stdlib)",

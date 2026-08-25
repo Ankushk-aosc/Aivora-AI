@@ -83,6 +83,17 @@ def _probe_database():
         return "DEGRADED", str(e)
 
 
+def _probe_agents():
+    from .agents import list_agents
+    agents = list_agents()
+    return ("HEALTHY", f"{len(agents)} agent(s) registered") if agents else ("DEGRADED", "no agents registered")
+
+
+def _probe_workflow():
+    from .workflow import WORKFLOWS
+    return ("HEALTHY", f"{len(WORKFLOWS)} workflow(s) registered") if WORKFLOWS else ("DEGRADED", "no workflows registered")
+
+
 def _probe_auth():
     from .auth import (
         AuthError, authenticate, create_user, delete_user,
@@ -185,6 +196,8 @@ _PROBES = {
     "MODEL_REGISTRY": _probe_model_registry,
     "AUTH_RBAC": _probe_auth,
     "HUMAN_APPROVAL": _probe_approval,
+    "AI_AGENTS": _probe_agents,
+    "WORKFLOW_ENGINE": _probe_workflow,
 }
 
 

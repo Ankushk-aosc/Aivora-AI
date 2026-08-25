@@ -528,6 +528,46 @@ def h_ai_speech_synthesize(payload, _query):
     return {"wav_path": path, "size_bytes": os.path.getsize(path)}
 
 
+def h_agents_list(_payload, _query):
+    from ai_platform.agents import list_agents
+    return {"agents": list_agents()}
+
+
+def h_agents_ask(payload, _query):
+    from ai_platform.agents import Agent, AgentExecutionError
+    payload = payload or {}
+    agent_id = payload.get("agent")
+    query = payload.get("query")
+    if not agent_id or not query:
+        raise ValueError('Provide {"agent": "...", "query": "..."}')
+    if STATE.get("orchestrator") is None:
+        from ai_platform import AIOrchestrator
+        STATE["orchestrator"] = AIOrchestrator(
+            model=STATE.get("model"), device=STATE.get("device", "cpu"),
+            document_store=STATE.get("document_store"),
+        )
+    try:
+        agent = Agent(agent_id, STATE["orchestrator"])
+        response = agent.handle(query)
+        return response.to_dict()
+    except (KeyError, AgentExecutionError) as e:
+        return {"error": str(e)}
+
+
+def h_workflow_run(payload, _query):
+    from ai_platform.workflow import run_workflow
+    payload = payload or {}
+    name = payload.get("workflow")
+    context = payload.get("context", {})
+    if not name:
+        raise ValueError('Provide {"workflow": "...", "context": {...}}')
+    try:
+        result = run_workflow(name, context)
+        return result.to_dict()
+    except KeyError as e:
+        return {"error": str(e)}
+
+
 def h_auth_register(payload, _query):
     from ai_platform.auth import AuthError, create_user
     payload = payload or {}
@@ -709,6 +749,9 @@ ROUTES = {
     ("GET", "/api/approvals"): h_approvals_list,
     ("POST", "/api/approvals/request"): h_approvals_request,
     ("POST", "/api/approvals/decide"): h_approvals_decide,
+    ("GET", "/api/agents"): h_agents_list,
+    ("POST", "/api/agents/ask"): h_agents_ask,
+    ("POST", "/api/workflow/run"): h_workflow_run,
 }
 
 
