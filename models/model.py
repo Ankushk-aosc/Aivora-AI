@@ -146,18 +146,83 @@ class DeepSeekV3(nn.Module):
             return main_logits[:, [-1], :], None, None, None
 
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
+    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None,
+                 top_p=None, repetition_penalty=1.0,
+                 stop_on_repetition=False, repetition_window=12, repetition_threshold=4):
+        """Autoregressive sampling.
+
+        top_k / top_p / repetition_penalty / stop_on_repetition are all
+        opt-in (default off) so every existing caller (main.py demo,
+        run_inference.py, the original tiny_debug smoke tests) keeps its
+        exact prior behavior unless it explicitly asks for the new controls.
+
+        repetition_penalty follows the standard CTRL-style rule: logits of
+        tokens already present in the sequence are divided by the penalty
+        when positive, multiplied when negative - so repetition_penalty > 1
+        makes repeats less likely without needing extra parameters.
+
+        stop_on_repetition performs real, cheap n-gram degeneration
+        detection during generation itself (not just after the fact): if
+        the same short token window repeats `repetition_threshold` times
+        within the last `repetition_window` generated tokens, generation
+        halts early instead of grinding out "the the the the ..." for the
+        full max_new_tokens budget.
+        """
+        batch_size = idx.size(0)
+        finished = torch.zeros(batch_size, dtype=torch.bool, device=idx.device)
+
         for _ in range(max_new_tokens):
             idx_cond = idx if idx.size(1) <= self.config.block_size else idx[:, -self.config.block_size:]
             logits, _, _, _ = self(idx_cond)
-            logits = logits[:, -1, :] / temperature
+            logits = logits[:, -1, :] / max(temperature, 1e-5)
+
+            if repetition_penalty != 1.0:
+                for b in range(batch_size):
+                    seen = torch.unique(idx[b])
+                    seen_logits = logits[b, seen]
+                    logits[b, seen] = torch.where(
+                        seen_logits > 0, seen_logits / repetition_penalty,
+                        seen_logits * repetition_penalty,
+                    )
 
             if top_k is not None:
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
                 logits[logits < v[:, [-1]]] = -float('Inf')
 
+            if top_p is not None:
+                sorted_logits, sorted_idx = torch.sort(logits, descending=True, dim=-1)
+                sorted_probs = F.softmax(sorted_logits, dim=-1)
+                cumulative = torch.cumsum(sorted_probs, dim=-1)
+                # Keep the smallest prefix whose cumulative prob exceeds top_p;
+                # always keep at least the single most likely token.
+                remove = cumulative - sorted_probs > top_p
+                remove[:, 0] = False
+                sorted_logits[remove] = -float('Inf')
+                logits = torch.full_like(logits, -float('Inf')).scatter(1, sorted_idx, sorted_logits)
+
             probs = F.softmax(logits, dim=-1)
             idx_next = torch.multinomial(probs, num_samples=1)
+            # Once a sequence is finished, keep emitting its own last token
+            # so the batch stays aligned without corrupting unfinished rows.
+            idx_next = torch.where(finished.unsqueeze(1), idx[:, -1:], idx_next)
             idx = torch.cat((idx, idx_next), dim=1)
+
+            if stop_on_repetition and idx.size(1) >= repetition_window:
+                window = idx[:, -repetition_window:]
+                for b in range(batch_size):
+                    if finished[b]:
+                        continue
+                    row = window[b].tolist()
+                    last_tok = row[-1]
+                    if row.count(last_tok) >= repetition_threshold:
+                        finished[b] = True
+                        continue
+                    if repetition_window >= 6:
+                        bigram = tuple(row[-2:])
+                        pairs = [tuple(row[i:i + 2]) for i in range(len(row) - 1)]
+                        if pairs.count(bigram) >= max(2, repetition_threshold // 2):
+                            finished[b] = True
+                if bool(finished.all()):
+                    break
 
         return idx

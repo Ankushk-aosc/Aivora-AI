@@ -23,8 +23,16 @@ min_lr: 1.0e-5
 eval_interval: 25
 eval_iters: 5
 
+# General-purpose slice (fineweb_edu + general_*) stays at 40% overall, same
+# as before - it's now diversified across raw web text, instruction-following,
+# dialogue, QA, and reasoning instead of just fineweb_edu alone, so the model
+# generalizes beyond finance. The financial slice (60%) is unchanged.
 dataset_mix:
-  fineweb_edu: 0.40
+  fineweb_edu: 0.20
+  general_instruction: 0.05
+  general_dialogue: 0.05
+  general_qa: 0.05
+  general_reasoning: 0.05
   financial_text: 0.20
   financial_qa: 0.15
   financial_reports: 0.10

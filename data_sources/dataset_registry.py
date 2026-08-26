@@ -69,6 +69,88 @@ REGISTRY = {
         notes="Architecture validation / debugging / small experiments only, not the "
         "primary financial training dataset.",
     ),
+    "general_wikipedia": DatasetEntry(
+        name="general_wikipedia",
+        hf_id="wikimedia/wikipedia",
+        subset="20231101.en",
+        split="train",
+        category="general",
+        license="cc-by-sa-3.0 / gfdl",
+        source_url="https://huggingface.co/datasets/wikimedia/wikipedia",
+        verification_status=VERIFIED,
+        fields_used=["title", "text"],
+        notes="English Wikipedia, Nov 2023 snapshot. Subset id 'wikimedia/wikipedia' "
+        "confirmed live via datasets.get_dataset_config_names() (323 configs; "
+        "'20231101.en' exists). Broad world-knowledge text, not finance-specific - "
+        "shares the 'general' bucket with fineweb_edu/tinystories so it adds source "
+        "diversity to that slice rather than a new bucket.",
+    ),
+    # ------------------------------------------------------------------
+    # General instruction-following / dialogue / QA / reasoning
+    # (broadens the model beyond finance-only text, per explicit request -
+    # sourced from huggingface.co/collections/sugatoray/llm-training-datasets,
+    # github.com/mlabonne/llm-datasets, and github.com/Zjh-819/LLMDataHub;
+    # each entry below was independently verified against its own Hugging
+    # Face dataset card and a live streamed sample, not taken on the list's
+    # word - the Salesforce/dialogstudio collection was NOT added because its
+    # own README states licensing is mixed per sub-dataset and cannot be
+    # blanket-verified the way every other entry in this registry is.)
+    # ------------------------------------------------------------------
+    "general_instruction_dolly": DatasetEntry(
+        name="general_instruction_dolly",
+        hf_id="databricks/databricks-dolly-15k",
+        split="train",
+        category="general_instruction",
+        license="cc-by-sa-3.0",
+        source_url="https://huggingface.co/datasets/databricks/databricks-dolly-15k",
+        verification_status=VERIFIED,
+        fields_used=["instruction", "context", "response"],
+        notes="15,011 instruction/response pairs, written by Databricks employees "
+        "(not LLM-generated) across 8 task categories. Permits commercial use.",
+    ),
+    "general_dialogue_oasst1": DatasetEntry(
+        name="general_dialogue_oasst1",
+        hf_id="OpenAssistant/oasst1",
+        split="train",
+        category="general_dialogue",
+        license="apache-2.0",
+        source_url="https://huggingface.co/datasets/OpenAssistant/oasst1",
+        verification_status=VERIFIED,
+        fields_used=["text"],
+        notes="~84K human-written, human-ranked multi-turn assistant conversation "
+        "turns (OpenAssistant crowdsourced project). Each row is one message; "
+        "the loader reads the 'text' field directly.",
+    ),
+    "general_qa_squad": DatasetEntry(
+        name="general_qa_squad",
+        hf_id="rajpurkar/squad",
+        split="train",
+        category="general_qa",
+        license="cc-by-sa-4.0",
+        source_url="https://huggingface.co/datasets/rajpurkar/squad",
+        verification_status=VERIFIED,
+        fields_used=["title", "context", "question"],
+        notes="Stanford Question Answering Dataset, 87,599 train examples built "
+        "from Wikipedia passages. The 'answers' field is a nested dict "
+        "(answer_start/text lists), which this pipeline's generic plain-text "
+        "extractor does not flatten, so only the passage + question are used, "
+        "not the extracted answer span - a known, documented limitation rather "
+        "than a silent gap.",
+    ),
+    "general_reasoning_gsm8k": DatasetEntry(
+        name="general_reasoning_gsm8k",
+        hf_id="openai/gsm8k",
+        subset="main",
+        split="train",
+        category="general_reasoning",
+        license="mit",
+        source_url="https://huggingface.co/datasets/openai/gsm8k",
+        verification_status=VERIFIED,
+        fields_used=["question", "answer"],
+        notes="7,473 grade-school math word problems with full step-by-step "
+        "solutions. Teaches multi-step numerical reasoning in plain English, "
+        "complementing (not duplicating) the financial_reasoning bucket.",
+    ),
     # ------------------------------------------------------------------
     # Financial educational text / terminology
     # ------------------------------------------------------------------

@@ -20,6 +20,12 @@ BUCKET_TO_CATEGORY = {
     "financial_reports": "financial_reports",
     "financial_reasoning": "financial_reasoning",
     "financial_instruction": "financial_instruction",
+    # General-purpose breadth buckets (added so the model isn't finance-only -
+    # see data_sources/dataset_registry.py for the sourcing/verification notes).
+    "general_instruction": "general_instruction",
+    "general_dialogue": "general_dialogue",
+    "general_qa": "general_qa",
+    "general_reasoning": "general_reasoning",
 }
 
 

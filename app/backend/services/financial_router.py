@@ -39,6 +39,7 @@ FINANCIAL_TERMS = [
     "gross profit", "net income", "operating income", "valuation", "ev/ebitda",
     "debt", "leverage", "current ratio", "shareholder", "yoy", "qoq", "nopat",
     "invested capital", "free cash flow", "net profit", "turnover", "solvency",
+    "expenses", "expense", "costs", "stock", "shares",
 ]
 
 # Explicit requests to compute something.
@@ -67,7 +68,7 @@ DOCUMENT_TERMS = [
 _NUMBER_RE = re.compile(r"\d")
 _ASSIGNMENT_RE = re.compile(
     r"(?:revenue|ebitda|profit|income|equity|assets?|liabilit(?:y|ies)|sales|"
-    r"capex|cash\s*flow|shares?|price|debt|expenses?)\s*(?:is|=|:|of|was|were)?\s*"
+    r"capex|cash\s*flow|shares?|price|debt|expenses?|costs?)\s*(?:is|are|=|:|of|was|were)?\s*"
     r"[₹$€£]?\s*[\d,]+(?:\.\d+)?",
     re.IGNORECASE,
 )
@@ -155,10 +156,10 @@ def extract_financial_values(query: str) -> dict:
     """
     values = {}
     pattern = re.compile(
-        r"(revenue|ebitda|gross profit|net income|operating income|profit|equity|"
+        r"(revenue|ebitda|gross profit|net income|operating income|expenses|costs|profit|equity|"
         r"total assets|assets|liabilities|shares outstanding|shares|price|debt|"
         r"capex|capital expenditure|operating cash flow|cash flow)"
-        r"\s*(?:is|=|:|of|was|were)?\s*"
+        r"\s*(?:is|are|=|:|of|was|were)?\s*"
         r"[₹$€£]?\s*([\d,]+(?:\.\d+)?)\s*"
         r"(crore|cr|lakh|million|mn|bn|billion|thousand|k)?",
         re.IGNORECASE,
@@ -168,8 +169,11 @@ def extract_financial_values(query: str) -> dict:
         "million": 1e6, "mn": 1e6, "bn": 1e9, "billion": 1e9,
         "thousand": 1e3, "k": 1e3,
     }
+    # Synonyms collapse onto the calculator's canonical argument name.
+    label_aliases = {"costs": "expenses"}
     for label, number, scale in pattern.findall(query):
         key = label.lower().strip().replace(" ", "_")
+        key = label_aliases.get(key, key)
         amount = float(number.replace(",", ""))
         if scale:
             amount *= multipliers[scale.lower()]

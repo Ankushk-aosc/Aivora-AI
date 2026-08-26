@@ -80,6 +80,14 @@ def cagr(beginning_value: float, ending_value: float, years: float) -> CalcResul
 # Margins
 # ----------------------------------------------------------------------
 
+def simple_profit(revenue: float, expenses: float) -> CalcResult:
+    return CalcResult(
+        "Profit", revenue - expenses, "",
+        "Revenue - Expenses",
+        {"revenue": revenue, "expenses": expenses},
+    )
+
+
 def gross_margin(gross_profit: float, revenue: float) -> CalcResult:
     return CalcResult(
         "Gross Margin", _ratio_pct(gross_profit, revenue, "revenue"), "%",
@@ -210,6 +218,7 @@ def ev_to_ebitda(enterprise_value: float, ebitda: float) -> CalcResult:
 CALCULATIONS = {
     "revenue_growth": revenue_growth,
     "cagr": cagr,
+    "simple_profit": simple_profit,
     "gross_margin": gross_margin,
     "operating_margin": operating_margin,
     "ebitda_margin": ebitda_margin,

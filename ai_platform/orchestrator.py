@@ -21,6 +21,8 @@ from dataclasses import dataclass, field
 from app.backend.services.financial_router import (
     Route as CoreRoute, classify as core_classify, extract_financial_values,
 )
+from app.backend.services.chat_service import DEFAULT_GENERATION
+from app.backend.services.quality import analyze_output, trim_to_sentences
 from ai_platform.registry import REGISTRY, Status
 from ai_platform.security import check_input, check_output
 from ai_platform.verification import sufficient_evidence, verify_response, INSUFFICIENT_EVIDENCE_MESSAGE
@@ -97,9 +99,10 @@ class AIOrchestrator:
         self.device = device
         self.document_store = document_store
 
-    def _generate(self, prompt: str, max_new_tokens: int = 40) -> str:
+    def _raw_generate(self, prompt: str, max_new_tokens: int, temperature: float,
+                       top_k: int, top_p: float, repetition_penalty: float) -> str:
         if self.model is None:
-            return "[no model checkpoint loaded]"
+            return ""
         import torch
         from data_sources.tokenizer import get_encoding
         enc = get_encoding()
@@ -109,8 +112,45 @@ class AIOrchestrator:
             ids = ids[-max_ctx:]
         context = torch.tensor(ids, dtype=torch.long, device=self.device).unsqueeze(0)
         with torch.no_grad():
-            out = self.model.generate(context, max_new_tokens, 0.8, 40)
+            out = self.model.generate(
+                context, max_new_tokens, temperature=temperature, top_k=top_k,
+                top_p=top_p, repetition_penalty=repetition_penalty,
+                stop_on_repetition=True,
+            )
         return enc.decode(out[0, len(ids):].tolist()).strip()
+
+    def _generate(self, prompt: str, max_new_tokens: int = None):
+        """Generate, then run the output-quality guard (same pipeline the
+        chat service uses - see app/backend/services/quality.py). Retries
+        once with more conservative sampling on degenerate output before
+        returning None so callers can show an honest fallback instead of
+        "the the the the" text. Returns (text_or_none, QualityReport)."""
+        if self.model is None:
+            return "[no model checkpoint loaded]", None
+
+        max_new_tokens = max_new_tokens or DEFAULT_GENERATION["max_new_tokens"]
+        text = self._raw_generate(
+            prompt, max_new_tokens, DEFAULT_GENERATION["temperature"],
+            DEFAULT_GENERATION["top_k"], DEFAULT_GENERATION["top_p"],
+            DEFAULT_GENERATION["repetition_penalty"],
+        )
+        report = analyze_output(text)
+
+        if report.is_degenerate:
+            text_retry = self._raw_generate(
+                prompt, max_new_tokens,
+                temperature=max(0.4, DEFAULT_GENERATION["temperature"] - 0.3),
+                top_k=min(DEFAULT_GENERATION["top_k"], 20),
+                top_p=min(DEFAULT_GENERATION["top_p"], 0.8),
+                repetition_penalty=max(DEFAULT_GENERATION["repetition_penalty"], 1.5),
+            )
+            report_retry = analyze_output(text_retry)
+            if not report_retry.is_degenerate:
+                text, report = text_retry, report_retry
+
+        if report.is_degenerate:
+            return None, report
+        return trim_to_sentences(text, max_sentences=3), report
 
     def _not_implemented(self, capability: str) -> OrchestratorResponse:
         cap = REGISTRY[capability]
@@ -263,7 +303,20 @@ class AIOrchestrator:
             )
 
         # GENERAL_LLM / FINANCIAL_LLM
-        answer = self._generate(f"Question: {query}\nAnswer:")
+        answer, report = self._generate(f"Question: {query}\nAnswer:")
+        if answer is None:
+            reasons = ", ".join(report.reasons) if report else "empty output"
+            answer = (
+                "This model has not been trained enough yet to answer that "
+                f"reliably in words (output withheld: {reasons})."
+            )
+            verification = verify_response(answer)
+            return OrchestratorResponse(
+                capability=capability,
+                status=cap_entry.status.value, answer=answer, reason=reason,
+                model="Not available (model output withheld - quality guard)",
+                verification=verification.to_dict(),
+            )
         verification = verify_response(answer)
         return OrchestratorResponse(
             capability=capability, status=cap_entry.status.value, answer=answer,
@@ -311,11 +364,20 @@ class AIOrchestrator:
                 answer=f"Calculation error: {e}", reason=reason,
             )
 
-        explanation = self._generate(f"Question: {query}\nAnswer: {result.name} is {result.formatted()}.")
-        verification = verify_response(explanation, verified_value=result.value)
-        answer = f"{result.name} = {result.formatted()}\n\nFormula: {result.formula}"
-        if explanation and self.model is not None:
-            answer += f"\n\nModel explanation: {explanation}"
+        # Structured Answer/Formula/Inputs/Result - deterministic only, the
+        # LLM never touches the arithmetic (see tools/financial_calculator.py).
+        # No free-text "model explanation" is appended: at this checkpoint's
+        # training level that text is unreliable filler more often than not,
+        # and the calculator's own formula + inputs already fully explain
+        # the result without risking a contradicting or degenerate sentence.
+        inputs_line = ", ".join(f"{k} = {v:,.2f}" for k, v in result.inputs.items())
+        verification = verify_response(f"{result.name} is {result.formatted()}.", verified_value=result.value)
+        answer = (
+            f"Answer: {result.name} = {result.formatted()}\n"
+            f"Formula: {result.formula}\n"
+            f"Inputs: {inputs_line}\n"
+            f"Result: {result.formatted()}"
+        )
 
         return OrchestratorResponse(
             capability="CALCULATOR", status=Status.TESTED.value, answer=answer,
@@ -406,7 +468,15 @@ class AIOrchestrator:
             )
 
         context, sources = build_context(retrieved)
-        generated = self._generate(f"Context: {context}\n\nQuestion: {query}\nAnswer:")
+        generated, report = self._generate(f"Context: {context}\n\nQuestion: {query}\nAnswer:")
+        if generated is None:
+            # Honest fallback: show the real retrieved passage rather than
+            # degenerate model text pretending to summarize it.
+            top_snippet = retrieved[0].chunk.text.strip()[:400]
+            generated = (
+                "The model could not produce a reliable summary, so here is the "
+                f"most relevant passage retrieved directly from the document:\n\n{top_snippet}"
+            )
         verification = verify_response(generated, retrieved_chunks=[r.chunk.text for r in retrieved])
 
         return OrchestratorResponse(
