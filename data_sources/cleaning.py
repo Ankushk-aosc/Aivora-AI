@@ -113,8 +113,45 @@ class Deduplicator:
         return False
 
 
-def clean_and_filter(records, min_length: int = MIN_TEXT_LENGTH, stats: dict = None):
-    """Generator: clean, validate, and dedup a stream of {"text": ...} records.
+def load_eval_questions() -> list:
+    """Every evaluation question's exact text, lowercased, for leakage
+    filtering during data prep (not just post-hoc detection).
+
+    Imports evaluation.evaluator lazily: evaluator.py imports from
+    data_sources (get_encoding), so an unconditional top-of-file import
+    here would be circular. By the time this function is actually called
+    (during a real prepare_dataset() run), both modules are fully loaded.
+    """
+    from evaluation.evaluator import EVAL_FILES, load_eval_set
+
+    questions = []
+    for category in EVAL_FILES:
+        for item in load_eval_set(category):
+            q = item.get("question")
+            if q:
+                questions.append(q.lower())
+    return questions
+
+
+def contains_eval_leakage(text: str, eval_questions: list) -> bool:
+    lowered = text.lower()
+    return any(q in lowered for q in eval_questions)
+
+
+def clean_and_filter(records, min_length: int = MIN_TEXT_LENGTH, stats: dict = None,
+                      eval_questions: list = None):
+    """Generator: clean, validate, dedup, and leakage-filter a stream of
+    {"text": ...} records.
+
+    eval_questions, when given, excludes any record whose text contains an
+    evaluation question verbatim - the same check_leakage() uses to detect
+    leakage after the fact, applied here so leakage can't happen in the
+    first place rather than only being caught (and wasting a prepare run)
+    after. A real example this caught: a Dolly-15k record happened to
+    contain "what is a balance sheet?" verbatim, coincidentally colliding
+    with this project's own qa_004 evaluation item, at financial_poc's
+    larger per-dataset token budget (the smaller `small` preset's budget
+    never happened to sample that record).
 
     If `stats` is provided, it is updated in place as records are consumed,
     so the caller can inspect counts after the generator is exhausted.
@@ -122,7 +159,8 @@ def clean_and_filter(records, min_length: int = MIN_TEXT_LENGTH, stats: dict = N
     dedup = Deduplicator()
     if stats is None:
         stats = {}
-    stats.update({"seen": 0, "kept": 0, "removed_invalid": 0, "removed_duplicate": 0})
+    stats.update({"seen": 0, "kept": 0, "removed_invalid": 0, "removed_duplicate": 0,
+                  "removed_eval_leakage": 0})
 
     for record in records:
         stats["seen"] += 1
@@ -134,6 +172,10 @@ def clean_and_filter(records, min_length: int = MIN_TEXT_LENGTH, stats: dict = N
 
         if dedup.is_duplicate(text):
             stats["removed_duplicate"] += 1
+            continue
+
+        if eval_questions and contains_eval_leakage(text, eval_questions):
+            stats["removed_eval_leakage"] += 1
             continue
 
         stats["kept"] += 1

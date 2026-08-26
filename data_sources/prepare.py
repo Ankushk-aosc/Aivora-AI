@@ -6,7 +6,7 @@ import logging
 import os
 
 from .tokenizer import get_encoding
-from .cleaning import clean_and_filter
+from .cleaning import clean_and_filter, load_eval_questions
 from .dataset_registry import VERIFIED, get_entry
 from .huggingface_loader import stream_records
 from .manifest import record_preparation
@@ -39,8 +39,15 @@ def prepare_dataset(
 
     raw_records = stream_records(entry, max_records=max_records, max_tokens=max_tokens)
 
+    # Filter out any record that contains an evaluation question verbatim -
+    # prevents leakage at the source instead of only detecting it after a
+    # full prepare run (see cleaning.clean_and_filter's docstring for the
+    # real qa_004/Dolly-15k collision this was added for).
+    eval_questions = load_eval_questions()
+
     clean_stats = {}
-    cleaned_records = clean_and_filter(raw_records, min_length=min_text_length, stats=clean_stats)
+    cleaned_records = clean_and_filter(raw_records, min_length=min_text_length,
+                                        stats=clean_stats, eval_questions=eval_questions)
 
     enc = get_encoding()
     train_writer = ShardWriter(os.path.join(shards_root, name, "train"))
@@ -82,6 +89,7 @@ def prepare_dataset(
         "records_seen": clean_stats.get("seen", 0),
         "records_removed_invalid": clean_stats.get("removed_invalid", 0),
         "records_removed_duplicate": clean_stats.get("removed_duplicate", 0),
+        "records_removed_eval_leakage": clean_stats.get("removed_eval_leakage", 0),
         "train_records_used": train_records,
         "validation_records_used": val_records,
         "train_tokens_used": train_tokens,
