@@ -1,6 +1,6 @@
 {
-  "id": "aoscjkjhh/aivora-ai-financial-poc-training",
-  "title": "Aivora AI Financial POC Training",
+  "id": "aoscjkjhh/aivora-ai-financial-poc-round-2",
+  "title": "Aivora AI Financial Poc Round 2",
   "code_file": "Aivora_Kaggle_Training.ipynb",
   "language": "python",
   "kernel_type": "notebook",
@@ -11,6 +11,6 @@
   "machine_shape": "NvidiaTeslaT4",
   "dataset_sources": [],
   "competition_sources": [],
-  "kernel_sources": ["aoscjkjhh/aivora-ai-gpu-training"],
+  "kernel_sources": ["aoscjkjhh/aivora-ai-financial-poc-training"],
   "model_sources": []
 }
