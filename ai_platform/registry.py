@@ -50,29 +50,33 @@ REGISTRY = {
     # ------------------------------------------------------------------
     "GENERAL_LLM": Capability(
         name="General LLM", route="GENERAL_LLM", type="llm",
-        model="FinLLM-102M-Instruct", version="checkpoints/base/checkpoint_2000.pt",
+        model="FinLLM-102M-Instruct", version="checkpoints/base/checkpoint_8000.pt",
         provider="proprietary", status=Status.TESTED,
-        reason="Proprietary DeepSeek-V3-style model (101,723,264 params). v1.2: "
-        "real GPU training completed on Kaggle (Tesla T4, 'small' preset, 2,000 "
-        "steps, 8,192,000 tokens, ~50 min wall-clock) - loss dropped from "
-        "10.70 (100-step CPU run) to a measured 6.762 train / 7.055 val. "
-        "Checkpoint SHA256-verified identical between Kaggle's own hash and "
-        "this repo's local re-hash after download (base-v2, "
-        "6e3916eacaada4fc9b71efafe13b1af5217fbba94fda0a5b72ad3d36f9f70ed0). "
-        "Qualitative jump is real: at checkpoint_100 every open-ended question "
-        "in tests/test_response_pipeline.py hit the output-quality guard's "
-        "honest 'not trained enough yet' fallback; at checkpoint_2000 all of "
-        "them now produce grammatically coherent sentences that pass the "
-        "guard - though factual accuracy is still low (measured 2.22% on the "
-        "45-question eval set: numerical 1/15, financial_qa/terminology/"
-        "reasoning 0). This is reported honestly, not rounded up - more "
-        "training (financial_poc, 50M tokens) is the next real step, not a "
-        "pipeline fix. v1.1 (response-quality pipeline, unchanged this round): "
-        "generation uses configurable temperature/top_k/top_p/repetition_"
-        "penalty plus real in-generation repetition stopping (models/model.py "
-        "generate()), and every output passes an output-quality guard (app/"
-        "backend/services/quality.py) that detects both literal repetition "
-        "('the the the') and content-free function-word strings.",
+        reason="Proprietary DeepSeek-V3-style model (101,723,264 params). v1.3: "
+        "two real GPU training runs on Kaggle now, chained via resume - "
+        "'small' preset (2,000 steps, 8.19M tokens, ~50 min) then 'financial_"
+        "poc' (resumed from step 2000 through step 8000, 6,000 more steps, "
+        "~2.7h) for 40.96M cumulative tokens total. Val loss: 10.70 (100-step "
+        "CPU baseline) -> 7.055 (after 'small') -> 6.377 (after 'financial_"
+        "poc'). Checkpoint SHA256-verified identical between Kaggle's own "
+        "hash and this repo's local re-hash after download at every stage "
+        "(base-v3, d982a47f82cc3f45cc3c9857b099dadace878177aa51f3c17c10e3b"
+        "fec9ddd4a). Reported plainly, not rounded up: the 45-question eval "
+        "accuracy stayed at 2.22% across both runs (1/45, a different "
+        "question passing each time by coincidence) - the large loss drop "
+        "has not yet translated into exact-match factual accuracy, though "
+        "inference output is qualitatively more fluent and thematically "
+        "on-topic (uses real finance vocabulary - 'dividend yield', 'EPS', "
+        "'current ratio' - in roughly appropriate contexts) even though "
+        "individual facts/definitions are still frequently wrong. More "
+        "training and/or a larger/cleaner financial corpus is the honest "
+        "next lever, not a pipeline fix. v1.1 (response-quality pipeline, "
+        "unchanged since introduced): generation uses configurable "
+        "temperature/top_k/top_p/repetition_penalty plus real in-generation "
+        "repetition stopping (models/model.py generate()), and every output "
+        "passes an output-quality guard (app/backend/services/quality.py) "
+        "that detects both literal repetition and content-free function-"
+        "word strings.",
         endpoint="/api/chat",
         known_bugs=["v1.0 generation had no repetition control at all "
                     "(temperature=0.8/top_k=40 fixed) and no output-quality "
@@ -88,44 +92,64 @@ REGISTRY = {
                     "reduced batch_size/seq_len between attempts, so all 3 "
                     "retries failed identically - fixed to genuinely halve "
                     "batch_size (then seq_len) and rewrite the preset yaml "
-                    "between attempts, which is what let the real run succeed."],
+                    "between attempts, which is what let the real run succeed.",
+                    "Real leakage caught by check_leakage() at financial_poc's "
+                    "larger per-dataset token budget: a databricks-dolly-15k "
+                    "record happened to contain 'what is a balance sheet?' "
+                    "verbatim, coincidentally colliding with this project's "
+                    "own qa_004 eval item (the smaller 'small' budget never "
+                    "sampled that record). check_leakage() correctly blocked "
+                    "the run before training; fixed properly by filtering "
+                    "eval-question text out at prepare time (data_sources/"
+                    "cleaning.py load_eval_questions/contains_eval_leakage), "
+                    "not just detecting it after a wasted prepare run."],
     ),
     "FINANCIAL_LLM": Capability(
         name="Financial LLM", route="FINANCIAL_LLM", type="llm",
-        model="FinLLM-102M-Financial", version="checkpoints/base/checkpoint_2000.pt",
+        model="FinLLM-102M-Financial", version="checkpoints/base/checkpoint_8000.pt",
         provider="proprietary", status=Status.TESTED,
-        reason="Same proprietary model and same real Kaggle GPU training run as "
+        reason="Same proprietary model and same real Kaggle GPU training runs as "
         "GENERAL_LLM above (base-stage checkpoint, trained on the full "
-        "10-bucket financial+general dataset mix including the general_* "
-        "buckets added for broader coverage). Same measured loss (6.762/"
-        "7.055), same honest 2.22% eval accuracy, same response-quality "
-        "pipeline.",
+        "10-bucket financial+general dataset mix). Same measured loss "
+        "(5.930 train / 6.377 val), same honest 2.22% eval accuracy, same "
+        "response-quality pipeline.",
         endpoint="/api/chat",
     ),
     "GPU_TRAINING_KAGGLE": Capability(
         name="Kaggle GPU Training", route="GPU_TRAINING_KAGGLE", type="infra",
-        model="training/kaggle/Aivora_Kaggle_Training.ipynb", version="1.0",
+        model="training/kaggle/Aivora_Kaggle_Training.ipynb", version="1.1",
         provider="local", status=Status.TESTED,
-        reason="Real, complete GPU training run - not authored-but-unrun like "
-        "GPU_TRAINING_COLAB. Pushed via the real `kaggle` CLI (kernels push) "
-        "to a live Kaggle kernel, ran end to end on a Tesla T4 (14.56GB VRAM, "
-        "torch 2.10.0+cu128) for ~50 real minutes, and produced a real "
-        "checkpoint (base-v2) that was downloaded, SHA256-verified byte-"
-        "identical to Kaggle's own hash, registered locally, and used for "
-        "real local inference through the actual production chat pipeline "
-        "(main.py chat) - not just tested inside the Kaggle notebook. Getting "
-        "here required diagnosing three separate real, non-obvious blockers "
-        "in sequence: (1) a Kaggle account needs phone-number verification "
-        "before GPU/TPU attaches, which silently falls back to CPU with no "
-        "error otherwise; (2) kernel-metadata.json's enable_gpu field must be "
-        "the string \"true\", not a JSON boolean, or it's silently ignored; "
+        reason="Real, complete GPU training - not authored-but-unrun like "
+        "GPU_TRAINING_COLAB. Two chained real runs so far, both pushed via "
+        "the real `kaggle` CLI to live Kaggle kernels on a Tesla T4 (14.56GB "
+        "VRAM, torch 2.10.0+cu128): 'small' (2,000 steps, ~50 min), then "
+        "'financial_poc' RESUMED from that checkpoint (Kaggle's kernel_"
+        "sources output-chaining, mounting one kernel's output as another's "
+        "input - real, not simulated) through step 8000 (~2.7h more). Both "
+        "checkpoints SHA256-verified byte-identical between Kaggle's own "
+        "hash and this repo's local re-hash after download, registered "
+        "locally, and used for real local inference through the actual "
+        "production chat pipeline (main.py chat) - not just tested inside "
+        "the Kaggle notebook. Getting the first run to succeed required "
+        "diagnosing three separate real, non-obvious blockers in sequence: "
+        "(1) a Kaggle account needs phone-number verification before GPU/"
+        "TPU attaches, which silently falls back to CPU with no error "
+        "otherwise; (2) kernel-metadata.json's enable_gpu field must be the "
+        "string \"true\", not a JSON boolean, or it's silently ignored; "
         "(3) the public GitHub repo Kaggle clones from had reverted to "
         "private, which fails an anonymous git clone with a credential "
-        "prompt rather than a clear 'repo not found' error.",
+        "prompt rather than a clear 'repo not found' error. The resume run "
+        "surfaced a fourth real issue: the exact /kaggle/input mount path "
+        "for a kernel_sources output couldn't be predicted with certainty, "
+        "so the notebook's resume cell falls back to a glob search rather "
+        "than gambling a multi-hour run on a guessed path - which is exactly "
+        "what happened (the guess was wrong; the search found it).",
         endpoint="training/kaggle/Aivora_Kaggle_Training.ipynb",
         known_bugs=["See GENERAL_LLM's known_bugs for the enable_gpu string-"
-                    "vs-boolean bug and the OOM-retry no-op bug, both found "
-                    "and fixed while getting this run to succeed."],
+                    "vs-boolean bug, the OOM-retry no-op bug, and the real "
+                    "eval-leakage collision at financial_poc's larger token "
+                    "budget, all found and fixed while getting these runs to "
+                    "succeed."],
     ),
     "CALCULATOR": Capability(
         name="Financial Calculator / Math Engine", route="CALCULATOR", type="tool",

@@ -32,10 +32,21 @@
       "train_loss": 6.761973857879639,
       "val_loss": 7.054560661315918,
       "registered_at": "2026-08-26T08:22:43.940317Z"
+    },
+    {
+      "version": "base-v3",
+      "stage": "base",
+      "path": "checkpoints/base/checkpoint_8000.pt",
+      "checksum": "d982a47f82cc3f45cc3c9857b099dadace878177aa51f3c17c10e3bfec9ddd4a",
+      "size_bytes": 1259195772,
+      "step": 8000,
+      "train_loss": 5.9294562339782715,
+      "val_loss": 6.376895904541016,
+      "registered_at": "2026-08-26T15:19:21.663552Z"
     }
   ],
   "active": {
-    "base": "base-v2",
+    "base": "base-v3",
     "instruction": "instruction-v1"
   }
 }
