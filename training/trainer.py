@@ -67,8 +67,12 @@ def save_checkpoint(model, optimizer, config, preset, step, train_loss, val_loss
     ckpt_path = os.path.join(CHECKPOINTS_DIR, f"checkpoint_{step}.pt")
     meta_path = os.path.join(CHECKPOINTS_DIR, f"checkpoint_{step}.json")
 
+    # Unwrap DataParallel so the saved state_dict has the same key names
+    # (no "module." prefix) whether the run used 1 or several GPUs - keeps
+    # every checkpoint resumable regardless of GPU count.
+    raw_model = model.module if isinstance(model, torch.nn.DataParallel) else model
     torch.save({
-        "model_state_dict": model.state_dict(),
+        "model_state_dict": raw_model.state_dict(),
         "optimizer_state_dict": optimizer.state_dict(),
         "step": step,
         "best_val_loss": best_val_loss,
@@ -129,15 +133,22 @@ def load_checkpoint(path, model, optimizer=None):
 
 
 def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: bool = False,
-                 shards_root: str = os.path.join("data", "shards"), seed: int = 42):
+                 shards_root: str = os.path.join("data", "shards"), seed: int = 42,
+                 max_steps_override: int = None, eval_interval_override: int = None):
+    """max_steps_override/eval_interval_override let a caller run a short
+    smoke test against a preset's real batch_size/seq_len/dataset_mix
+    without editing the preset yaml. max_steps_override is the number of
+    ADDITIONAL steps to run past the resumed checkpoint's step (or from 0
+    if not resuming) - NOT an absolute target step - because the training
+    loop is `range(start_step, max_iters)`, and an absolute small target
+    below start_step would silently produce zero iterations."""
     preset = load_preset(preset_name)
     config = DeepSeekConfig.default()
 
     learning_rate = float(preset["learning_rate"])
-    max_iters = int(preset["max_steps"])
     warmup_steps = int(preset["warmup_steps"])
     min_lr = float(preset["min_lr"])
-    eval_interval = int(preset["eval_interval"])
+    eval_interval = int(eval_interval_override) if eval_interval_override is not None else int(preset["eval_interval"])
     eval_iters = int(preset["eval_iters"])
     batch_size = int(preset["batch_size"])
     gradient_accumulation_steps = int(preset["gradient_accumulation_steps"])
@@ -190,10 +201,27 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
         print(f"Resumed from {resume} at step {start_step} "
               f"(best_val_loss={best_val_loss}, tokens_processed={tokens_processed:,})")
 
+    if max_steps_override is not None:
+        max_iters = start_step + int(max_steps_override)
+        print(f"max_steps_override={max_steps_override}: running steps "
+              f"{start_step}->{max_iters} ({max_steps_override} steps), not preset "
+              f"max_steps={preset['max_steps']}. LR schedule below is computed "
+              f"against this shorter horizon, not the preset's real one - "
+              f"loss/LR numbers from this run are not meaningful for judging "
+              f"training quality, only for smoke-testing throughput/memory.")
+    else:
+        max_iters = int(preset["max_steps"])
+
+    if device == "cuda" and torch.cuda.device_count() > 1:
+        print(f"Using DataParallel across {torch.cuda.device_count()} GPUs")
+        model = torch.nn.DataParallel(model)
+
     model.train()
     last_train_loss = None
     last_val_loss = None
     run_start = time.time()
+    last_log_time = run_start
+    last_log_tokens = tokens_processed
 
     for step in tqdm(range(start_step, max_iters)):
         if step % eval_interval == 0 and step != start_step:
@@ -201,8 +229,11 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
                                     device_type, device, ctx, seq_len=seq_len)
             last_train_loss, last_val_loss = losses["train"].item(), losses["val"].item()
             elapsed = time.time() - run_start
+            now = time.time()
+            interval_tok_s = (tokens_processed - last_log_tokens) / max(now - last_log_time, 1e-9)
+            last_log_time, last_log_tokens = now, tokens_processed
             print(f"step {step}: train {last_train_loss:.4f}, val {last_val_loss:.4f} | "
-                  f"tokens {tokens_processed:,} | {tokens_processed / max(elapsed, 1e-9):.0f} tok/s | "
+                  f"tokens {tokens_processed:,} | {interval_tok_s:.0f} tok/s | "
                   f"elapsed {elapsed:.0f}s")
             if wandb:
                 wandb.log({"step": step, "train_loss": last_train_loss, "val_loss": last_val_loss,
@@ -216,6 +247,11 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
         X, y = get_batch(loaders, "train", config, batch_size, device_type, device, seq_len)
         with ctx:
             _, total_loss, main_loss, mtp_loss = model(X, y)
+            # DataParallel gathers each replica's scalar loss into a
+            # (num_gpus,) tensor; .mean() is a no-op on a single GPU/CPU.
+            total_loss = total_loss.mean()
+            main_loss = main_loss.mean() if main_loss is not None else None
+            mtp_loss = mtp_loss.mean() if mtp_loss is not None else None
             loss = total_loss / gradient_accumulation_steps
 
         # Part 29: never silently train through NaN/Inf.
