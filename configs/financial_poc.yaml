@@ -4,14 +4,17 @@
 name: financial_poc
 description: "Actual financial specialization experiment."
 
-# max_steps raised 8000 -> 16000 to continue training past the first
-# financial_poc run (resumed from checkpoint_8000.pt, val loss 6.377 at
-# that point) for another full financial_poc-sized stretch, rather than
-# restarting. train_tokens/validation_tokens describe the per-run data-
-# prep budget (datasets are freshly re-streamed each run and sampled with
-# replacement across steps), not a hard cap on total steps.
-train_tokens: 50000000
-validation_tokens: 2000000
+# max_steps unchanged at 16000 - this data-prep scale-up is deliberately
+# decoupled from step count (see dataset_token_overrides below). Once the
+# larger shards are prepared, decide max_steps separately by comparing
+# train_tokens against batch_size*seq_len*gradient_accumulation_steps
+# (131,072 tokens/step at the settings below) - 16000 steps is now well
+# under one epoch over the raised corpus, where it used to be ~40 epochs.
+# train_tokens/validation_tokens describe the per-run data-prep budget
+# (datasets are freshly re-streamed each run and sampled with replacement
+# across steps), not a hard cap on total steps.
+train_tokens: 121500000
+validation_tokens: 4900000
 max_steps: 16000
 
 # Sized for a GPU. Reduce batch_size / seq_len if you hit OOM.
@@ -30,6 +33,16 @@ eval_iters: 100
 # as before - it's now diversified across raw web text, instruction-following,
 # dialogue, QA, and reasoning instead of just fineweb_edu alone, so the model
 # generalizes beyond finance. The financial slice (60%) is unchanged.
+#
+# NOTE: these weights control TRAINING-TIME sampling ratio only (how often
+# MixedShardedLoader draws a batch from each bucket - see
+# data_sources/dataset_mixer.py resolve_available_buckets /
+# training/data_loader.py get_batch). They are UNCHANGED by the data-prep
+# scale-up below. Per-dataset PREP volume (how many tokens get streamed to
+# disk for each source) is now controlled by dataset_token_overrides,
+# because the old bucket_budget // num_entries_in_category split can no
+# longer serve fineweb_edu/general_wikipedia/tinystories, which all share
+# the "general" bucket but now need very different absolute amounts.
 dataset_mix:
   fineweb_edu: 0.20
   general_instruction: 0.05
@@ -41,3 +54,41 @@ dataset_mix:
   financial_reports: 0.10
   financial_reasoning: 0.10
   financial_instruction: 0.05
+
+# Explicit per-dataset token-budget ceilings (train+validation combined),
+# read by training/kaggle/Aivora_Kaggle_Training.ipynb's prep cell in place
+# of the automatic bucket_weight * total_budget / num_entries split for any
+# dataset listed here. Every value below is a real HF source's own
+# verified-available scale (see data_sources/dataset_registry.py notes for
+# each), not an arbitrary round number:
+#   - fineweb_edu, general_wikipedia, financial_qa_sujet,
+#     financial_reports_edgar, tinystories: raised from their old
+#     evenly-split shares because these sources have far more available
+#     than was previously requested.
+#   - financial_reasoning_fino1: the FinQA reasoning-path replacement for
+#     financial_reasoning_finqa (Aiera/finqa-verified), whose old ceiling of
+#     5,200,000 tokens hit a real wall at just 67,994 actual tokens - the
+#     source was exhausted, not under-requested. See dataset_registry.py.
+#   - The five "leave as-is" datasets keep their exact previous ceiling
+#     (2,600,000 = old 52,000,000-token total_budget * 0.05 weight) - they
+#     were already near their own ceiling, so explicit values here just
+#     stop them silently inheriting a much bigger implicit budget now that
+#     train_tokens/validation_tokens below are bigger.
+#   - financial_text_investopedia (financial_text bucket, weight 0.20) was
+#     not mentioned when this scale-up was requested - assumed "leave
+#     as-is" like the other unmentioned buckets and pinned to its old
+#     value (10,400,000 = old 52,000,000 * 0.20) for the same reason as
+#     above. Remove this line (or raise it) if that assumption is wrong.
+dataset_token_overrides:
+  fineweb_edu: 30000000
+  general_wikipedia: 15000000
+  tinystories: 10000000
+  financial_text_investopedia: 10400000
+  financial_qa_sujet: 25000000
+  financial_reports_edgar: 20000000
+  financial_reasoning_fino1: 3000000
+  financial_instruction_alpaca: 2600000
+  general_instruction_dolly: 2600000
+  general_dialogue_oasst1: 2600000
+  general_qa_squad: 2600000
+  general_reasoning_gsm8k: 2600000

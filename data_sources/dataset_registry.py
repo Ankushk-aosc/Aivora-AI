@@ -226,13 +226,45 @@ REGISTRY = {
         # evaluation items are authored separately and the leakage check
         # confirms no overlap.
         split="test",
-        category="financial_reasoning",
+        category="financial_reasoning_superseded",
         license="mit",
         source_url="https://huggingface.co/datasets/Aiera/finqa-verified",
         verification_status=VERIFIED,
         fields_used=["question", "answer", "context"],
         notes="Human-verified FinQA multi-step numerical reasoning over filings. "
-        "Only a 'test' split is published upstream.",
+        "Only a 'test' split is published upstream, and it turned out to "
+        "already be fully consumed at just 67,994 real tokens despite a "
+        "5,200,000-token request in the second financial_poc run - there is "
+        "no more to extract from this source. Superseded by "
+        "financial_reasoning_fino1 (TheFinAI/Fino1_Reasoning_Path_FinQA, "
+        "below). Category changed from 'financial_reasoning' to "
+        "'financial_reasoning_superseded' (not a bucket target in "
+        "dataset_mixer.BUCKET_TO_CATEGORY) so the default financial_reasoning "
+        "mix no longer picks it up automatically; kept here, still VERIFIED "
+        "and still real/loadable, for provenance.",
+    ),
+    "financial_reasoning_fino1": DatasetEntry(
+        name="financial_reasoning_fino1",
+        hf_id="TheFinAI/Fino1_Reasoning_Path_FinQA",
+        split="train",
+        category="financial_reasoning",
+        license="cc-by-4.0",
+        source_url="https://huggingface.co/datasets/TheFinAI/Fino1_Reasoning_Path_FinQA",
+        verification_status=VERIFIED,
+        fields_used=["Open-ended Verifiable Question", "Complex_CoT",
+                     "Ground-True Answer", "Response"],
+        notes="GPT-4o-generated multi-step reasoning paths over the original "
+        "FinQA questions (arXiv:2502.08127); confirmed live via the HF "
+        "dataset viewer schema (exact field names above, including the "
+        "dataset's own capitalization/hyphenation) - auto-converted to "
+        "Parquet, no loading script. 5,500 rows, and each row is much "
+        "longer than financial_reasoning_finqa's (question up to ~16.3k "
+        "chars, plus a full Complex_CoT reasoning chain and Response, not "
+        "just a short answer), so it should sustain a meaningfully larger "
+        "token budget - but 5,500 rows is still small in absolute count, so "
+        "the ~3,000,000 token request below is a ceiling, not a guarantee; "
+        "check the real prepare-run's train_tokens_used before assuming it "
+        "was hit.",
     ),
     "financial_reasoning_finqa_ibm": DatasetEntry(
         name="financial_reasoning_finqa_ibm",
