@@ -134,14 +134,15 @@ def load_checkpoint(path, model, optimizer=None):
 
 def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: bool = False,
                  shards_root: str = os.path.join("data", "shards"), seed: int = 42,
-                 max_steps_override: int = None, eval_interval_override: int = None):
-    """max_steps_override/eval_interval_override let a caller run a short
-    smoke test against a preset's real batch_size/seq_len/dataset_mix
-    without editing the preset yaml. max_steps_override is the number of
-    ADDITIONAL steps to run past the resumed checkpoint's step (or from 0
-    if not resuming) - NOT an absolute target step - because the training
-    loop is `range(start_step, max_iters)`, and an absolute small target
-    below start_step would silently produce zero iterations."""
+                 max_steps_override: int = None, eval_interval_override: int = None,
+                 batch_size_override: int = None):
+    """max_steps_override/eval_interval_override/batch_size_override let a
+    caller run a short smoke test against a preset's real seq_len/
+    dataset_mix without editing the preset yaml. max_steps_override is the
+    number of ADDITIONAL steps to run past the resumed checkpoint's step
+    (or from 0 if not resuming) - NOT an absolute target step - because the
+    training loop is `range(start_step, max_iters)`, and an absolute small
+    target below start_step would silently produce zero iterations."""
     preset = load_preset(preset_name)
     config = DeepSeekConfig.default()
 
@@ -150,7 +151,7 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     min_lr = float(preset["min_lr"])
     eval_interval = int(eval_interval_override) if eval_interval_override is not None else int(preset["eval_interval"])
     eval_iters = int(preset["eval_iters"])
-    batch_size = int(preset["batch_size"])
+    batch_size = int(batch_size_override) if batch_size_override is not None else int(preset["batch_size"])
     gradient_accumulation_steps = int(preset["gradient_accumulation_steps"])
     dataset_mix = preset["dataset_mix"]
     seq_len = preset.get("seq_len")  # None -> use full config.block_size
