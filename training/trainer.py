@@ -36,7 +36,14 @@ def detect_device():
 
 
 def build_context(device_type: str):
-    if device_type == "cuda" and torch.cuda.is_bf16_supported():
+    # torch.cuda.is_bf16_supported() is not reliable across torch versions/
+    # hardware (real bf16 tensor cores only exist from Ampere/compute
+    # capability 8.0 onward; this call has returned True on pre-Ampere GPUs
+    # in some torch builds, e.g. observed on a Tesla P100/compute 6.0 under
+    # torch 2.7.1+cu118 - bf16 tensors work there but with no hardware
+    # acceleration, silently ballooning memory use versus real bf16). Gate
+    # on compute capability directly instead of trusting that function.
+    if device_type == "cuda" and torch.cuda.get_device_capability(0)[0] >= 8:
         return torch.cuda.amp.autocast(dtype=torch.bfloat16), "bfloat16"
     if device_type == "cuda":
         return torch.cuda.amp.autocast(dtype=torch.float16), "float16"
