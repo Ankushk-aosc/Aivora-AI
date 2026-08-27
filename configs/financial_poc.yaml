@@ -4,23 +4,31 @@
 name: financial_poc
 description: "Actual financial specialization experiment."
 
-# max_steps unchanged at 16000 - this data-prep scale-up is deliberately
-# decoupled from step count (see dataset_token_overrides below). Once the
-# larger shards are prepared, decide max_steps separately by comparing
-# train_tokens against batch_size*seq_len*gradient_accumulation_steps
-# (131,072 tokens/step at the settings below) - 16000 steps is now well
-# under one epoch over the raised corpus, where it used to be ~40 epochs.
+# max_steps raised 16000 -> 495700 (16000 + 479700 more steps) to target
+# ~2.03B total tokens processed (~20 tokens/param Chinchilla-ish ratio for
+# this 101.7M-param model): 65,536,000 tokens already processed as of
+# checkpoint_16000.pt + 479,700 steps * 4,096 tokens/step (batch_size=4 *
+# seq_len=1024, the actual per-"step" tokens.numel() this codebase counts,
+# independent of gradient_accumulation_steps) ~= 2,031,308,800 tokens.
 # train_tokens/validation_tokens describe the per-run data-prep budget
 # (datasets are freshly re-streamed each run and sampled with replacement
 # across steps), not a hard cap on total steps.
 train_tokens: 121500000
 validation_tokens: 4900000
-max_steps: 16000
+max_steps: 495700
 
-# Sized for a GPU. Reduce batch_size / seq_len if you hit OOM.
-batch_size: 16
+# batch_size dropped 16 -> 4 (confirmed via real smoke-test measurements on
+# the P100 this account is currently being assigned on Kaggle - batch_size
+# 16 and 8 both genuinely OOM at seq_len=1024 on that GPU's ~15.89GiB, only
+# 4 fit cleanly with headroom: 9.16GiB allocated / 10.47GiB reserved).
+# gradient_accumulation_steps raised 8 -> 32 to hold the effective batch
+# size at 128 (4*32, matching the original 16*8=128) that the resumed
+# checkpoint's Adam momentum/variance state was tuned under - no added GPU
+# memory cost or raw tok/s reduction, since it only changes how often
+# optimizer.step() fires, not the per-micro-batch tensor shape.
+batch_size: 4
 seq_len: 1024
-gradient_accumulation_steps: 8
+gradient_accumulation_steps: 32
 
 learning_rate: 3.0e-4
 warmup_steps: 500
