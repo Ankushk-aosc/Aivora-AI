@@ -13,6 +13,7 @@ from tqdm.auto import tqdm
 from models import DeepSeekConfig, DeepSeekV3
 
 from .data_loader import MixedShardedLoader, estimate_loss, get_batch
+from .notifier_utils import notify_checkpoint_saved, notify_training_failed
 
 CONFIGS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configs")
 CHECKPOINTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "checkpoints", "base")
@@ -232,74 +233,80 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     last_log_tokens = tokens_processed
 
     for step in tqdm(range(start_step, max_iters)):
-        if step % eval_interval == 0 and step != start_step:
-            losses = estimate_loss(model, loaders, config, eval_iters, batch_size,
-                                    device_type, device, ctx, seq_len=seq_len)
-            last_train_loss, last_val_loss = losses["train"].item(), losses["val"].item()
-            elapsed = time.time() - run_start
-            now = time.time()
-            interval_tok_s = (tokens_processed - last_log_tokens) / max(now - last_log_time, 1e-9)
-            last_log_time, last_log_tokens = now, tokens_processed
-            print(f"step {step}: train {last_train_loss:.4f}, val {last_val_loss:.4f} | "
-                  f"tokens {tokens_processed:,} | {interval_tok_s:.0f} tok/s | "
-                  f"elapsed {elapsed:.0f}s")
-            if wandb:
-                wandb.log({"step": step, "train_loss": last_train_loss, "val_loss": last_val_loss,
-                            "tokens_processed": tokens_processed})
+        try:
+            if step % eval_interval == 0 and step != start_step:
+                losses = estimate_loss(model, loaders, config, eval_iters, batch_size,
+                                        device_type, device, ctx, seq_len=seq_len)
+                last_train_loss, last_val_loss = losses["train"].item(), losses["val"].item()
+                elapsed = time.time() - run_start
+                now = time.time()
+                interval_tok_s = (tokens_processed - last_log_tokens) / max(now - last_log_time, 1e-9)
+                last_log_time, last_log_tokens = now, tokens_processed
+                print(f"step {step}: train {last_train_loss:.4f}, val {last_val_loss:.4f} | "
+                      f"tokens {tokens_processed:,} | {interval_tok_s:.0f} tok/s | "
+                      f"elapsed {elapsed:.0f}s")
+                if wandb:
+                    wandb.log({"step": step, "train_loss": last_train_loss, "val_loss": last_val_loss,
+                                "tokens_processed": tokens_processed})
 
-            if last_val_loss < best_val_loss:
-                best_val_loss = last_val_loss
-                save_checkpoint(model, optimizer, config, preset, step, last_train_loss,
-                                 last_val_loss, best_val_loss, seed, tokens_processed, device)
+                if last_val_loss < best_val_loss:
+                    best_val_loss = last_val_loss
+                    ckpt_path, _ = save_checkpoint(model, optimizer, config, preset, step, last_train_loss,
+                                                    last_val_loss, best_val_loss, seed, tokens_processed, device)
+                    notify_checkpoint_saved(step, max_iters, last_train_loss, last_val_loss,
+                                             best_val_loss, tokens_processed, ckpt_path)
 
-        X, y = get_batch(loaders, "train", config, batch_size, device_type, device, seq_len)
-        with ctx:
-            _, total_loss, main_loss, mtp_loss = model(X, y)
-            # DataParallel gathers each replica's scalar loss into a
-            # (num_gpus,) tensor; .mean() is a no-op on a single GPU/CPU.
-            total_loss = total_loss.mean()
-            main_loss = main_loss.mean() if main_loss is not None else None
-            mtp_loss = mtp_loss.mean() if mtp_loss is not None else None
-            loss = total_loss / gradient_accumulation_steps
+            X, y = get_batch(loaders, "train", config, batch_size, device_type, device, seq_len)
+            with ctx:
+                _, total_loss, main_loss, mtp_loss = model(X, y)
+                # DataParallel gathers each replica's scalar loss into a
+                # (num_gpus,) tensor; .mean() is a no-op on a single GPU/CPU.
+                total_loss = total_loss.mean()
+                main_loss = main_loss.mean() if main_loss is not None else None
+                mtp_loss = mtp_loss.mean() if mtp_loss is not None else None
+                loss = total_loss / gradient_accumulation_steps
 
-        # Part 29: never silently train through NaN/Inf.
-        if not torch.isfinite(total_loss):
-            raise RuntimeError(
-                f"Non-finite loss at step {step}: total={total_loss.item()} "
-                f"main={main_loss.item() if main_loss is not None else None} "
-                f"mtp={mtp_loss.item() if mtp_loss is not None else None}. "
-                f"lr={optimizer.param_groups[0]['lr']}, batch={X.shape}. Stopping run."
-            )
-
-        loss.backward()
-        tokens_processed += X.numel()
-
-        if ((step + 1) % gradient_accumulation_steps == 0) or (step + 1 == max_iters):
-            bad_grad = next(
-                (n for n, p in model.named_parameters()
-                 if p.grad is not None and not torch.isfinite(p.grad).all()),
-                None,
-            )
-            if bad_grad is not None:
+            # Part 29: never silently train through NaN/Inf.
+            if not torch.isfinite(total_loss):
                 raise RuntimeError(
-                    f"Non-finite gradient in '{bad_grad}' at step {step}. Stopping run."
+                    f"Non-finite loss at step {step}: total={total_loss.item()} "
+                    f"main={main_loss.item() if main_loss is not None else None} "
+                    f"mtp={mtp_loss.item() if mtp_loss is not None else None}. "
+                    f"lr={optimizer.param_groups[0]['lr']}, batch={X.shape}. Stopping run."
                 )
-            optimizer.step()
-            optimizer.zero_grad(set_to_none=True)
 
-        if step < warmup_steps:
-            lr = learning_rate * (step + 1) / max(1, warmup_steps)
-        else:
-            progress = (step - warmup_steps) / max(1, (max_iters - warmup_steps))
-            lr = min_lr + (learning_rate - min_lr) * 0.5 * (1 + math.cos(math.pi * progress))
-        for param_group in optimizer.param_groups:
-            param_group["lr"] = lr
+            loss.backward()
+            tokens_processed += X.numel()
 
-        if wandb:
-            wandb.log({
-                "step": step, "total_loss": total_loss.item(), "main_loss": main_loss.item(),
-                "mtp_loss": mtp_loss.item() if mtp_loss is not None else None, "learning_rate": lr,
-            })
+            if ((step + 1) % gradient_accumulation_steps == 0) or (step + 1 == max_iters):
+                bad_grad = next(
+                    (n for n, p in model.named_parameters()
+                     if p.grad is not None and not torch.isfinite(p.grad).all()),
+                    None,
+                )
+                if bad_grad is not None:
+                    raise RuntimeError(
+                        f"Non-finite gradient in '{bad_grad}' at step {step}. Stopping run."
+                    )
+                optimizer.step()
+                optimizer.zero_grad(set_to_none=True)
+
+            if step < warmup_steps:
+                lr = learning_rate * (step + 1) / max(1, warmup_steps)
+            else:
+                progress = (step - warmup_steps) / max(1, (max_iters - warmup_steps))
+                lr = min_lr + (learning_rate - min_lr) * 0.5 * (1 + math.cos(math.pi * progress))
+            for param_group in optimizer.param_groups:
+                param_group["lr"] = lr
+
+            if wandb:
+                wandb.log({
+                    "step": step, "total_loss": total_loss.item(), "main_loss": main_loss.item(),
+                    "mtp_loss": mtp_loss.item() if mtp_loss is not None else None, "learning_rate": lr,
+                })
+        except Exception as e:
+            notify_training_failed(step, e)
+            raise
 
     # Final measured losses before saving the last checkpoint.
     losses = estimate_loss(model, loaders, config, eval_iters, batch_size,
@@ -311,6 +318,8 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
         model, optimizer, config, preset, max_iters, last_train_loss, last_val_loss,
         best_val_loss, seed, tokens_processed, device,
     )
+    notify_checkpoint_saved(max_iters, max_iters, last_train_loss, last_val_loss,
+                             best_val_loss, tokens_processed, ckpt_path)
     elapsed = time.time() - run_start
     print(f"Training completed in {elapsed:.0f}s | tokens processed: {tokens_processed:,}")
     print(f"Final train loss: {last_train_loss:.4f} | Final val loss: {last_val_loss:.4f}")
