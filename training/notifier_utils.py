@@ -1,15 +1,17 @@
-"""Email notifications for long-running training jobs (e.g. the Kaggle
-financial_poc run, which spans many hours/sessions unattended).
+"""Email notifications for long-running training jobs (e.g. the financial_poc
+run, which spans many hours/sessions unattended, on either Kaggle or Colab).
 
 Credentials are never hardcoded and never read from a plain env var as the
-primary path - they come from Kaggle Secrets (Notebook -> Add-ons ->
-Secrets), fetched at send-time via kaggle_secrets.UserSecretsClient so they
-never appear in the notebook's saved source or output. An environment
-variable fallback exists only so this module can be unit-tested / run
-locally off Kaggle; it is not the intended production path.
+primary path - they come from the host platform's own secrets vault (Kaggle
+Secrets via kaggle_secrets.UserSecretsClient, or Colab Secrets via
+google.colab.userdata), fetched at send-time so they never appear in the
+notebook's saved source or output. An environment variable fallback exists
+only so this module can be unit-tested / run locally off both platforms; it
+is not the intended production path.
 
-Required Kaggle Secrets (attach these to the notebook before relying on
-this module):
+Required secrets (attach these under the notebook's secrets panel - Kaggle:
+Add-ons -> Secrets; Colab: the key icon in the left sidebar - before relying
+on this module):
   NOTIFIER_EMAIL_ADDRESS  - sending account, e.g. a Gmail address
   NOTIFIER_EMAIL_PASSWORD - an app password for that account, NOT its
                             normal login password (Gmail requires 2FA to
@@ -34,13 +36,10 @@ def _get_secret(name: str) -> str:
     try:
         from kaggle_secrets import UserSecretsClient
     except ImportError:
-        client = None
+        pass
     else:
-        client = UserSecretsClient()
-
-    if client is not None:
         try:
-            return client.get_secret(name)
+            return UserSecretsClient().get_secret(name)
         except Exception as e:
             raise RuntimeError(
                 f"Kaggle secret '{name}' could not be read ({e}). Attach it under "
@@ -48,12 +47,27 @@ def _get_secret(name: str) -> str:
                 f"access if it already exists in your account)."
             ) from e
 
+    try:
+        from google.colab import userdata
+    except ImportError:
+        pass
+    else:
+        try:
+            return userdata.get(name)
+        except Exception as e:
+            raise RuntimeError(
+                f"Colab secret '{name}' could not be read ({e}). Add it under "
+                f"this notebook's left sidebar -> Secrets (key icon), and grant "
+                f"this notebook access if it already exists."
+            ) from e
+
     value = os.environ.get(name)
     if value:
         return value
     raise RuntimeError(
-        f"Secret '{name}' not found: kaggle_secrets isn't importable (not running "
-        f"on Kaggle) and no '{name}' environment variable is set for local testing."
+        f"Secret '{name}' not found: neither kaggle_secrets nor google.colab.userdata "
+        f"is importable (not running on Kaggle or Colab) and no '{name}' environment "
+        f"variable is set for local testing."
     )
 
 
