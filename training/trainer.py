@@ -70,10 +70,29 @@ def runtime_info(device):
 
 
 def save_checkpoint(model, optimizer, config, preset, step, train_loss, val_loss, best_val_loss,
-                     seed, tokens_processed=0, device="cpu"):
-    os.makedirs(CHECKPOINTS_DIR, exist_ok=True)
-    ckpt_path = os.path.join(CHECKPOINTS_DIR, f"checkpoint_{step}.pt")
-    meta_path = os.path.join(CHECKPOINTS_DIR, f"checkpoint_{step}.json")
+                     seed, tokens_processed=0, device="cpu", checkpoints_dir=None,
+                     protect_paths=()):
+    """checkpoints_dir lets a continuation run write to its own directory
+    instead of checkpoints/base/, so a recovery run can never land on top of
+    the known-good checkpoint it is being recovered from.
+
+    protect_paths is a belt-and-braces guard: if the path about to be written
+    resolves to one of these, refuse rather than overwrite. Filenames are
+    keyed on step number so a collision already requires writing at the exact
+    resumed step, but "already unlikely" is not the same as "cannot happen",
+    and the file this protects is the only good artifact in the project."""
+    target_dir = checkpoints_dir or CHECKPOINTS_DIR
+    os.makedirs(target_dir, exist_ok=True)
+    ckpt_path = os.path.join(target_dir, f"checkpoint_{step}.pt")
+    meta_path = os.path.join(target_dir, f"checkpoint_{step}.json")
+
+    protected = {os.path.realpath(p) for p in protect_paths if p}
+    if os.path.realpath(ckpt_path) in protected:
+        raise RuntimeError(
+            f"Refusing to overwrite protected checkpoint {ckpt_path}. This is the "
+            f"known-good recovery checkpoint; the run should be writing to a "
+            f"separate continuation directory."
+        )
 
     # Unwrap DataParallel so the saved state_dict has the same key names
     # (no "module." prefix) whether the run used 1 or several GPUs - keeps
@@ -143,7 +162,8 @@ def load_checkpoint(path, model, optimizer=None):
 def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: bool = False,
                  shards_root: str = os.path.join("data", "shards"), seed: int = 42,
                  max_steps_override: int = None, eval_interval_override: int = None,
-                 batch_size_override: int = None):
+                 batch_size_override: int = None, checkpoints_dir: str = None,
+                 lr_horizon_override: int = None, divergence_val_threshold: float = None):
     """max_steps_override/eval_interval_override/batch_size_override let a
     caller run a short smoke test against a preset's real seq_len/
     dataset_mix without editing the preset yaml. max_steps_override is the
@@ -164,6 +184,27 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     dataset_mix = preset["dataset_mix"]
     seq_len = preset.get("seq_len")  # None -> use full config.block_size
 
+    # ---- Continuation-training (resume) stability controls -------------
+    # A learning rate that is correct for training FROM SCRATCH is not
+    # automatically correct for continuing an already-converged checkpoint.
+    # A fresh model has large, well-conditioned gradients and sits far from
+    # any minimum; a converged one sits in a sharp minimum and a large LR
+    # ejects it. Measured on this project: resuming checkpoint_16000
+    # (val 6.07) at peak lr=3e-4 diverged smoothly to val 53.90 by step
+    # 20,000, with NO NaN/Inf at any point - ordinary gradient-descent
+    # blowup, not a numerical fault.
+    #
+    # So a resume reads its LR from preset["continuation"] when present,
+    # leaving the from-scratch schedule above untouched for fresh runs.
+    is_continuation = resume is not None
+    continuation = preset.get("continuation") or {}
+    grad_clip = float(preset.get("grad_clip", 1.0))
+    if is_continuation and continuation:
+        learning_rate = float(continuation.get("learning_rate", learning_rate))
+        min_lr = float(continuation.get("min_lr", min_lr))
+        warmup_steps = int(continuation.get("warmup_steps", warmup_steps))
+        grad_clip = float(continuation.get("grad_clip", grad_clip))
+
     device = detect_device()
     device_type = "cuda" if device == "cuda" else "cpu"
     ctx, dtype = build_context(device_type if device == "cuda" else "cpu")
@@ -173,6 +214,24 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     print(f"Preset: {preset_name} | device: {device} | dtype: {dtype}")
     print(f"batch_size={batch_size} seq_len={effective_seq_len} "
           f"(model block_size={config.block_size}) grad_accum={gradient_accumulation_steps}")
+
+    # GradScaler is ONLY correct for float16. bfloat16 has the same exponent
+    # range as float32, so it does not need loss scaling, and float32 needs
+    # none either - enabling it there would be wrong, not merely wasteful.
+    # build_context() already picked the dtype from compute capability, so
+    # gate on its answer rather than re-deriving it.
+    use_amp_scaler = (dtype == "float16")
+    scaler = torch.amp.GradScaler("cuda", enabled=use_amp_scaler)
+    print(f"grad_clip={grad_clip} | GradScaler enabled={scaler.is_enabled()} "
+          f"(dtype={dtype}; scaler applies to float16 only)")
+    if is_continuation:
+        print(f"CONTINUATION run: peak_lr={learning_rate:.3e} min_lr={min_lr:.3e} "
+              f"warmup_steps={warmup_steps}"
+              + (" (from preset['continuation'])" if continuation else
+                 " (no 'continuation' block in preset - using the from-scratch LR!)"))
+    else:
+        print(f"FROM-SCRATCH run: peak_lr={learning_rate:.3e} min_lr={min_lr:.3e} "
+              f"warmup_steps={warmup_steps}")
 
     wandb = None
     if use_wandb:
@@ -210,6 +269,22 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
         print(f"Resumed from {resume} at step {start_step} "
               f"(best_val_loss={best_val_loss}, tokens_processed={tokens_processed:,})")
 
+        # torch.optim.Optimizer.load_state_dict() restores param_groups, and
+        # that includes the 'lr' the checkpoint was saved with - so the line
+        # above silently reinstates the OLD run's learning rate over the one
+        # AdamW was just constructed with. There is no torch LR scheduler in
+        # this trainer (the schedule is the plain lr_at_step() function
+        # below, which holds no state), so the optimizer's param_groups are
+        # the only place a stale LR can hide. Overwrite it explicitly and say
+        # so, rather than relying on the loop's first assignment to correct
+        # it a step later.
+        restored_lr = optimizer.param_groups[0].get("lr")
+        for param_group in optimizer.param_groups:
+            param_group["lr"] = learning_rate
+        print(f"Optimizer state restored (Adam moments kept). LR carried in that "
+              f"state was {restored_lr:.3e}; overridden to this run's "
+              f"{learning_rate:.3e}.")
+
     if max_steps_override is not None:
         max_iters = start_step + int(max_steps_override)
         print(f"max_steps_override={max_steps_override}: running steps "
@@ -221,12 +296,24 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     else:
         max_iters = int(preset["max_steps"])
 
+    # The cosine horizon. Normally this is just max_iters, but a SHORT
+    # stability test needs to be told the real long-run horizon, otherwise it
+    # silently tests the wrong learning rate: shortening max_iters compresses
+    # the cosine, so a 1,000-step probe of a 495,700-step schedule would run
+    # at ~1.02e-5 instead of the intended ~3.0e-5 and "pass" without ever
+    # exercising the LR the real run would use.
+    lr_horizon = int(lr_horizon_override) if lr_horizon_override is not None else max_iters
+    if lr_horizon_override is not None:
+        print(f"lr_horizon_override={lr_horizon}: the LR schedule is computed against "
+              f"this horizon while the run itself stops at step {max_iters}, so a short "
+              f"probe sees the same LR the full run would.")
+
     def base_lr_at(step):
         """The preset's own warmup-then-cosine schedule, as a function of
         absolute step."""
         if step < warmup_steps:
             return learning_rate * (step + 1) / max(1, warmup_steps)
-        progress = (step - warmup_steps) / max(1, (max_iters - warmup_steps))
+        progress = (step - warmup_steps) / max(1, (lr_horizon - warmup_steps))
         return min_lr + (learning_rate - min_lr) * 0.5 * (1 + math.cos(math.pi * progress))
 
     # Re-warm the learning rate after a resume.
@@ -271,6 +358,15 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     model.train()
     last_train_loss = None
     last_val_loss = None
+    # Stability telemetry - reported on every eval line so a run can be
+    # judged from the Kaggle log alone, without re-deriving it afterwards.
+    MAX_CONSECUTIVE_SKIPS = 25
+    consecutive_skips = 0
+    nonfinite_grad_events = 0
+    clipped_updates = 0
+    total_updates = 0
+    last_grad_norm_before = float("nan")
+    last_grad_norm_after = float("nan")
     run_start = time.time()
     last_log_time = run_start
     last_log_tokens = tokens_processed
@@ -285,19 +381,52 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
                 now = time.time()
                 interval_tok_s = (tokens_processed - last_log_tokens) / max(now - last_log_time, 1e-9)
                 last_log_time, last_log_tokens = now, tokens_processed
+                gpu_mem = (f"{torch.cuda.max_memory_allocated() / 1024 ** 3:.2f}GiB"
+                           if device_type == "cuda" else "n/a")
                 print(f"step {step}: train {last_train_loss:.4f}, val {last_val_loss:.4f} | "
+                      f"lr {optimizer.param_groups[0]['lr']:.3e} | "
+                      f"grad_norm {last_grad_norm_before:.3f}->{last_grad_norm_after:.3f} "
+                      f"(clipped {clipped_updates}/{total_updates}) | "
+                      f"nonfinite {nonfinite_grad_events} | scale {scaler.get_scale():.0f} | "
+                      f"gpu_mem {gpu_mem} | "
                       f"tokens {tokens_processed:,} | {interval_tok_s:.0f} tok/s | "
                       f"elapsed {elapsed:.0f}s")
                 if wandb:
                     wandb.log({"step": step, "train_loss": last_train_loss, "val_loss": last_val_loss,
                                 "tokens_processed": tokens_processed})
 
+                # Stop a stability probe the moment it is clearly diverging,
+                # rather than paying for the whole budget to confirm it. The
+                # previous run took ~52 GPU-minutes to reach val 53.90 when
+                # the answer was already obvious by val 11.43 at step 16500.
+                if (divergence_val_threshold is not None
+                        and last_val_loss > divergence_val_threshold):
+                    raise RuntimeError(
+                        f"STABILITY TEST FAILED: val loss {last_val_loss:.4f} at step "
+                        f"{step} exceeded the divergence threshold "
+                        f"{divergence_val_threshold:.4f}. Stopping early to preserve GPU "
+                        f"quota. Do NOT start a long run; lower the continuation "
+                        f"learning_rate (currently {learning_rate:.3e}) and retest."
+                    )
+
                 if last_val_loss < best_val_loss:
                     best_val_loss = last_val_loss
                     ckpt_path, _ = save_checkpoint(model, optimizer, config, preset, step, last_train_loss,
-                                                    last_val_loss, best_val_loss, seed, tokens_processed, device)
+                                                    last_val_loss, best_val_loss, seed, tokens_processed, device,
+                                                    checkpoints_dir=checkpoints_dir,
+                                                    protect_paths=(resume,))
                     notify_checkpoint_saved(step, max_iters, last_train_loss, last_val_loss,
                                              best_val_loss, tokens_processed, ckpt_path)
+
+            # Set this step's LR BEFORE any optimizer.step() consumes it.
+            # This assignment used to sit AFTER optimizer.step(), so every
+            # update ran on the previous iteration's learning rate - an
+            # off-by-one that is invisible on a smooth schedule but actively
+            # wrong during a warmup ramp, which is exactly when the LR is
+            # changing fastest.
+            lr = lr_at_step(step)
+            for param_group in optimizer.param_groups:
+                param_group["lr"] = lr
 
             X, y = get_batch(loaders, "train", config, batch_size, device_type, device, seq_len)
             with ctx:
@@ -318,25 +447,60 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
                     f"lr={optimizer.param_groups[0]['lr']}, batch={X.shape}. Stopping run."
                 )
 
-            loss.backward()
+            # scaler.scale() is the identity when the scaler is disabled
+            # (bf16/fp32), so this one path is correct for every precision.
+            scaler.scale(loss).backward()
             tokens_processed += X.numel()
 
             if ((step + 1) % gradient_accumulation_steps == 0) or (step + 1 == max_iters):
-                bad_grad = next(
-                    (n for n, p in model.named_parameters()
-                     if p.grad is not None and not torch.isfinite(p.grad).all()),
-                    None,
+                # Order matters and is the documented AMP recipe:
+                #   unscale_ -> clip_grad_norm_ -> scaler.step -> scaler.update
+                # Clipping BEFORE unscaling would clip the loss-scaled
+                # gradients, i.e. clip against a threshold that is ~65536x
+                # off and does nothing useful.
+                scaler.unscale_(optimizer)
+                # clip_grad_norm_ returns the total norm measured BEFORE
+                # clipping, which is the number worth logging - the norm
+                # after is just min(before, grad_clip).
+                grad_norm_before = float(
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
                 )
-                if bad_grad is not None:
-                    raise RuntimeError(
-                        f"Non-finite gradient in '{bad_grad}' at step {step}. Stopping run."
-                    )
-                optimizer.step()
-                optimizer.zero_grad(set_to_none=True)
+                grad_norm_after = min(grad_norm_before, grad_clip)
 
-            lr = lr_at_step(step)
-            for param_group in optimizer.param_groups:
-                param_group["lr"] = lr
+                if not math.isfinite(grad_norm_before):
+                    nonfinite_grad_events += 1
+                    if scaler.is_enabled():
+                        # Expected occasionally under float16: unscale_ has
+                        # already flagged the overflow, so scaler.step() will
+                        # skip this update and scaler.update() will back the
+                        # scale off. Only a run that NEVER recovers is fatal.
+                        consecutive_skips += 1
+                        if consecutive_skips > MAX_CONSECUTIVE_SKIPS:
+                            raise RuntimeError(
+                                f"{consecutive_skips} consecutive non-finite gradients at "
+                                f"step {step} (loss scale {scaler.get_scale()}). The scaler "
+                                f"is not recovering. Stopping run."
+                            )
+                    else:
+                        # No scaler to absorb it - keep the original
+                        # never-train-through-NaN/Inf guarantee.
+                        raise RuntimeError(
+                            f"Non-finite gradient norm at step {step} with the GradScaler "
+                            f"disabled (dtype={dtype}). Stopping run."
+                        )
+                else:
+                    consecutive_skips = 0
+                    last_grad_norm_before = grad_norm_before
+                    last_grad_norm_after = grad_norm_after
+                    if grad_norm_before > grad_clip:
+                        clipped_updates += 1
+                    total_updates += 1
+
+                # No-op if unscale_ found inf/NaN; a plain optimizer.step()
+                # when the scaler is disabled.
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad(set_to_none=True)
 
             if wandb:
                 wandb.log({
@@ -356,6 +520,7 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     ckpt_path, meta_path = save_checkpoint(
         model, optimizer, config, preset, max_iters, last_train_loss, last_val_loss,
         best_val_loss, seed, tokens_processed, device,
+        checkpoints_dir=checkpoints_dir, protect_paths=(resume,),
     )
     notify_checkpoint_saved(max_iters, max_iters, last_train_loss, last_val_loss,
                              best_val_loss, tokens_processed, ckpt_path)

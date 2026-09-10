@@ -58,9 +58,49 @@ batch_size: 4
 seq_len: 1024
 gradient_accumulation_steps: 32
 
+# FROM-SCRATCH schedule. These three are correct for training this model
+# from random init and are what produced checkpoint_16000 (val 6.07). They
+# are deliberately NOT used when resuming - see the continuation block below.
 learning_rate: 3.0e-4
 warmup_steps: 500
 min_lr: 1.0e-5
+
+# Max gradient norm, applied after unscaling and before the optimizer step.
+# The trainer had no clipping at all until the divergence documented below,
+# so nothing bounded an update once the loss started climbing.
+grad_clip: 1.0
+
+# ---- CONTINUATION (resume) SCHEDULE -------------------------------------
+# training/trainer.py reads this block INSTEAD of learning_rate/min_lr/
+# warmup_steps whenever resume is not None. It exists because a peak LR that
+# is right for a random-init model is wrong for an already-converged one: a
+# fresh model has large, well-conditioned gradients and sits far from any
+# minimum, while a converged model sits in a sharp one and a large LR ejects
+# it.
+#
+# Evidence, measured on this project rather than assumed - resuming
+# checkpoint_16000 (train 5.31 / val 6.07) at the from-scratch peak of
+# 3.0e-4 diverged monotonically:
+#     step 16500  train 10.85  val 11.43
+#     step 17000  train 19.92  val 20.01
+#     step 18000  train 29.60  val 29.65
+#     step 19000  train 33.99  val 33.88
+#     step 20000  train 53.14  val 53.90   <- run cancelled here
+# For reference this model's random-init loss is ~14.1, so it was worse than
+# untrained by step 17000. No NaN or Inf occurred at any point and the
+# gradient norms stayed finite - this was ordinary gradient-descent blowup
+# from too-large steps, not a numerical/fp16 fault. Adding a 500-step warmup
+# ramp helped (10.85 instead of 17.71 at step 16500) but only softened the
+# approach to the same unusable LR, so the peak itself has to come down.
+#
+# 3.0e-5 is a 10x reduction and the conservative starting point. If a short
+# stability run still climbs, drop to 1.0e-5 (equal to min_lr, i.e. an
+# effectively flat schedule) before spending any long-run GPU quota.
+continuation:
+  learning_rate: 3.0e-5
+  min_lr: 1.0e-5
+  warmup_steps: 500
+  grad_clip: 1.0
 
 eval_interval: 500
 eval_iters: 100
