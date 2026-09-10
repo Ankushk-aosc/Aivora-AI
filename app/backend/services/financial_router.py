@@ -149,33 +149,96 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
 def extract_financial_values(query: str) -> dict:
     """Pull named numeric values out of a query, e.g.
     "Revenue is ₹500 crore and EBITDA is ₹100 crore" ->
-    {"revenue": 500.0, "ebitda": 100.0}
+    {"revenue": 5000000000.0, "ebitda": 1000000000.0}
 
     Returns only what was actually found; never guesses a missing value.
     Crore/lakh/million/billion multipliers are applied when present.
     """
     values = {}
-    pattern = re.compile(
-        r"(revenue|ebitda|gross profit|net income|operating income|expenses|costs|profit|equity|"
-        r"total assets|assets|liabilities|shares outstanding|shares|price|debt|"
-        r"capex|capital expenditure|operating cash flow|cash flow)"
-        r"\s*(?:is|are|=|:|of|was|were)?\s*"
-        r"[₹$€£]?\s*([\d,]+(?:\.\d+)?)\s*"
-        r"(crore|cr|lakh|million|mn|bn|billion|thousand|k)?",
-        re.IGNORECASE,
-    )
     multipliers = {
         "crore": 1e7, "cr": 1e7, "lakh": 1e5,
-        "million": 1e6, "mn": 1e6, "bn": 1e9, "billion": 1e9,
+        "million": 1e6, "mn": 1e6, "m": 1e6,
+        "billion": 1e9, "bn": 1e9, "b": 1e9,
         "thousand": 1e3, "k": 1e3,
     }
-    # Synonyms collapse onto the calculator's canonical argument name.
-    label_aliases = {"costs": "expenses"}
-    for label, number, scale in pattern.findall(query):
+    label_aliases = {
+        "costs": "expenses",
+        "cost_of_goods_sold": "cogs",
+        "opex": "operating_expenses",
+        "shareholder_equity": "equity",
+        "shareholders_equity": "equity",
+        "average_shareholder_equity": "equity",
+        "total_debt": "debt",
+        "total_assets": "total_assets",
+        "capital_expenditure": "capex",
+        "beginning_value": "beginning_value",
+        "initial_value": "beginning_value",
+        "ending_value": "ending_value",
+        "final_value": "ending_value",
+    }
+
+    # Pattern A: <Label> ... <Number> <Scale>
+    pattern_label_first = re.compile(
+        r"(revenue|ebitda|gross profit|net income|operating income|operating expenses|expenses|costs|cogs|cost of goods sold|interest expense|profit|shareholder equity|shareholders equity|average shareholder equity|equity|"
+        r"total assets|assets|liabilities|current assets|current liabilities|shares outstanding|shares|price|total debt|debt|"
+        r"capex|capital expenditure|operating cash flow|cash flow|initial value|beginning value|final value|ending value|prior revenue|current revenue)"
+        r"\s*(?:is|are|=|:|of|was|were|has)?\s*"
+        r"[₹$€£]?\s*([\d,]+(?:\.\d+)?)\s*"
+        r"(crore|cr|lakh|million|mn|billion|bn|thousand|k)?",
+        re.IGNORECASE,
+    )
+
+    for label, number, scale in pattern_label_first.findall(query):
+        number_str = number.replace(",", "").strip()
+        if not number_str:
+            continue
         key = label.lower().strip().replace(" ", "_")
         key = label_aliases.get(key, key)
-        amount = float(number.replace(",", ""))
-        if scale:
+        amount = float(number_str)
+        if scale and scale.lower() in multipliers:
             amount *= multipliers[scale.lower()]
         values.setdefault(key, amount)
+
+    # Pattern B: <Number> <Scale> in/of <Label> (e.g., "15 million in net income")
+    pattern_number_first = re.compile(
+        r"[₹$€£]?\s*([\d,]+(?:\.\d+)?)\s*"
+        r"(crore|cr|lakh|million|mn|billion|bn|thousand|k)?\s*"
+        r"(?:in|of|for|as)?\s*"
+        r"(revenue|ebitda|gross profit|net income|net profit|operating income|operating expenses|expenses|costs|cogs|cost of goods sold|interest expense|profit|shareholder equity|shareholders equity|equity|total debt|debt|capex|assets|liabilities)",
+        re.IGNORECASE,
+    )
+
+    for number, scale, label in pattern_number_first.findall(query):
+        number_str = number.replace(",", "").strip()
+        if not number_str:
+            continue
+        key = label.lower().strip().replace(" ", "_")
+        key = label_aliases.get(key, key)
+        amount = float(number_str)
+        if scale and scale.lower() in multipliers:
+            amount *= multipliers[scale.lower()]
+        values.setdefault(key, amount)
+
+    # Pattern C: Historical revenue growth (e.g., "revenue was 80 million last year and 100 million this year")
+    growth_match = re.search(
+        r"revenue\s+was\s+[₹$€£]?\s*([\d,]+(?:\.\d+)?)\s*(crore|cr|lakh|million|mn|bn|billion|k)?\s*(?:last year|prior year|previously|in year 1).*?(?:and|to)\s+[₹$€£]?\s*([\d,]+(?:\.\d+)?)\s*(crore|cr|lakh|million|mn|bn|billion|k)?\s*(?:this year|current year|now|in year 2)",
+        query, re.IGNORECASE,
+    )
+    if growth_match:
+        p_num, p_scale, c_num, c_scale = growth_match.groups()
+        p_amt = float(p_num.replace(",", ""))
+        if p_scale and p_scale.lower() in multipliers:
+            p_amt *= multipliers[p_scale.lower()]
+        c_amt = float(c_num.replace(",", ""))
+        if c_scale and c_scale.lower() in multipliers:
+            c_amt *= multipliers[c_scale.lower()]
+        values["prior_revenue"] = p_amt
+        values["current_revenue"] = c_amt
+        values["revenue"] = c_amt
+
+    # Pattern D: Years / periods for CAGR (e.g., "over 5 years")
+    years_match = re.search(r"(?:over|in|for)\s*([\d]+(?:\.\d+)?)\s*(?:years|yrs|periods)", query, re.IGNORECASE)
+    if years_match:
+        values["years"] = float(years_match.group(1))
+
     return values

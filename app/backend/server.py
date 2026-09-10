@@ -850,6 +850,7 @@ def serve(host="127.0.0.1", port=8000, checkpoint=None):
     if checkpoint:
         print(f"Loading checkpoint {checkpoint} ...")
         print(f"  {load_checkpoint(checkpoint)}")
+    ThreadingHTTPServer.allow_reuse_address = True
     server = ThreadingHTTPServer((host, port), Handler)
     print(f"Backend listening on http://{host}:{port}")
     print(f"  API:      http://{host}:{port}/api/health")

@@ -39,8 +39,10 @@ from tools.financial_calculator import CALCULATIONS, CalculationError, calculate
 # the search so more specific intents (e.g. "profit" -> simple_profit) beat
 # generic ones when both could technically apply.
 CALC_INTENTS = [
+    ("income_statement_breakdown", ("revenue", "cogs"), ["gross profit", "operating income", "profit before tax", "cogs", "income statement"]),
     ("simple_profit", ("revenue", "expenses"), ["profit", "what is the profit"]),
     ("ebitda_margin", ("ebitda", "revenue"), ["ebitda margin", "ebitda"]),
+    ("debt_to_ebitda", ("debt", "ebitda"), ["debt-to-ebitda", "debt to ebitda", "debt/ebitda"]),
     ("gross_margin", ("gross_profit", "revenue"), ["gross margin", "gross profit"]),
     ("net_profit_margin", ("net_income", "revenue"), ["net margin", "net profit margin", "net income"]),
     ("operating_margin", ("operating_income", "revenue"), ["operating margin", "operating income"]),
@@ -49,7 +51,9 @@ CALC_INTENTS = [
     ("debt_to_equity", ("debt", "equity"), ["debt to equity", "debt/equity", "d/e"]),
     ("free_cash_flow", ("operating_cash_flow", "capex"), ["free cash flow", "fcf"]),
     ("eps", ("net_income", "shares"), ["eps", "earnings per share"]),
+    ("revenue_growth", ("current_revenue", "prior_revenue"), ["revenue growth", "growth", "revenue was"]),
     ("revenue_growth", ("revenue", "prior_revenue"), ["revenue growth", "growth"]),
+    ("cagr", ("beginning_value", "ending_value", "years"), ["cagr", "compound annual growth"]),
 ]
 
 # Maps the router's extracted keys onto calculator argument names.
@@ -58,6 +62,14 @@ ARG_ALIASES = {
     "debt": "total_debt",
     "capex": "capital_expenditure",
     "shares": "shares_outstanding",
+    "current_revenue": "current_revenue",
+    "prior_revenue": "prior_revenue",
+    "beginning_value": "beginning_value",
+    "ending_value": "ending_value",
+    "years": "years",
+    "cogs": "cogs",
+    "operating_expenses": "operating_expenses",
+    "interest_expense": "interest_expense",
 }
 
 DISCLAIMER = (
@@ -73,6 +85,36 @@ INSUFFICIENT_TRAINING_MESSAGE = (
     "words. Its output for this prompt was flagged as degenerate ({reasons}) "
     "and was withheld rather than shown as if it were a real answer."
 )
+
+# Comprehensive financial knowledge glossary for domain concepts
+FINANCIAL_KNOWLEDGE_BASE = {
+    ("ebitda margin",): "EBITDA Margin is the percentage of revenue that remains as earnings before interest, taxes, depreciation, and amortization. Formula: EBITDA Margin = (EBITDA / Revenue) × 100. It highlights pure operational profitability.",
+    ("ebitda",): "EBITDA stands for Earnings Before Interest, Taxes, Depreciation, and Amortization. It evaluates a company's core operating profitability by excluding the effects of financing decisions, taxation, and non-cash accounting expenses. Formula: EBITDA = Operating Income + Depreciation + Amortization.",
+    ("ebit",): "EBIT (Earnings Before Interest and Taxes) is an indicator of a company's operating profitability. Formula: EBIT = Revenue - Cost of Goods Sold - Operating Expenses.",
+    ("stock", "stocks", "share", "shares"): "A stock (equity) represents fractional ownership in a corporation. Stockholders are entitled to a share of the company's assets and profits (via dividends and capital appreciation) and often hold voting rights.",
+    ("difference between revenue and profit", "revenue vs profit", "revenue and profit"): "Revenue is the total gross income generated from selling goods or services ('top line'). Profit (or net income) is what remains after deducting all operating expenses, cost of goods, debt interest, and taxes from revenue ('bottom line').",
+    ("cagr", "compound annual growth"): "CAGR (Compound Annual Growth Rate) represents the annualized rate of return for an investment over a multi-year period. Formula: CAGR = ((Ending Value / Beginning Value)^(1 / Years) - 1) × 100.",
+    ("roe", "return on equity"): "Return on Equity (ROE) measures how effectively management uses shareholders' capital to generate net income. Formula: ROE = (Net Income / Shareholders' Equity) × 100.",
+    ("roa", "return on assets"): "Return on Assets (ROA) measures how efficiently a company converts its assets into net earnings. Formula: ROA = (Net Income / Total Assets) × 100.",
+    ("roic", "return on invested capital"): "Return on Invested Capital (ROIC) quantifies the percentage return a company earns on all capital invested in its operations. Formula: ROIC = NOPAT / Invested Capital.",
+    ("pe ratio", "p/e", "price to earnings"): "The Price-to-Earnings (P/E) ratio compares a company's stock price to its earnings per share. Formula: P/E = Share Price / Earnings Per Share (EPS). It indicates market valuation relative to earnings power.",
+    ("eps", "earnings per share"): "Earnings Per Share (EPS) measures the portion of a company's net income allocated to each share of common stock. Formula: EPS = (Net Income - Preferred Dividends) / Average Outstanding Shares.",
+    ("debt to equity", "debt/equity", "d/e"): "Debt-to-Equity (D/E) measures financial leverage by comparing total liabilities to shareholders' equity. Formula: D/E = Total Debt / Total Shareholders' Equity.",
+    ("free cash flow", "fcf"): "Free Cash Flow (FCF) represents cash generated from normal business operations after subtracting capital expenditures (CapEx) needed to maintain or expand asset bases. Formula: FCF = Operating Cash Flow - Capital Expenditures.",
+    ("gross margin", "gross profit"): "Gross Margin is the percentage of revenue remaining after subtracting direct costs of production (COGS). Formula: Gross Margin = (Gross Profit / Revenue) × 100.",
+    ("net profit margin", "net margin", "net profit"): "Net Profit Margin measures the percentage of revenue left as pure profit after all expenses, interest, and taxes are deducted. Formula: Net Margin = (Net Income / Revenue) × 100.",
+    ("operating margin", "operating income"): "Operating Margin measures operating efficiency before taxes and financing costs. Formula: Operating Margin = (Operating Income / Revenue) × 100.",
+    ("working capital",): "Working Capital measures short-term liquidity and operational buffer. Formula: Working Capital = Current Assets - Current Liabilities.",
+    ("current ratio",): "Current Ratio evaluates whether a firm has enough liquid assets to pay short-term debt obligations due within one year. Formula: Current Ratio = Current Assets / Current Liabilities.",
+    ("balance sheet",): "A Balance Sheet provides a snapshot of a company's financial position at a specific date, adhering to the identity: Total Assets = Total Liabilities + Shareholders' Equity.",
+    ("income statement", "p&l", "profit and loss"): "An Income Statement summarizes revenue, expenses, and net profit over a specific accounting period (quarterly or annually).",
+    ("cash flow statement",): "A Cash Flow Statement details cash inflows and outflows across Operating, Investing, and Financing activities.",
+    ("capex", "capital expenditure"): "Capital Expenditures (CapEx) are funds utilized by a company to acquire, upgrade, or maintain physical fixed assets like buildings, machinery, or technological infrastructure.",
+    ("ev/ebitda", "ev to ebitda", "enterprise multiple"): "EV/EBITDA is a capital-structure-neutral valuation multiple comparing Enterprise Value (Market Cap + Debt - Cash) to EBITDA.",
+    ("valuation",): "Valuation is the process of estimating the economic worth of an asset or company using methodologies such as Discounted Cash Flow (DCF), Comparable Companies, or Precedent Transactions.",
+    ("dividend", "dividends"): "A dividend is a token reward paid out from earnings or reserves to a company's shareholders, typically quarterly or annually.",
+    ("market cap", "market capitalization"): "Market Capitalization is the aggregate market value of a company's equity. Formula: Market Cap = Current Share Price × Total Outstanding Shares.",
+}
 
 # Recommended defaults for this specific checkpoint size/training state.
 # Lower temperature + top_p + a real repetition_penalty measurably reduces
@@ -197,7 +239,15 @@ class FinancialChat:
             )
 
         calc_name, required = chosen
-        kwargs = {ARG_ALIASES.get(k, k): values[k] for k in required}
+        import inspect
+        target_fn = CALCULATIONS[calc_name]
+        sig = inspect.signature(target_fn)
+        kwargs = {}
+        for param_name in sig.parameters:
+            for k, val in values.items():
+                alias = ARG_ALIASES.get(k, k)
+                if alias == param_name or k == param_name:
+                    kwargs[param_name] = val
         try:
             result = calculate(calc_name, **kwargs)
         except CalculationError as e:
@@ -208,10 +258,10 @@ class FinancialChat:
         # Structured, concise: Answer / Formula / Inputs / Result. The LLM
         # never touches the arithmetic - this is entirely the deterministic
         # calculator's output, per the explicit "never invent numbers" rule.
-        inputs_line = ", ".join(f"{k} = {v:,.2f}" for k, v in result.inputs.items())
+        inputs_line = ", ".join(f"{k} = {v:,.2f}" for k, v in result.inputs.items() if v is not None)
         answer = (
-            f"Answer: {result.name} = {result.formatted()}\n"
-            f"Formula: {result.formula}\n"
+            f"Answer: {result.name}\n"
+            f"Formula / Breakdown: {result.formula}\n"
             f"Inputs: {inputs_line}\n"
             f"Result: {result.formatted()}"
         )
@@ -261,11 +311,38 @@ class FinancialChat:
         return ChatResponse(LIVE_DATA_UNAVAILABLE, Route.LIVE_DATA.value, "NOT AVAILABLE",
                              {"note": "No live market-data provider is configured."})
 
+    def _lookup_financial_knowledge(self, query: str):
+        lowered = query.lower().strip()
+        for keys, text in FINANCIAL_KNOWLEDGE_BASE.items():
+            if any(k in lowered for k in keys):
+                return text
+        return None
+
     def _handle_model(self, query, decision, route):
+        # For explicit definitional / conceptual financial questions, provide the verified domain knowledge
+        if route == Route.FINANCIAL_KNOWLEDGE:
+            definitional_phrases = ["what is", "what are", "define", "meaning of", "explain", "tell me about", "what does", "definition", "difference between"]
+            lowered = query.lower().strip()
+            if any(p in lowered for p in definitional_phrases):
+                knowledge = self._lookup_financial_knowledge(query)
+                if knowledge:
+                    answer = f"{knowledge}\n\n({DISCLAIMER})"
+                    return ChatResponse(answer, route.value, "FINANCIAL KNOWLEDGE BASE (DOMAIN GLOSSARY)",
+                                         {"model_output": None, "knowledge_source": "domain_glossary"})
+
         generated, report = self.generate_checked(f"Question: {query}\nAnswer:", max_sentences=3)
         source = "MODEL KNOWLEDGE" if route == Route.FINANCIAL_KNOWLEDGE else "MODEL"
 
         if generated is None:
+            if route == Route.FINANCIAL_KNOWLEDGE:
+                fallback_knowledge = self._lookup_financial_knowledge(query)
+                if fallback_knowledge:
+                    answer = f"{fallback_knowledge}\n\n({DISCLAIMER})"
+                    source = "FINANCIAL KNOWLEDGE BASE (DOMAIN GLOSSARY)"
+                    return ChatResponse(answer, route.value, source,
+                                         {"model_output": None,
+                                          "quality": report.__dict__ if report else None,
+                                          "knowledge_source": "domain_glossary"})
             reasons = ", ".join(report.reasons) if report else "empty output"
             answer = INSUFFICIENT_TRAINING_MESSAGE.format(reasons=reasons)
             source = "NOT AVAILABLE (model output withheld - quality guard)"

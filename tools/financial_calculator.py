@@ -161,6 +161,33 @@ def debt_to_equity(total_debt: float, shareholders_equity: float) -> CalcResult:
     )
 
 
+def debt_to_ebitda(total_debt: float, ebitda: float) -> CalcResult:
+    _require_nonzero(ebitda, "ebitda")
+    return CalcResult(
+        "Debt/EBITDA", total_debt / ebitda, "x",
+        "Total Debt / EBITDA",
+        {"total_debt": total_debt, "ebitda": ebitda},
+    )
+
+
+def income_statement_breakdown(revenue: float, cogs: float = 0.0,
+                               operating_expenses: float = 0.0,
+                               interest_expense: float = 0.0,
+                               tax_expense: float = 0.0) -> CalcResult:
+    gross_profit = revenue - cogs
+    operating_income = gross_profit - operating_expenses
+    profit_before_tax = operating_income - interest_expense
+    net_income = profit_before_tax - tax_expense
+    gross_margin_pct = (gross_profit / revenue * 100) if revenue else 0.0
+    operating_margin_pct = (operating_income / revenue * 100) if revenue else 0.0
+    return CalcResult(
+        "Income Statement Analysis", net_income, "",
+        f"Gross Profit = {gross_profit:,.2f} ({gross_margin_pct:.1f}% margin), Operating Income = {operating_income:,.2f} ({operating_margin_pct:.1f}% margin), Profit Before Tax (PBT) = {profit_before_tax:,.2f}",
+        {"revenue": revenue, "cogs": cogs, "operating_expenses": operating_expenses,
+         "interest_expense": interest_expense, "tax_expense": tax_expense},
+    )
+
+
 def current_ratio(current_assets: float, current_liabilities: float) -> CalcResult:
     _require_nonzero(current_liabilities, "current_liabilities")
     return CalcResult(
@@ -227,6 +254,8 @@ CALCULATIONS = {
     "roa": roa,
     "roic": roic,
     "debt_to_equity": debt_to_equity,
+    "debt_to_ebitda": debt_to_ebitda,
+    "income_statement_breakdown": income_statement_breakdown,
     "current_ratio": current_ratio,
     "free_cash_flow": free_cash_flow,
     "eps": eps,

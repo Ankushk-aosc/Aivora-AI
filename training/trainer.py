@@ -71,7 +71,7 @@ def runtime_info(device):
 
 def save_checkpoint(model, optimizer, config, preset, step, train_loss, val_loss, best_val_loss,
                      seed, tokens_processed=0, device="cpu", checkpoints_dir=None,
-                     protect_paths=()):
+                     protect_paths=(), effective_hparams=None):
     """checkpoints_dir lets a continuation run write to its own directory
     instead of checkpoints/base/, so a recovery run can never land on top of
     the known-good checkpoint it is being recovered from.
@@ -121,6 +121,13 @@ def save_checkpoint(model, optimizer, config, preset, step, train_loss, val_loss
             "gradient_accumulation_steps": preset.get("gradient_accumulation_steps"),
             "learning_rate": preset.get("learning_rate"),
         },
+        # What the run ACTUALLY used. dataset_config["learning_rate"] above is
+        # the preset's from-scratch value, which is NOT the LR a continuation
+        # run trains at - checkpoint_17000 was trained at 3e-5 but recorded
+        # 3e-4, i.e. the metadata named the exact setting that had destroyed
+        # the model. Record the effective values so a checkpoint is honest
+        # about its own provenance.
+        "effective_hparams": effective_hparams or "Not recorded",
         "train_tokens_budget": preset.get("train_tokens"),
         "validation_tokens_budget": preset.get("validation_tokens"),
         "dataset_manifest": _read_manifest_snapshot(),
@@ -232,6 +239,22 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     else:
         print(f"FROM-SCRATCH run: peak_lr={learning_rate:.3e} min_lr={min_lr:.3e} "
               f"warmup_steps={warmup_steps}")
+
+    def _effective_hparams():
+        """The values this run actually trained with - see save_checkpoint."""
+        return {
+            "is_continuation": is_continuation,
+            "learning_rate": learning_rate,
+            "min_lr": min_lr,
+            "warmup_steps": warmup_steps,
+            "grad_clip": grad_clip,
+            "batch_size": batch_size,
+            "gradient_accumulation_steps": gradient_accumulation_steps,
+            "effective_batch": batch_size * gradient_accumulation_steps,
+            "amp_dtype": dtype,
+            "grad_scaler_enabled": bool(scaler.is_enabled()),
+            "resumed_from": resume,
+        }
 
     wandb = None
     if use_wandb:
@@ -414,7 +437,8 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
                     ckpt_path, _ = save_checkpoint(model, optimizer, config, preset, step, last_train_loss,
                                                     last_val_loss, best_val_loss, seed, tokens_processed, device,
                                                     checkpoints_dir=checkpoints_dir,
-                                                    protect_paths=(resume,))
+                                                    protect_paths=(resume,),
+                                                    effective_hparams=_effective_hparams())
                     notify_checkpoint_saved(step, max_iters, last_train_loss, last_val_loss,
                                              best_val_loss, tokens_processed, ckpt_path)
 
@@ -521,6 +545,7 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
         model, optimizer, config, preset, max_iters, last_train_loss, last_val_loss,
         best_val_loss, seed, tokens_processed, device,
         checkpoints_dir=checkpoints_dir, protect_paths=(resume,),
+        effective_hparams=_effective_hparams(),
     )
     notify_checkpoint_saved(max_iters, max_iters, last_train_loss, last_val_loss,
                              best_val_loss, tokens_processed, ckpt_path)
