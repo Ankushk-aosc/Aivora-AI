@@ -13,6 +13,14 @@ description: "Actual financial specialization experiment."
 # train_tokens/validation_tokens describe the per-run data-prep budget
 # (datasets are freshly re-streamed each run and sampled with replacement
 # across steps), not a hard cap on total steps.
+#
+# NOTE: the ~2.03B figure above assumes 4,096 tokens/step, i.e. batch_size=4
+# on ONE GPU. On a 2-GPU session, cell 9b of the Kaggle notebook scales
+# batch_size to 8, making it 8,192 tokens/step - so 495,700 steps would
+# process ~4.06B tokens, double the intended budget. Reaching ~2.03B on two
+# GPUs means stopping at ~247,850 steps. Neither number is a wall the code
+# enforces; max_steps is the only real stopping condition, so treat the
+# token target as the thing to check when deciding where to stop.
 train_tokens: 121500000
 validation_tokens: 4900000
 max_steps: 495700
@@ -21,11 +29,20 @@ max_steps: 495700
 # the P100 this account is currently being assigned on Kaggle - batch_size
 # 16 and 8 both genuinely OOM at seq_len=1024 on that GPU's ~15.89GiB, only
 # 4 fit cleanly with headroom: 9.16GiB allocated / 10.47GiB reserved).
-# gradient_accumulation_steps raised 8 -> 32 to hold the effective batch
-# size at 128 (4*32, matching the original 16*8=128) that the resumed
-# checkpoint's Adam momentum/variance state was tuned under - no added GPU
-# memory cost or raw tok/s reduction, since it only changes how often
-# optimizer.step() fires, not the per-micro-batch tensor shape.
+# gradient_accumulation_steps raised 8 -> 32, giving an effective batch of
+# 128 (4*32) - no added GPU memory cost or raw tok/s reduction, since it
+# only changes how often optimizer.step() fires, not the per-micro-batch
+# tensor shape.
+#
+# CORRECTION: an earlier version of this comment claimed 128 "matches the
+# effective batch the resumed checkpoint's Adam state was tuned under". That
+# is not what actually happened. checkpoint_16000.json records the run that
+# produced it as batch_size=4, gradient_accumulation_steps=8 - an effective
+# batch of 32, not 128. (It also records gpu_name "Tesla T4", not the P100
+# the batch_size comment above describes; both GPUs have been assigned to
+# this account at different times.) Going 32 -> 128 is a deliberate 4x
+# increase, which is fine and if anything stabilising at a fixed LR - but it
+# is a change, not a preservation, and should be described as one.
 #
 # These two values are the SINGLE-GPU baseline. training/trainer.py wraps
 # the model in nn.DataParallel whenever torch.cuda.device_count() > 1, and

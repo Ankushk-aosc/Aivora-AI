@@ -221,6 +221,49 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     else:
         max_iters = int(preset["max_steps"])
 
+    def base_lr_at(step):
+        """The preset's own warmup-then-cosine schedule, as a function of
+        absolute step."""
+        if step < warmup_steps:
+            return learning_rate * (step + 1) / max(1, warmup_steps)
+        progress = (step - warmup_steps) / max(1, (max_iters - warmup_steps))
+        return min_lr + (learning_rate - min_lr) * 0.5 * (1 + math.cos(math.pi * progress))
+
+    # Re-warm the learning rate after a resume.
+    #
+    # base_lr_at()'s warmup branch is keyed on the ABSOLUTE step, so a run
+    # resumed past warmup_steps got no warmup at all - it jumped straight to
+    # whatever the cosine says at that step. That is harmless when the
+    # schedule is unchanged, but catastrophic when max_steps is raised
+    # between runs, because raising max_steps stretches the cosine and moves
+    # the LR at the resume point back up toward the peak.
+    #
+    # This is not hypothetical: resuming checkpoint_16000 (which finished its
+    # own 16,000-step schedule at min_lr=1e-5) under the raised
+    # max_steps=495700 put step 16000 at 2.993e-4 - a 29.9x jump, applied
+    # with no warmup to a model that had converged to val_loss 6.07. It
+    # diverged immediately, to train 17.71/val 18.69 by step 16500 and
+    # 19.97/19.91 by step 17000 - worse than this model's ~14.1 random-init
+    # loss, and still climbing.
+    #
+    # So: ramp from min_lr up to the scheduled LR over warmup_steps measured
+    # FROM THE RESUME POINT. A fresh run (start_step == 0) is unaffected -
+    # base_lr_at() already warms up from step 0 there.
+    resumed_at = start_step if (resume is not None and start_step > 0) else None
+
+    def lr_at_step(step):
+        scheduled = base_lr_at(step)
+        if resumed_at is None or step >= resumed_at + warmup_steps:
+            return scheduled
+        ramp = (step - resumed_at + 1) / max(1, warmup_steps)
+        return min_lr + (scheduled - min_lr) * ramp
+
+    if resumed_at is not None:
+        print(f"Resume warmup: ramping LR from {min_lr:.3e} to the scheduled "
+              f"{base_lr_at(resumed_at + warmup_steps):.3e} over {warmup_steps} steps "
+              f"({resumed_at} -> {resumed_at + warmup_steps}). Without this the run "
+              f"would start at {base_lr_at(resumed_at):.3e} with no warmup.")
+
     if device == "cuda" and torch.cuda.device_count() > 1:
         print(f"Using DataParallel across {torch.cuda.device_count()} GPUs")
         model = torch.nn.DataParallel(model)
@@ -291,11 +334,7 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
 
-            if step < warmup_steps:
-                lr = learning_rate * (step + 1) / max(1, warmup_steps)
-            else:
-                progress = (step - warmup_steps) / max(1, (max_iters - warmup_steps))
-                lr = min_lr + (learning_rate - min_lr) * 0.5 * (1 + math.cos(math.pi * progress))
+            lr = lr_at_step(step)
             for param_group in optimizer.param_groups:
                 param_group["lr"] = lr
 
