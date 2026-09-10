@@ -67,7 +67,17 @@ class DeepSeekV3(nn.Module):
         elif isinstance(module, nn.Embedding):
             nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
-    def forward(self, idx, targets=None):
+    def forward(self, idx, targets=None, return_logits=True):
+        """return_logits=False drops main_logits from the training-path
+        return value. Every training/eval caller discards it already, and
+        under nn.DataParallel returning it forces a (batch, seq_len,
+        vocab_size) tensor to be gathered from every replica onto GPU 0 -
+        ~825 MB of pure waste per gather at batch_size=8/seq_len=1024/
+        vocab_size=50257 in float16, on top of each replica's own copy.
+        That gather is what makes multi-GPU (e.g. Kaggle's T4 x2, 14.74 GiB
+        per GPU) tighter on memory than the single-GPU case it was tuned
+        on. Default stays True so inference/generation callers, which do
+        need the logits, are unaffected."""
         device = idx.device
         b, t = idx.size()
         assert t <= self.config.block_size
@@ -137,11 +147,12 @@ class DeepSeekV3(nn.Module):
 
         # Combine losses
         if targets is not None:
+            returned_logits = main_logits if return_logits else None
             if mtp_loss is not None:
                 total_loss = main_loss + self.config.mtp_loss_weight * mtp_loss
-                return main_logits, total_loss, main_loss, mtp_loss
+                return returned_logits, total_loss, main_loss, mtp_loss
             else:
-                return main_logits, main_loss, main_loss, None
+                return returned_logits, main_loss, main_loss, None
         else:
             return main_logits[:, [-1], :], None, None, None
 

@@ -26,6 +26,17 @@ max_steps: 495700
 # checkpoint's Adam momentum/variance state was tuned under - no added GPU
 # memory cost or raw tok/s reduction, since it only changes how often
 # optimizer.step() fires, not the per-micro-batch tensor shape.
+#
+# These two values are the SINGLE-GPU baseline. training/trainer.py wraps
+# the model in nn.DataParallel whenever torch.cuda.device_count() > 1, and
+# DataParallel SPLITS batch_size across GPUs - so on a multi-GPU session
+# (Kaggle's GPU T4 x2) a batch_size of 4 would put only 2 sequences on each
+# GPU. Cell 9b of training/kaggle/Aivora_Kaggle_Training.ipynb rescales
+# these on the fly to batch_size = 4 * num_gpus and
+# gradient_accumulation_steps = 32 / num_gpus, which keeps the per-GPU
+# micro-batch at the measured-safe 4 AND the effective batch at 128. Do not
+# hardcode the multi-GPU values here: this file must stay correct for the
+# single-GPU case, since Kaggle assigns P100 or T4 x2 unpredictably.
 batch_size: 4
 seq_len: 1024
 gradient_accumulation_steps: 32

@@ -120,7 +120,7 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
             for _ in range(eval_iters):
                 X, Y = ds.get_batch(batch_size, device, device_type)
                 with ctx:
-                    _, loss, _, _ = model(X, Y)
+                    _, loss, _, _ = model(X, Y, return_logits=False)
                 losses.append(loss.item())
             out[name] = sum(losses) / len(losses)
         model.train()
@@ -140,7 +140,7 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
 
         X, Y = train_ds.get_batch(batch_size, device, device_type)
         with ctx:
-            _, total_loss, _, _ = model(X, Y)
+            _, total_loss, _, _ = model(X, Y, return_logits=False)
 
         if not torch.isfinite(total_loss):
             raise RuntimeError(f"Non-finite loss at instruction step {step}. Stopping run.")

@@ -258,7 +258,7 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
 
             X, y = get_batch(loaders, "train", config, batch_size, device_type, device, seq_len)
             with ctx:
-                _, total_loss, main_loss, mtp_loss = model(X, y)
+                _, total_loss, main_loss, mtp_loss = model(X, y, return_logits=False)
                 # DataParallel gathers each replica's scalar loss into a
                 # (num_gpus,) tensor; .mean() is a no-op on a single GPU/CPU.
                 total_loss = total_loss.mean()

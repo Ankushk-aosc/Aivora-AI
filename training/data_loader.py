@@ -107,7 +107,7 @@ def estimate_loss(model, loaders, config, eval_iters, batch_size, device_type, d
             for k in range(eval_iters):
                 X, Y = get_batch(loaders, key, config, batch_size, device_type, device, seq_len)
                 with ctx:
-                    _, loss, _, _ = model(X, Y)
+                    _, loss, _, _ = model(X, Y, return_logits=False)
                 # .mean() reduces DataParallel's per-GPU gathered losses to
                 # a scalar; identity on a single GPU/CPU.
                 losses[k] = loss.mean().item()
