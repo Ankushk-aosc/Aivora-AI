@@ -141,6 +141,28 @@ def save_checkpoint(model, optimizer, config, preset, step, train_loss, val_loss
     return ckpt_path, meta_path
 
 
+def _prune_checkpoints(target_dir, keep, protect_paths=()):
+    """Delete all but the `keep` highest-step checkpoints in target_dir.
+
+    Each checkpoint is ~1.2 GB and a long run saves on every val improvement,
+    so without this a 10-hour Kaggle run would write far past the 20 GB
+    /kaggle/working limit. Only ever called on a run's own output directory;
+    protected paths are never removed."""
+    import glob
+    import re
+    protected = {os.path.realpath(p) for p in protect_paths if p}
+    found = []
+    for pt in glob.glob(os.path.join(target_dir, "checkpoint_*.pt")):
+        m = re.search(r"checkpoint_(\d+)\.pt$", pt)
+        if m and os.path.realpath(pt) not in protected:
+            found.append((int(m.group(1)), pt))
+    for _, pt in sorted(found)[:-keep]:
+        for f in (pt, pt[:-3] + ".json"):
+            if os.path.exists(f):
+                os.remove(f)
+        print(f"Pruned old checkpoint {pt} (keep_last_checkpoints={keep})")
+
+
 def _read_manifest_snapshot():
     """Embed the dataset provenance (ids, licenses, revisions, token counts)
     that was actually used to build the shards, so a checkpoint is
@@ -170,7 +192,8 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
                  shards_root: str = os.path.join("data", "shards"), seed: int = 42,
                  max_steps_override: int = None, eval_interval_override: int = None,
                  batch_size_override: int = None, checkpoints_dir: str = None,
-                 lr_horizon_override: int = None, divergence_val_threshold: float = None):
+                 lr_horizon_override: int = None, divergence_val_threshold: float = None,
+                 max_train_seconds: float = None, keep_last_checkpoints: int = None):
     """max_steps_override/eval_interval_override/batch_size_override let a
     caller run a short smoke test against a preset's real seq_len/
     dataset_mix without editing the preset yaml. max_steps_override is the
@@ -394,7 +417,17 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     last_log_time = run_start
     last_log_tokens = tokens_processed
 
+    end_step = max_iters
     for step in tqdm(range(start_step, max_iters)):
+        # Wall-clock budget: stop cleanly, save, and let the notebook finish
+        # before Kaggle's session cap kills it (a killed run does not reliably
+        # keep its outputs). Checked before the step's work, so steps
+        # start_step..step-1 are complete and `step` is where a resume begins.
+        if max_train_seconds is not None and time.time() - run_start > max_train_seconds:
+            end_step = step
+            print(f"Time budget of {max_train_seconds:.0f}s reached at step {step}; "
+                  f"stopping and saving (resume will continue from step {step}).")
+            break
         try:
             if step % eval_interval == 0 and step != start_step:
                 losses = estimate_loss(model, loaders, config, eval_iters, batch_size,
@@ -441,6 +474,8 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
                                                     effective_hparams=_effective_hparams())
                     notify_checkpoint_saved(step, max_iters, last_train_loss, last_val_loss,
                                              best_val_loss, tokens_processed, ckpt_path)
+                    if keep_last_checkpoints and checkpoints_dir:
+                        _prune_checkpoints(checkpoints_dir, keep_last_checkpoints, (resume,))
 
             # Set this step's LR BEFORE any optimizer.step() consumes it.
             # This assignment used to sit AFTER optimizer.step(), so every
@@ -542,13 +577,15 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     best_val_loss = min(best_val_loss, last_val_loss)
 
     ckpt_path, meta_path = save_checkpoint(
-        model, optimizer, config, preset, max_iters, last_train_loss, last_val_loss,
+        model, optimizer, config, preset, end_step, last_train_loss, last_val_loss,
         best_val_loss, seed, tokens_processed, device,
         checkpoints_dir=checkpoints_dir, protect_paths=(resume,),
         effective_hparams=_effective_hparams(),
     )
-    notify_checkpoint_saved(max_iters, max_iters, last_train_loss, last_val_loss,
+    notify_checkpoint_saved(end_step, max_iters, last_train_loss, last_val_loss,
                              best_val_loss, tokens_processed, ckpt_path)
+    if keep_last_checkpoints and checkpoints_dir:
+        _prune_checkpoints(checkpoints_dir, keep_last_checkpoints, (resume,))
     elapsed = time.time() - run_start
     print(f"Training completed in {elapsed:.0f}s | tokens processed: {tokens_processed:,}")
     print(f"Final train loss: {last_train_loss:.4f} | Final val loss: {last_val_loss:.4f}")
