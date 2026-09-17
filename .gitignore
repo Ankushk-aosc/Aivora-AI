@@ -39,3 +39,4 @@ __pycache__/
 wandb/
 experiments/ai_observability.jsonl
 checkpoints/continuation_upload/
+checkpoints/continuation_upload_latest/

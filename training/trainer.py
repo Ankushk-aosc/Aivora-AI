@@ -594,4 +594,10 @@ def train_model(preset_name: str = "tiny_debug", resume: str = None, use_wandb: 
     if wandb:
         wandb.finish()
 
+    # Return the bare model, not the multi-GPU wrapper. DataParallel does not
+    # forward attribute access, so callers reading model.config (evaluation,
+    # generation) crashed with "'DataParallel' object has no attribute
+    # 'config'" after a successful 10-hour run.
+    if isinstance(model, torch.nn.DataParallel):
+        model = model.module
     return model, config, ckpt_path

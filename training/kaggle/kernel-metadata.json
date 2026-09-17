@@ -10,7 +10,7 @@
   "enable_internet": "true",
   "dataset_sources": [
     "aoscjkjhh/aivora-ai-financial-poc-checkpoint",
-    "aoscjkjhh/aivora-ai-financial-poc-checkpoint-17000"
+    "aoscjkjhh/aivora-ai-financial-poc-checkpoint-latest"
   ],
   "competition_sources": [],
   "kernel_sources": [],
