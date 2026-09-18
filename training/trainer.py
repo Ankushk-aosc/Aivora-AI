@@ -142,7 +142,8 @@ def save_checkpoint(model, optimizer, config, preset, step, train_loss, val_loss
 
 
 def _prune_checkpoints(target_dir, keep, protect_paths=()):
-    """Delete all but the `keep` highest-step checkpoints in target_dir.
+    """Delete all but the `keep` highest-step checkpoints in target_dir,
+    plus the lowest-val_loss one, which is always kept.
 
     Each checkpoint is ~1.2 GB and a long run saves on every val improvement,
     so without this a 10-hour Kaggle run would write far past the 20 GB
@@ -156,7 +157,23 @@ def _prune_checkpoints(target_dir, keep, protect_paths=()):
         m = re.search(r"checkpoint_(\d+)\.pt$", pt)
         if m and os.path.realpath(pt) not in protected:
             found.append((int(m.group(1)), pt))
-    for _, pt in sorted(found)[:-keep]:
+    # Always also keep the best (lowest val_loss) checkpoint. Keeping only
+    # the newest by step deleted v17's best checkpoint (val 4.73) the moment
+    # the time-budget save (val 4.81) landed.
+    def _val(pt):
+        try:
+            with open(pt[:-3] + ".json") as f:
+                return float(json.load(f)["val_loss"])
+        except (OSError, ValueError, KeyError, TypeError):
+            return float("inf")
+
+    ordered = sorted(found)
+    survivors = {pt for _, pt in ordered[-keep:]}
+    if ordered:
+        survivors.add(min(ordered, key=lambda sp: _val(sp[1]))[1])
+    for _, pt in ordered:
+        if pt in survivors:
+            continue
         for f in (pt, pt[:-3] + ".json"):
             if os.path.exists(f):
                 os.remove(f)
