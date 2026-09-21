@@ -21,9 +21,15 @@ description: "Actual financial specialization experiment."
 # GPUs means stopping at ~247,850 steps. Neither number is a wall the code
 # enforces; max_steps is the only real stopping condition, so treat the
 # token target as the thing to check when deciding where to stop.
+#
+# DECISION (2026-09-21): stop at 247,850, the ~2.03B-token target on 2 GPUs.
+# max_steps is also the cosine horizon, so with 495,700 the LR was still
+# ~2.6e-5 at step 143,635 and every update was being clipped (pre-clip grad
+# norm drifting 1.1 -> 1.4, peak 1.7, across v17/v18). With 247,850 the LR
+# drops to ~1.75e-5 at 143,635 and anneals to min_lr by the end.
 train_tokens: 121500000
 validation_tokens: 4900000
-max_steps: 495700
+max_steps: 247850
 
 # batch_size dropped 16 -> 4 (confirmed via real smoke-test measurements on
 # the P100 this account is currently being assigned on Kaggle - batch_size
