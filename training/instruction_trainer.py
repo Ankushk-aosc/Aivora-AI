@@ -149,7 +149,10 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
                 X, Y = ds.get_batch(batch_size, device, device_type)
                 with ctx:
                     _, loss, _, _ = model(X, Y, return_logits=False)
-                losses.append(loss.item())
+                # DataParallel returns one loss per GPU, so this is a 2-element
+                # tensor on Kaggle's T4 x2 and .item() would raise
+                # "a Tensor with 2 elements cannot be converted to Scalar".
+                losses.append(loss.mean().item() if loss.dim() > 0 else loss.item())
             out[name] = sum(losses) / len(losses)
         model.train()
         return out
