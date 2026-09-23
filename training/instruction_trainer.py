@@ -68,7 +68,8 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
                        min_lr: float = 2e-6, eval_interval: int = 25, eval_iters: int = 5,
                        val_fraction: float = 0.1, seed: int = 42,
                        grad_clip: float = 1.0, gradient_accumulation_steps: int = 1,
-                       checkpoints_dir: str = None, max_train_seconds: float = None):
+                       checkpoints_dir: str = None, max_train_seconds: float = None,
+                       early_stop_patience: int = None):
     """Stage B, with the same safeguards Stage A needed (training/trainer.py):
     gradient clipping, an fp16 loss scaler, the LR applied before the step it
     belongs to, a best-checkpoint save during the run, and a wall-clock budget.
@@ -168,6 +169,7 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
     last_train_loss = last_val_loss = None
     best_val_loss = float("inf")
     best_ckpt_path = None
+    evals_since_best = 0
     clipped_updates = nonfinite_events = 0
     last_grad_norm = float("nan")
     run_start = time.time()
@@ -192,11 +194,23 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
             # final step, and a crash used to lose everything.
             if last_val_loss < best_val_loss:
                 best_val_loss = last_val_loss
+                evals_since_best = 0
                 best_ckpt_path, _ = save_instruction_checkpoint(
                     model, optimizer, config, step, last_train_loss, last_val_loss,
                     data_path, train_ds.stats(), base_checkpoint, seed, tokens_processed,
                     device, hyperparams, checkpoints_dir=checkpoints_dir)
                 print(f"  new best val {best_val_loss:.4f} -> {best_ckpt_path}")
+            else:
+                evals_since_best += 1
+                # Fine-tuning a small model on a small set overfits quickly:
+                # train loss keeps falling while val rises. Once val has not
+                # improved for `patience` evals the rest of the budget only
+                # makes the model worse, so stop and keep the best checkpoint.
+                if early_stop_patience and evals_since_best >= early_stop_patience:
+                    end_step = step
+                    print(f"Early stop: val has not improved for {evals_since_best} evals "
+                          f"(best {best_val_loss:.4f}). Stopping at step {step}.")
+                    break
 
         # This step's LR, set BEFORE the update it applies to (it used to be
         # assigned after optimizer.step(), so every update ran on the previous
