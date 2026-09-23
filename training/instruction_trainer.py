@@ -26,13 +26,17 @@ DEFAULT_DATA = os.path.join("data", "instruction", "financial_instructions.jsonl
 
 def save_instruction_checkpoint(model, optimizer, config, step, train_loss, val_loss,
                                  dataset_path, dataset_stats, base_checkpoint, seed,
-                                 tokens_processed, device, hyperparams):
-    os.makedirs(INSTRUCTION_CKPT_DIR, exist_ok=True)
-    ckpt_path = os.path.join(INSTRUCTION_CKPT_DIR, f"checkpoint_{step}.pt")
-    meta_path = os.path.join(INSTRUCTION_CKPT_DIR, f"checkpoint_{step}.json")
+                                 tokens_processed, device, hyperparams, checkpoints_dir=None):
+    target_dir = checkpoints_dir or INSTRUCTION_CKPT_DIR
+    os.makedirs(target_dir, exist_ok=True)
+    ckpt_path = os.path.join(target_dir, f"checkpoint_{step}.pt")
+    meta_path = os.path.join(target_dir, f"checkpoint_{step}.json")
 
+    # Unwrap DataParallel so the saved keys have no "module." prefix and the
+    # checkpoint loads the same way regardless of GPU count.
+    raw_model = model.module if isinstance(model, torch.nn.DataParallel) else model
     torch.save({
-        "model_state_dict": model.state_dict(),
+        "model_state_dict": raw_model.state_dict(),
         "optimizer_state_dict": optimizer.state_dict(),
         "step": step,
         "tokens_processed": tokens_processed,
@@ -60,9 +64,18 @@ def save_instruction_checkpoint(model, optimizer, config, step, train_loss, val_
 
 def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
                        max_steps: int = 100, batch_size: int = 2, seq_len: int = 256,
-                       learning_rate: float = 1e-4, warmup_steps: int = 10,
-                       min_lr: float = 1e-5, eval_interval: int = 25, eval_iters: int = 5,
-                       val_fraction: float = 0.1, seed: int = 42):
+                       learning_rate: float = 2e-5, warmup_steps: int = 10,
+                       min_lr: float = 2e-6, eval_interval: int = 25, eval_iters: int = 5,
+                       val_fraction: float = 0.1, seed: int = 42,
+                       grad_clip: float = 1.0, gradient_accumulation_steps: int = 1,
+                       checkpoints_dir: str = None, max_train_seconds: float = None):
+    """Stage B, with the same safeguards Stage A needed (training/trainer.py):
+    gradient clipping, an fp16 loss scaler, the LR applied before the step it
+    belongs to, a best-checkpoint save during the run, and a wall-clock budget.
+
+    learning_rate defaults to 2e-5, not the 1e-4 this used to use: fine-tuning
+    at 3x the pretraining peak LR (3e-5) risks undoing what pretraining
+    learned."""
     if not os.path.exists(base_checkpoint):
         raise FileNotFoundError(f"Base checkpoint not found: {base_checkpoint}")
 
@@ -89,6 +102,10 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
     model = model.to(device)
     print(f"Loaded base weights ({sum(p.numel() for p in model.parameters()):,} parameters)")
 
+    if device == "cuda" and torch.cuda.device_count() > 1:
+        print(f"Using DataParallel across {torch.cuda.device_count()} GPUs")
+        model = torch.nn.DataParallel(model)
+
     records = load_instruction_records(data_path)
     if not records:
         raise RuntimeError(f"No usable instruction records in {data_path}")
@@ -106,9 +123,20 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.95),
                                    weight_decay=0.1, eps=1e-9)
 
+    # fp16 needs loss scaling or small gradients underflow to zero; bf16 and
+    # fp32 do not, hence the dtype gate (same rule as training/trainer.py).
+    scaler = torch.amp.GradScaler("cuda", enabled=(dtype == "float16"))
+    print(f"grad_clip={grad_clip} | grad_accum={gradient_accumulation_steps} | "
+          f"GradScaler enabled={scaler.is_enabled()} (dtype={dtype})")
+    print(f"learning_rate={learning_rate:.2e} min_lr={min_lr:.2e} warmup_steps={warmup_steps}")
+
     hyperparams = {
         "max_steps": max_steps, "batch_size": batch_size, "seq_len": effective_seq,
         "learning_rate": learning_rate, "warmup_steps": warmup_steps, "min_lr": min_lr,
+        "grad_clip": grad_clip, "gradient_accumulation_steps": gradient_accumulation_steps,
+        "effective_batch": batch_size * gradient_accumulation_steps,
+        "amp_dtype": dtype, "grad_scaler_enabled": bool(scaler.is_enabled()),
+        "base_checkpoint": base_checkpoint,
     }
 
     @torch.no_grad()
@@ -126,46 +154,100 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
         model.train()
         return out
 
+    def lr_at(step):
+        if step < warmup_steps:
+            return learning_rate * (step + 1) / max(1, warmup_steps)
+        progress = (step - warmup_steps) / max(1, max_steps - warmup_steps)
+        return min_lr + (learning_rate - min_lr) * 0.5 * (1 + math.cos(math.pi * progress))
+
     model.train()
     tokens_processed = 0
     last_train_loss = last_val_loss = None
+    best_val_loss = float("inf")
+    best_ckpt_path = None
+    clipped_updates = nonfinite_events = 0
+    last_grad_norm = float("nan")
     run_start = time.time()
+    end_step = max_steps
 
     for step in tqdm(range(max_steps)):
+        if max_train_seconds is not None and time.time() - run_start > max_train_seconds:
+            end_step = step
+            print(f"Time budget of {max_train_seconds:.0f}s reached at step {step}; stopping.")
+            break
+
         if step % eval_interval == 0 and step != 0:
             losses = estimate()
             last_train_loss, last_val_loss = losses["train"], losses["val"]
             print(f"step {step}: train {last_train_loss:.4f}, val {last_val_loss:.4f} | "
-                  f"tokens {tokens_processed:,}")
+                  f"lr {optimizer.param_groups[0]['lr']:.3e} | grad_norm {last_grad_norm:.3f} "
+                  f"(clipped {clipped_updates}/{step}) | nonfinite {nonfinite_events} | "
+                  f"scale {scaler.get_scale():.0f} | tokens {tokens_processed:,} | "
+                  f"elapsed {time.time() - run_start:.0f}s")
+            # Keep the best checkpoint during the run, not just the last one:
+            # fine-tuning on a small set starts overfitting well before the
+            # final step, and a crash used to lose everything.
+            if last_val_loss < best_val_loss:
+                best_val_loss = last_val_loss
+                best_ckpt_path, _ = save_instruction_checkpoint(
+                    model, optimizer, config, step, last_train_loss, last_val_loss,
+                    data_path, train_ds.stats(), base_checkpoint, seed, tokens_processed,
+                    device, hyperparams, checkpoints_dir=checkpoints_dir)
+                print(f"  new best val {best_val_loss:.4f} -> {best_ckpt_path}")
 
-        X, Y = train_ds.get_batch(batch_size, device, device_type)
-        with ctx:
-            _, total_loss, _, _ = model(X, Y, return_logits=False)
-
-        if not torch.isfinite(total_loss):
-            raise RuntimeError(f"Non-finite loss at instruction step {step}. Stopping run.")
-
-        total_loss.backward()
-        tokens_processed += X.numel()
-        optimizer.step()
-        optimizer.zero_grad(set_to_none=True)
-
-        if step < warmup_steps:
-            lr = learning_rate * (step + 1) / max(1, warmup_steps)
-        else:
-            progress = (step - warmup_steps) / max(1, max_steps - warmup_steps)
-            lr = min_lr + (learning_rate - min_lr) * 0.5 * (1 + math.cos(math.pi * progress))
+        # This step's LR, set BEFORE the update it applies to (it used to be
+        # assigned after optimizer.step(), so every update ran on the previous
+        # step's LR and step 0 ran at the full LR with no warmup).
+        lr = lr_at(step)
         for g in optimizer.param_groups:
             g["lr"] = lr
+
+        for micro in range(gradient_accumulation_steps):
+            X, Y = train_ds.get_batch(batch_size, device, device_type)
+            with ctx:
+                _, total_loss, _, _ = model(X, Y, return_logits=False)
+                # DataParallel returns one loss per GPU.
+                if total_loss.dim() > 0:
+                    total_loss = total_loss.mean()
+                total_loss = total_loss / gradient_accumulation_steps
+            if not torch.isfinite(total_loss):
+                raise RuntimeError(f"Non-finite loss at instruction step {step}. Stopping run.")
+            scaler.scale(total_loss).backward()
+            tokens_processed += X.numel()
+
+        # Unscale before clipping, or the threshold would be compared against
+        # gradients still multiplied by the scaler's factor.
+        scaler.unscale_(optimizer)
+        norm = torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+        last_grad_norm = float(norm)
+        if not math.isfinite(last_grad_norm):
+            nonfinite_events += 1
+        elif last_grad_norm > grad_clip:
+            clipped_updates += 1
+        scaler.step(optimizer)
+        scaler.update()
+        optimizer.zero_grad(set_to_none=True)
 
     losses = estimate()
     last_train_loss, last_val_loss = losses["train"], losses["val"]
 
     ckpt_path, _ = save_instruction_checkpoint(
-        model, optimizer, config, max_steps, last_train_loss, last_val_loss,
+        model, optimizer, config, end_step, last_train_loss, last_val_loss,
         data_path, train_ds.stats(), base_checkpoint, seed, tokens_processed, device, hyperparams,
+        checkpoints_dir=checkpoints_dir,
     )
     print(f"Instruction tuning completed in {time.time() - run_start:.0f}s")
     print(f"Final train loss: {last_train_loss:.4f} | val loss: {last_val_loss:.4f}")
-    print(f"Checkpoint: {ckpt_path}")
-    return model, config, ckpt_path
+    print(f"Final checkpoint: {ckpt_path}")
+    # Hand back whichever is actually better - the final save often is, since
+    # the in-run "best" only sees the eval points before it.
+    if best_ckpt_path and best_val_loss < last_val_loss:
+        print(f"Best checkpoint (val {best_val_loss:.4f}): {best_ckpt_path}")
+        chosen = best_ckpt_path
+    else:
+        chosen = ckpt_path
+    # Return the bare model, not the multi-GPU wrapper: callers read
+    # model.config, which DataParallel does not forward.
+    if isinstance(model, torch.nn.DataParallel):
+        model = model.module
+    return model, config, chosen

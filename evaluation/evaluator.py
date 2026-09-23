@@ -87,7 +87,12 @@ def score_item(category: str, item: dict, prediction: str) -> dict:
 
 
 def evaluate_model(model, device: str = "cpu", categories=None, max_new_tokens: int = 48,
-                    verbose: bool = False) -> dict:
+                    verbose: bool = False, prompt_style: str = "qa") -> dict:
+    """prompt_style "qa" asks `Question: ... Answer:`, which is how the base
+    (pretrained) model saw text. "instruction" uses the
+    `### Instruction: ... ### Response:` template an instruction-tuned
+    checkpoint was fine-tuned on - scoring such a model with the "qa" prompt
+    measures the wrong thing."""
     model.eval()
     categories = categories or list(EVAL_FILES)
     results = {"categories": {}, "details": []}
@@ -102,7 +107,11 @@ def evaluate_model(model, device: str = "cpu", categories=None, max_new_tokens: 
 
         scored = []
         for item in items:
-            prompt = f"Question: {item['question']}\nAnswer:"
+            if prompt_style == "instruction":
+                from training.instruction_dataset import format_prompt
+                prompt = format_prompt({"instruction": item["question"], "input": ""})
+            else:
+                prompt = f"Question: {item['question']}\nAnswer:"
             prediction = generate_answer(
                 model, prompt, max_new_tokens=max_new_tokens, device=device
             )
