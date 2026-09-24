@@ -40,3 +40,7 @@ wandb/
 experiments/ai_observability.jsonl
 checkpoints/continuation_upload/
 checkpoints/continuation_upload_latest/
+checkpoints/previous_checkpoints/
+data/documents/*
+!data/documents/.gitkeep
+hf_export/
