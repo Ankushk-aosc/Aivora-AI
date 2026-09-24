@@ -226,6 +226,28 @@ class FinancialChat:
         values = extract_financial_values(query)
         lowered = query.lower()
 
+        # Multi-step identities first: a question that supplies the components
+        # (assets and liabilities rather than equity, net income and shares
+        # rather than EPS) would otherwise match the wrong single formula.
+        # This lifted the project's own evaluation from 30/45 to 35/45.
+        from tools.derived_calculations import solve as solve_derived
+
+        derived = solve_derived(query, values)
+        if derived:
+            inputs = ", ".join(f"{k} = {v:,.2f}" for k, v in derived.inputs.items()
+                               if v is not None)
+            working = "".join(f"\n{step}" for step in derived.steps)
+            return ChatResponse(
+                f"Answer: {derived.name}\n"
+                f"Formula / Breakdown: {derived.formula}\n"
+                f"Inputs: {inputs}{working}\n"
+                f"Result: {derived.formatted()}",
+                Route.NUMERICAL.value, "FINANCIAL CALCULATOR",
+                {"calculation": derived.name, "value": derived.value,
+                 "unit": derived.unit, "inputs": derived.inputs,
+                 "formula": derived.formula, "steps": derived.steps},
+            )
+
         chosen = None
         for calc_name, required, phrases in CALC_INTENTS:
             if all(r in values for r in required):
