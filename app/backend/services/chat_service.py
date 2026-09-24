@@ -54,6 +54,10 @@ CALC_INTENTS = [
     ("revenue_growth", ("current_revenue", "prior_revenue"), ["revenue growth", "growth", "revenue was"]),
     ("revenue_growth", ("revenue", "prior_revenue"), ["revenue growth", "growth"]),
     ("cagr", ("beginning_value", "ending_value", "years"), ["cagr", "compound annual growth"]),
+    ("current_ratio", ("current_assets", "current_liabilities"), ["current ratio"]),
+    ("ev_to_ebitda", ("enterprise_value", "ebitda"), ["ev/ebitda", "ev to ebitda", "enterprise value"]),
+    ("pe_ratio", ("price_per_share", "earnings_per_share"), ["p/e", "pe ratio", "price to earnings", "price-to-earnings"]),
+    ("roic", ("nopat", "invested_capital"), ["roic", "return on invested capital"]),
 ]
 
 # Maps the router's extracted keys onto calculator argument names.
@@ -148,8 +152,16 @@ class ChatResponse:
 class FinancialChat:
     def __init__(self, model=None, device="cpu", document_store=None,
                  max_new_tokens=None, temperature=None, top_k=None,
-                 top_p=None, repetition_penalty=None):
+                 top_p=None, repetition_penalty=None, backend=None):
+        # `backend` lets the app serve any model (see services/generation.py);
+        # passing `model` keeps the original behaviour for this project's own
+        # checkpoints, so existing callers and tests are unaffected.
         self.model = model
+        self.backend = backend
+        if backend is None and model is not None:
+            from app.backend.services.generation import DeepSeekBackend
+
+            self.backend = DeepSeekBackend(model, device=device)
         self.device = device
         self.document_store = document_store
         self.max_new_tokens = max_new_tokens or DEFAULT_GENERATION["max_new_tokens"]
@@ -167,19 +179,12 @@ class FinancialChat:
     def _raw_generate(self, prompt: str, max_new_tokens: int,
                        temperature: float, top_k: int, top_p: float,
                        repetition_penalty: float) -> str:
-        if self.model is None:
+        if self.backend is None:
             return ""
-        ids = self.enc.encode_ordinary(prompt)
-        max_ctx = self.model.config.block_size - max_new_tokens
-        if len(ids) > max_ctx:
-            ids = ids[-max_ctx:]
-        context = torch.tensor(ids, dtype=torch.long, device=self.device).unsqueeze(0)
-        out = self.model.generate(
-            context, max_new_tokens, temperature=temperature, top_k=top_k,
-            top_p=top_p, repetition_penalty=repetition_penalty,
-            stop_on_repetition=True,
+        return self.backend.generate(
+            prompt, max_new_tokens=max_new_tokens, temperature=temperature,
+            top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty,
         )
-        return self.enc.decode(out[0, len(ids):].tolist()).strip()
 
     def generate_checked(self, prompt: str, max_sentences: int = 3):
         """Generate, then run the output-quality guard. On degenerate
@@ -188,7 +193,7 @@ class FinancialChat:
         repetition penalty) before giving up and returning an honest
         failure rather than garbage. Returns (text_or_none, quality_report).
         """
-        if self.model is None:
+        if self.backend is None:
             return None, None
 
         text = self._raw_generate(

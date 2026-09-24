@@ -89,14 +89,22 @@ class PadCollator:
 def load_base_model(model_name: str = DEFAULT_MODEL, device_map="auto"):
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
+    import transformers
+
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-        device_map=device_map,
-    )
+
+    dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+    # transformers 5 renamed torch_dtype -> dtype. from_pretrained takes
+    # **kwargs, so the wrong name is not rejected: it lands in the config and
+    # breaks model construction with a confusing "model of type qwen2 to
+    # instantiate a model of type ." error. Pick by version instead.
+    dtype_kwarg = "dtype" if int(transformers.__version__.split(".")[0]) >= 5 else "torch_dtype"
+    kwargs = {dtype_kwarg: dtype}
+    if device_map is not None:
+        kwargs["device_map"] = device_map
+    model = AutoModelForCausalLM.from_pretrained(model_name, **kwargs)
     return model, tokenizer
 
 
