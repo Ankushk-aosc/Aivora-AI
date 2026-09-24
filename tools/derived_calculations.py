@@ -80,6 +80,38 @@ def solve(question, values):
                            "Net Income / Revenue x 100",
                            {"net_income": income, "revenue": revenue}, steps)
 
+    # Growth between two stated periods ("revenue grew from 100 to 120").
+    if trend and ("growth" in q or "grew" in q or "increase" in q or "change" in q):
+        for key, (first, second) in trend.items():
+            if first:
+                growth = 100.0 * (second - first) / first
+                label = key.replace("_", " ").title()
+                return Derived(f"{label} Growth", growth, "%",
+                               "(Current - Prior) / Prior x 100",
+                               {f"prior_{key}": first, f"current_{key}": second},
+                               [f"change = {second:,.2f} - {first:,.2f} = {second - first:,.2f}"])
+
+    # EPS from net income and share count.
+    if ("eps" in q or "earnings per share" in q) and "net_income" in values:
+        shares = values.get("shares") or values.get("shares_outstanding")
+        if shares:
+            return Derived("EPS", values["net_income"] / shares, "",
+                           "Net Income / Shares Outstanding",
+                           {"net_income": values["net_income"], "shares_outstanding": shares})
+
+    # EBIT from EBITDA by removing the non-cash charges it adds back.
+    if "ebit" in q and "ebitda" in values and (
+            "depreciation" in values or "amortization" in values):
+        depreciation = values.get("depreciation", 0.0)
+        amortization = values.get("amortization", 0.0)
+        ebit = values["ebitda"] - depreciation - amortization
+        return Derived("EBIT", ebit, "",
+                       "EBITDA - Depreciation - Amortization",
+                       {"ebitda": values["ebitda"], "depreciation": depreciation,
+                        "amortization": amortization},
+                       [f"EBIT = {values['ebitda']:,.2f} - {depreciation:,.2f} "
+                        f"- {amortization:,.2f} = {ebit:,.2f}"])
+
     # Operating margin from its components.
     if "operating margin" in q and {"revenue", "cogs", "operating_expenses"} <= values.keys():
         revenue, cogs, opex = values["revenue"], values["cogs"], values["operating_expenses"]

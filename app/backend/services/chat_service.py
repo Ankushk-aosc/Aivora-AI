@@ -92,6 +92,12 @@ INSUFFICIENT_TRAINING_MESSAGE = (
 
 # Comprehensive financial knowledge glossary for domain concepts
 FINANCIAL_KNOWLEDGE_BASE = {
+    ("shareholders equity", "shareholder equity", "shareholders' equity"): "Shareholders' Equity is the owners' residual claim on a company: what would remain for shareholders if every asset were sold and every liability settled. Formula: Shareholders' Equity = Total Assets - Total Liabilities.",
+    ("current liabilities",): "Current Liabilities are obligations a company must settle within one year (or one operating cycle), such as accounts payable, accrued expenses, short-term debt and the current portion of long-term debt.",
+    ("current assets",): "Current Assets are assets expected to be converted to cash or used up within one year, such as cash, marketable securities, accounts receivable, inventory and prepaid expenses.",
+    ("yoy", "year over year", "year-over-year"): "YoY means Year over Year: a metric compared with the same period one year earlier, which removes seasonal effects. Formula: YoY Growth = (Current Period - Same Period Last Year) / Same Period Last Year × 100.",
+    ("qoq", "quarter over quarter", "quarter-over-quarter"): "QoQ means Quarter over Quarter: a metric compared with the immediately preceding quarter, used to spot short-term momentum. Formula: QoQ Growth = (This Quarter - Last Quarter) / Last Quarter × 100.",
+    ("nopat",): "NOPAT stands for Net Operating Profit After Tax: operating profit after tax but before financing costs, so capital structure does not distort it. Formula: NOPAT = EBIT × (1 - Tax Rate).",
     ("ebitda margin",): "EBITDA Margin is the percentage of revenue that remains as earnings before interest, taxes, depreciation, and amortization. Formula: EBITDA Margin = (EBITDA / Revenue) × 100. It highlights pure operational profitability.",
     ("ebitda",): "EBITDA stands for Earnings Before Interest, Taxes, Depreciation, and Amortization. It evaluates a company's core operating profitability by excluding the effects of financing decisions, taxation, and non-cash accounting expenses. Formula: EBITDA = Operating Income + Depreciation + Amortization.",
     ("ebit",): "EBIT (Earnings Before Interest and Taxes) is an indicator of a company's operating profitability. Formula: EBIT = Revenue - Cost of Goods Sold - Operating Expenses.",
@@ -340,14 +346,23 @@ class FinancialChat:
 
     def _lookup_financial_knowledge(self, query: str):
         lowered = query.lower().strip()
+        # Longest key first: "shareholders equity" must win over "equity",
+        # otherwise "What is shareholders equity?" is answered with the
+        # definition of a stock, which is what used to happen.
+        best_text, best_len = None, 0
         for keys, text in FINANCIAL_KNOWLEDGE_BASE.items():
-            if any(k in lowered for k in keys):
-                return text
-        return None
+            for key in keys:
+                if key in lowered and len(key) > best_len:
+                    best_text, best_len = text, len(key)
+        return best_text
 
     def _handle_model(self, query, decision, route):
-        # For explicit definitional / conceptual financial questions, provide the verified domain knowledge
-        if route == Route.FINANCIAL_KNOWLEDGE:
+        # For explicit definitional / conceptual financial questions, provide the verified domain knowledge.
+        # GENERAL is included because the router misses some finance terms
+        # ("What are current liabilities?" matched no term, since its list has
+        # the singular "liability"). A checked definition beats generated prose
+        # whichever bucket the router chose.
+        if route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL):
             definitional_phrases = ["what is", "what are", "define", "meaning of", "explain", "tell me about", "what does", "definition", "difference between"]
             lowered = query.lower().strip()
             if any(p in lowered for p in definitional_phrases):

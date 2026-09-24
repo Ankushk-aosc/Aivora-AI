@@ -135,9 +135,15 @@ def try_glossary(question):
     often enough that answering from a checked glossary - clearly labelled -
     is more useful than generating them."""
     lowered = question.lower()
+    # Longest key wins: "shareholders equity" must beat "equity", which
+    # otherwise answers with the definition of a stock.
+    best_text, best_len = None, 0
     for keys, text in FINANCIAL_KNOWLEDGE_BASE.items():
-        if any(k in lowered for k in keys):
-            return f"{text}\\n\\n_Source: curated glossary (not model-generated)._"
+        for key in keys:
+            if key in lowered and len(key) > best_len:
+                best_text, best_len = text, len(key)
+    if best_text:
+        return f"{best_text}\\n\\n_Source: curated glossary (not model-generated)._"
     return None
 
 
@@ -155,10 +161,9 @@ def answer(question, max_new_tokens, temperature):
         if computed:
             return computed
 
-    if decision.route == Route.FINANCIAL_KNOWLEDGE:
-        known = try_glossary(question)
-        if known:
-            return known
+    known = try_glossary(question)
+    if known:
+        return known
 
     text = generate(f"Question: {question}\\nAnswer:", int(max_new_tokens), float(temperature))
     report = analyze_output(text)

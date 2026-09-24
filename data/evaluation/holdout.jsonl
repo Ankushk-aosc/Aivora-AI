@@ -1,0 +1,18 @@
+{"id": "hold_001", "category": "terminology", "question": "What does CapEx mean?", "answer": "Capital Expenditure"}
+{"id": "hold_002", "category": "terminology", "question": "What is a dividend?", "answer": "a payment of profits to shareholders"}
+{"id": "hold_003", "category": "terminology", "question": "What does ROIC stand for?", "answer": "Return on Invested Capital"}
+{"id": "hold_004", "category": "terminology", "question": "What is amortization?", "answer": "spreading the cost of an intangible asset over its useful life"}
+{"id": "hold_005", "category": "terminology", "question": "What is an income statement?", "answer": "a statement of revenue, expenses and profit over a period"}
+{"id": "hold_006", "category": "numerical", "question": "Revenue is 1200 and gross profit is 480. What is the gross margin?", "answer": "40%", "numeric_answer": 40.0}
+{"id": "hold_007", "category": "numerical", "question": "Total debt is 600 and equity is 400. What is the debt to equity ratio?", "answer": "1.5", "numeric_answer": 1.5}
+{"id": "hold_008", "category": "numerical", "question": "Enterprise value is 2000 and EBITDA is 250. What is EV/EBITDA?", "answer": "8", "numeric_answer": 8.0}
+{"id": "hold_009", "category": "numerical", "question": "Operating cash flow is 500 and capex is 200. What is free cash flow?", "answer": "300", "numeric_answer": 300.0}
+{"id": "hold_010", "category": "numerical", "question": "Net income is 45 and revenue is 300. What is the net profit margin?", "answer": "15%", "numeric_answer": 15.0}
+{"id": "hold_011", "category": "numerical", "question": "Current assets are 500 and current liabilities are 250. What is the current ratio?", "answer": "2", "numeric_answer": 2.0}
+{"id": "hold_012", "category": "reasoning", "question": "Total assets are 1000, total liabilities are 400, and net income is 90. What is ROE?", "answer": "15%", "numeric_answer": 15.0}
+{"id": "hold_013", "category": "reasoning", "question": "Net income is 80, shares outstanding are 40, and the share price is 30. What is the P/E ratio?", "answer": "15", "numeric_answer": 15.0}
+{"id": "hold_014", "category": "reasoning", "question": "A company has EBITDA of 500, depreciation of 80, and amortization of 20. What is EBIT?", "answer": "400", "numeric_answer": 400.0}
+{"id": "hold_015", "category": "reasoning", "question": "Revenue is 2000, COGS is 1200, and operating expenses are 400. What is the operating margin?", "answer": "20%", "numeric_answer": 20.0}
+{"id": "hold_016", "category": "reasoning", "question": "Sales grew from 400 to 500. What is the sales growth?", "answer": "25%", "numeric_answer": 25.0}
+{"id": "hold_017", "category": "financial_qa", "question": "What is inventory?", "answer": "goods held for sale or materials used to make them"}
+{"id": "hold_018", "category": "financial_qa", "question": "What is depreciation?", "answer": "spreading the cost of a tangible asset over its useful life"}

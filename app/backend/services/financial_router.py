@@ -34,6 +34,7 @@ LIVE_DATA_UNAVAILABLE = "Current market data is not available."
 FINANCIAL_TERMS = [
     "ebitda", "ebit", "revenue", "profit", "margin", "equity", "asset", "liability",
     "cash flow", "fcf", "eps", "p/e", "pe ratio", "roe", "roa", "roic", "capex",
+    "liabilities", "current assets", "current liabilities",
     "balance sheet", "income statement", "cash flow statement", "dividend",
     "amortization", "amortisation", "depreciation", "working capital", "cagr",
     "gross profit", "net income", "operating income", "valuation", "ev/ebitda",
@@ -67,7 +68,8 @@ DOCUMENT_TERMS = [
 # Numbers, currency amounts, percentages.
 _NUMBER_RE = re.compile(r"\d")
 _ASSIGNMENT_RE = re.compile(
-    r"(?:revenue|ebitda|profit|income|equity|assets?|liabilit(?:y|ies)|sales|"
+    r"(?:enterprise\s+value|invested\s+capital|nopat|earnings\s+per\s+share|eps|"
+    r"revenue|ebitda|profit|income|equity|assets?|liabilit(?:y|ies)|sales|"
     r"capex|cash\s*flow|shares?|price|debt|expenses?|costs?)\s*(?:is|are|=|:|of|was|were)?\s*"
     r"[₹$€£]?\s*[\d,]+(?:\.\d+)?",
     re.IGNORECASE,
@@ -107,7 +109,11 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
     text = query.lower().strip()
     reasons = []
 
-    live_hits = _find(text, LIVE_DATA_TERMS)
+    # A live-data phrase followed by a figure ("share price 80") supplies the
+    # value rather than asking for today's market data, so it is an input to
+    # a calculation, not a live-data request.
+    live_hits = [t for t in _find(text, LIVE_DATA_TERMS)
+                 if not re.search(re.escape(t) + r"\s*(?:is|of|=|:|was)?\s*[₹$€£]?\s*\d", text)]
     doc_hits = _find(text, DOCUMENT_TERMS)
     fin_hits = _find(text, FINANCIAL_TERMS)
     calc_hits = _find(text, CALC_VERBS)
@@ -175,11 +181,15 @@ def extract_financial_values(query: str) -> dict:
         "initial_value": "beginning_value",
         "ending_value": "ending_value",
         "final_value": "ending_value",
+        "share_price": "price_per_share",
+        "eps": "earnings_per_share",
     }
 
     # Pattern A: <Label> ... <Number> <Scale>
     pattern_label_first = re.compile(
-        r"(revenue|ebitda|gross profit|net income|operating income|operating expenses|expenses|costs|cogs|cost of goods sold|interest expense|profit|shareholder equity|shareholders equity|average shareholder equity|equity|"
+        r"(enterprise value|price per share|share price|earnings per share|eps|nopat|invested capital|"
+        r"depreciation|amortisation|amortization|"
+        r"revenue|ebitda|gross profit|net income|operating income|operating expenses|expenses|costs|cogs|cost of goods sold|interest expense|profit|shareholder equity|shareholders equity|average shareholder equity|equity|"
         r"total assets|assets|liabilities|current assets|current liabilities|shares outstanding|shares|price|total debt|debt|"
         r"capex|capital expenditure|operating cash flow|cash flow|initial value|beginning value|final value|ending value|prior revenue|current revenue)"
         r"\s*(?:is|are|=|:|of|was|were|has)?\s*"
