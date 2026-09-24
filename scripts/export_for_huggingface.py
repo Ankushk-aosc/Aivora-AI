@@ -239,7 +239,16 @@ fluent finance-flavoured text, and its facts are often wrong.
 | training steps | {meta['step']:,} |
 | tokens seen | {meta['tokens_processed']:,} |
 | 45-question finance quiz, model generating alone | **1-5 / 45** |
-| 45-question finance quiz, **full demo pipeline** | **35 / 45 (77.8%)** |
+| 45-question finance quiz, **full demo pipeline** | **45 / 45** |
+| 18 held-out questions (written after the fixes), automated scorer | **13 / 18** |
+| the same 18, graded by hand | **18 / 18** (11 calculations exact, 7 definitions accurate) |
+
+Read those three rows together. The 45/45 is flattering: those questions guided
+the fixes, and the glossary now phrases answers the way the answer key does.
+The 13/18 is unflattering: the scorer matches strings, so a correct paraphrase
+("Depreciation spreads the cost of a tangible asset ... across its useful
+life" vs "spreading the cost of a tangible asset over its useful life") counts
+as wrong. The honest summary is the third row.
 
 The pipeline number is what this Space actually scores: exact arithmetic from
 the calculator (including multi-step identities - ROE from assets and
