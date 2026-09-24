@@ -1,0 +1,16 @@
+{
+  "id": "aoscjkjhh/aivora-ai-openmodel-lora",
+  "title": "Aivora AI OpenModel LoRA",
+  "code_file": "Aivora_OpenModel_LoRA.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
+}
