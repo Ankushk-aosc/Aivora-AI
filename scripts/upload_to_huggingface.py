@@ -5,9 +5,14 @@ Creates (or updates) two repos:
   * a MODEL repo  - the weights, config, model code and model card
   * a SPACE       - the Gradio demo, which runs on free CPU hardware
 
-Log in first, in your own terminal (this script never handles your token):
+Log in first, in your own terminal (this script never handles your token -
+paste it at the CLI's own hidden prompt, or export it as HF_TOKEN):
 
-    hf auth login          # or: huggingface-cli login
+    Windows:  .\\deepseek_env\\Scripts\\hf.exe auth login
+    Linux/Mac: hf auth login
+
+huggingface_hub 1.x dropped the old `python -m huggingface_hub.commands.*`
+entry point, hence the explicit path to the venv's hf executable.
 
 usage:
     python scripts/upload_to_huggingface.py --name aivora-financial-llm
@@ -18,6 +23,26 @@ usage:
 import argparse
 import os
 import sys
+
+
+def login_command():
+    """The exact login command for THIS install.
+
+    huggingface_hub 1.x removed `python -m huggingface_hub.commands.*`, and on
+    Windows the `hf` executable lives inside the venv rather than on PATH, so
+    print the path that actually exists here instead of a generic hint."""
+    candidates = [
+        os.path.join("deepseek_env", "Scripts", "hf.exe"),
+        os.path.join("deepseek_env", "Scripts", "huggingface-cli.exe"),
+        os.path.join("deepseek_env", "bin", "hf"),
+        os.path.join(os.path.dirname(sys.executable), "hf.exe"),
+        os.path.join(os.path.dirname(sys.executable), "hf"),
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            prefix = ".\\" if os.name == "nt" and not os.path.isabs(path) else ""
+            return f"{prefix}{path} auth login"
+    return "hf auth login"
 
 
 def main():
@@ -39,8 +64,12 @@ def main():
     try:
         me = api.whoami()
     except Exception as e:
-        sys.exit("Not logged in to Hugging Face.\n"
-                 "Run this in your terminal first:  hf auth login\n"
+        sys.exit(f"Not logged in to Hugging Face.\n\n"
+                 f"Run this in your terminal, then re-run this script:\n"
+                 f"    {login_command()}\n\n"
+                 f"Paste your token at its 'Enter your token:' prompt (it stays hidden).\n"
+                 f"Alternatively set HF_TOKEN in your shell before running this script.\n"
+                 f"Create a token at https://huggingface.co/settings/tokens (type: Write).\n"
                  f"(details: {type(e).__name__}: {e})")
     user = me["name"]
     print(f"Logged in as: {user}")
