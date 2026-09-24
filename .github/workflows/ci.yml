@@ -80,6 +80,12 @@ jobs:
           assert sum(s.values()) > 0, 'registry should not be empty'
           "
 
+      - name: API security regression tests
+        run: python tests/test_api_security.py
+
+      - name: Model backend API tests
+        run: python tests/test_model_backends.py
+
       - name: Code sandbox self-test (must NOT allow os import)
         run: |
           python -c "
