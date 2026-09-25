@@ -44,3 +44,5 @@ checkpoints/previous_checkpoints/
 data/documents/*
 !data/documents/.gitkeep
 hf_export/
+hf_lora_export/
+checkpoints/qwen_finance_lora/
