@@ -69,7 +69,7 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
                        val_fraction: float = 0.1, seed: int = 42,
                        grad_clip: float = 1.0, gradient_accumulation_steps: int = 1,
                        checkpoints_dir: str = None, max_train_seconds: float = None,
-                       early_stop_patience: int = None):
+                       early_stop_patience: int = None, prompt_style: str = "alpaca"):
     """Stage B, with the same safeguards Stage A needed (training/trainer.py):
     gradient clipping, an fp16 loss scaler, the LR applied before the step it
     belongs to, a best-checkpoint save during the run, and a wall-clock budget.
@@ -114,8 +114,10 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
     split_at = max(1, int(len(records) * (1 - val_fraction)))
     train_records, val_records = records[:split_at], records[split_at:]
     effective_seq = min(seq_len, config.block_size)
-    train_ds = InstructionDataset(train_records, effective_seq, seed=seed)
-    val_ds = InstructionDataset(val_records or train_records[-1:], effective_seq, seed=seed + 1)
+    train_ds = InstructionDataset(train_records, effective_seq, seed=seed,
+                                   prompt_style=prompt_style)
+    val_ds = InstructionDataset(val_records or train_records[-1:], effective_seq, seed=seed + 1,
+                                 prompt_style=prompt_style)
 
     print(f"Instruction data: {data_path}")
     print(f"  train: {train_ds.stats()}")
@@ -137,6 +139,7 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
         "grad_clip": grad_clip, "gradient_accumulation_steps": gradient_accumulation_steps,
         "effective_batch": batch_size * gradient_accumulation_steps,
         "amp_dtype": dtype, "grad_scaler_enabled": bool(scaler.is_enabled()),
+        "prompt_style": prompt_style,
         "base_checkpoint": base_checkpoint,
     }
 

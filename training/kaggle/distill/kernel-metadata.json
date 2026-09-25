@@ -1,0 +1,20 @@
+{
+  "id": "aoscjkjhh/aivora-ai-distillation",
+  "title": "Aivora AI Distillation",
+  "code_file": "Aivora_Distillation.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [
+    "aoscjkjhh/aivora-ai-financial-poc-checkpoint-latest"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [
+    "aoscjkjhh/aivora-ai-openmodel-lora"
+  ],
+  "model_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
+}

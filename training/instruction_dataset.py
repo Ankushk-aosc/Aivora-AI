@@ -27,7 +27,22 @@ PROMPT_WITH_INPUT = "### Instruction:\n{instruction}\n\n### Input:\n{input}\n\n#
 IGNORE_INDEX = -1  # matches the model's F.cross_entropy(ignore_index=-1)
 
 
-def format_prompt(record: dict) -> str:
+QA_PROMPT_NO_INPUT = "Question: {instruction}\nAnswer:"
+QA_PROMPT_WITH_INPUT = "Question: {instruction}\n{input}\nAnswer:"
+
+
+def format_prompt(record: dict, style: str = "alpaca") -> str:
+    """style "alpaca" is the ### Instruction/### Response template.
+
+    style "qa" is `Question: ... Answer:`, which is how the pretrained model
+    saw text and how the demo and evaluator prompt it. Training a checkpoint in
+    one style and prompting it in the other wastes the fine-tuning, so the
+    style used for distillation must match the style used at inference."""
+    if style == "qa":
+        if record.get("input"):
+            return QA_PROMPT_WITH_INPUT.format(instruction=record["instruction"],
+                                               input=record["input"])
+        return QA_PROMPT_NO_INPUT.format(instruction=record["instruction"])
     if record.get("input"):
         return PROMPT_WITH_INPUT.format(instruction=record["instruction"], input=record["input"])
     return PROMPT_NO_INPUT.format(instruction=record["instruction"])
@@ -64,14 +79,15 @@ def load_instruction_records(path: str):
 class InstructionDataset:
     """Tokenizes instruction records into fixed-length training examples."""
 
-    def __init__(self, records, block_size: int, seed: int = 42):
+    def __init__(self, records, block_size: int, seed: int = 42, prompt_style: str = "alpaca"):
         self.enc = get_encoding()
         self.block_size = block_size
+        self.prompt_style = prompt_style
         self.examples = []
         self.skipped = 0
 
         for record in records:
-            prompt = format_prompt(record)
+            prompt = format_prompt(record, self.prompt_style)
             prompt_ids = self.enc.encode_ordinary(prompt)
             answer_ids = self.enc.encode_ordinary(record["output"])
             ids = prompt_ids + answer_ids
