@@ -83,6 +83,9 @@ jobs:
       - name: API security regression tests
         run: python tests/test_api_security.py
 
+      - name: Knowledge retrieval (RAG) tests
+        run: python tests/test_knowledge_retrieval.py
+
       - name: Model backend API tests
         run: python tests/test_model_backends.py
 

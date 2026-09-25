@@ -91,12 +91,14 @@ status, body = request("POST", "/api/model/load",
                        {**HF, "adapter": "../../etc", "token": admin})
 check("adapter path outside checkpoints/ -> 403", status == 403, f"HTTP {status}")
 
-# The whole point: chat must answer through the backend. Use a question the
-# glossary does NOT cover, and a sentinel string only the stub can produce -
-# "What is EBITDA?" would pass from the glossary even with a dead backend.
+# The whole point: chat must answer through the backend. The question must be
+# one the glossary does not cover AND retrieval declines - "Why do companies
+# issue bonds?" used to work here until retrieval started answering it from the
+# bond entry, which is the pipeline behaving correctly. The sentinel proves the
+# text came from the backend rather than any canned source.
 SENTINEL = "SENTINEL-FROM-BACKEND"
-StubHF.generate = lambda self, prompt, **kw: f"{SENTINEL}: companies raise capital."
-status, body = request("POST", "/api/chat", {"query": "Why do companies issue bonds?"})
+StubHF.generate = lambda self, prompt, **kw: f"{SENTINEL}: an answer from the model."
+status, body = request("POST", "/api/chat", {"query": "Tell me something interesting"})
 check("chat answers via the loaded backend (sentinel present)",
       status == 200 and SENTINEL in str(body.get("answer", "")), str(body)[:200])
 

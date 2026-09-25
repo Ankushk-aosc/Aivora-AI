@@ -167,7 +167,11 @@ FINANCIAL_KNOWLEDGE_BASE = {
     ("ebitda margin",): "EBITDA Margin is the percentage of revenue that remains as earnings before interest, taxes, depreciation, and amortization. Formula: EBITDA Margin = (EBITDA / Revenue) × 100. It highlights pure operational profitability.",
     ("ebitda",): "EBITDA stands for Earnings Before Interest, Taxes, Depreciation, and Amortization. It evaluates a company's core operating profitability by excluding the effects of financing decisions, taxation, and non-cash accounting expenses. Formula: EBITDA = Operating Income + Depreciation + Amortization.",
     ("ebit",): "EBIT (Earnings Before Interest and Taxes) is an indicator of a company's operating profitability. Formula: EBIT = Revenue - Cost of Goods Sold - Operating Expenses.",
-    ("stock", "stocks", "share", "shares"): "A stock (equity) represents fractional ownership in a corporation. Stockholders are entitled to a share of the company's assets and profits (via dividends and capital appreciation) and often hold voting rights.",
+    # Not keyed on bare "share"/"shares": those hijacked every question merely
+    # mentioning shares - "what does it mean when a company buys back its own
+    # shares?" was answered with the definition of a stock. Retrieval handles
+    # those paraphrases instead.
+    ("stock", "stocks", "what is a share", "shares of stock", "equity share"): "A stock (equity) represents fractional ownership in a corporation. Stockholders are entitled to a share of the company's assets and profits (via dividends and capital appreciation) and often hold voting rights.",
     ("difference between revenue and profit", "revenue vs profit", "revenue and profit"): "Revenue is the total gross income generated from selling goods or services ('top line'). Profit (or net income) is what remains after deducting all operating expenses, cost of goods, debt interest, and taxes from revenue ('bottom line').",
     ("cagr", "compound annual growth"): "CAGR (Compound Annual Growth Rate) represents the annualized rate of return for an investment over a multi-year period. Formula: CAGR = ((Ending Value / Beginning Value)^(1 / Years) - 1) × 100.",
     ("roe", "return on equity"): "Return on Equity (ROE) measures how effectively management uses shareholders' capital to generate net income. Formula: ROE = (Net Income / Shareholders' Equity) × 100.",
@@ -437,6 +441,25 @@ class FinancialChat:
                     answer = f"{knowledge}\n\n({DISCLAIMER})"
                     return ChatResponse(answer, route.value, "FINANCIAL KNOWLEDGE BASE (DOMAIN GLOSSARY)",
                                          {"model_output": None, "knowledge_source": "domain_glossary"})
+
+        # Retrieval, for questions asked in the user's own words. The lookup
+        # above needs a glossary term to appear literally, so "how do I know if
+        # a company can pay its short-term bills?" misses every entry and would
+        # otherwise be answered by a 101M model that gets it wrong.
+        if route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL):
+            try:
+                from app.backend.services.knowledge_retrieval import retrieve_definition
+
+                hit = retrieve_definition(query, FINANCIAL_KNOWLEDGE_BASE)
+            except Exception:
+                hit = None
+            if hit:
+                answer = (f"{hit['text']}\n\n(Closest match in the glossary: "
+                          f"\"{hit['term']}\". {DISCLAIMER})")
+                return ChatResponse(answer, route.value,
+                                     "FINANCIAL KNOWLEDGE BASE (RETRIEVED)",
+                                     {"model_output": None, "knowledge_source": "retrieval",
+                                      "term": hit["term"], "score": hit["score"]})
 
         generated, report = self.generate_checked(f"Question: {query}\nAnswer:", max_sentences=3)
         source = "MODEL KNOWLEDGE" if route == Route.FINANCIAL_KNOWLEDGE else "MODEL"

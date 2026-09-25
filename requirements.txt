@@ -12,3 +12,6 @@ python-docx>=1.0
 scikit-learn>=1.3
 networkx>=3.0
 langdetect>=1.0.9
+# Optional: semantic retrieval over the finance glossary. Without it,
+# app/backend/services/knowledge_retrieval.py falls back to TF-IDF.
+sentence-transformers>=3.0
