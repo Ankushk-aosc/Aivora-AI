@@ -122,7 +122,7 @@ FINANCIAL_KNOWLEDGE_BASE = {
     # --- valuation and corporate finance ---
     ("npv", "net present value"): "Net Present Value discounts a project's future cash flows to today's money and subtracts the initial investment. A positive NPV means the project is expected to create value at the chosen discount rate.",
     ("irr", "internal rate of return"): "The Internal Rate of Return is the discount rate at which a project's NPV equals zero - effectively its expected annualised return. It is compared against the cost of capital.",
-    ("wacc", "cost of capital", "weighted average cost of capital"): "WACC is the blended cost of a company's debt and equity, weighted by how much of each it uses, and is the usual discount rate for valuing its cash flows.",
+    ("wacc", "cost of capital", "weighted average cost of capital"): "WACC stands for Weighted Average Cost of Capital: the blended cost of a company's debt and equity, weighted by how much of each it uses. It is the usual discount rate for valuing its cash flows.",
     ("payback period",): "The Payback Period is how long an investment takes to repay its initial cost from its cash inflows. It is simple but ignores everything that happens after payback, and the time value of money.",
     ("ipo", "initial public offering"): "An Initial Public Offering is the first sale of a private company's shares to the public, raising capital and creating a listed market in its stock.",
     ("share buyback", "buyback", "share repurchase"): "A Share Buyback is a company purchasing its own shares, reducing the share count so each remaining share represents a larger claim on earnings. It is an alternative to paying dividends.",

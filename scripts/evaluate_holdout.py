@@ -54,6 +54,14 @@ for item in items:
 
 print("")
 print("HELD-OUT RESULT:", aggregate(scored))
+from collections import Counter
+by_cat = {}
+for r in scored:
+    by_cat.setdefault(r["category"], []).append(r)
+for cat, rows in sorted(by_cat.items()):
+    print(f"   {cat:14} {sum(1 for r in rows if r['correct']):>3}/{len(rows):<3} "
+          f"({100*sum(1 for r in rows if r['correct'])/len(rows):.0f}%)")
+print("   graded by:", dict(Counter(r.get("match_type") for r in scored)))
 for item, prediction in fails:
     print("")
     print(f"[{item['id']}] {item['question']}")

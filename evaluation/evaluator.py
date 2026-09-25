@@ -18,6 +18,8 @@ import torch
 from data_sources.tokenizer import get_encoding
 from evaluation.financial_metrics import (
     aggregate, exact_match, keyword_coverage, normalized_match, numeric_match,
+    concept_overlap,
+    rubric_match,
 )
 
 EVAL_DIR = os.path.join("data", "evaluation")
@@ -72,6 +74,15 @@ def score_item(category: str, item: dict, prediction: str) -> dict:
     if category in ("numerical", "reasoning") and item.get("numeric_answer") is not None:
         correct = numeric_match(prediction, item["numeric_answer"])
         record["match_type"] = "numeric"
+    elif item.get("required_any"):
+        # A per-question rubric, when the item carries one: every concept group
+        # must appear, in any of its listed wordings. String matching against a
+        # single reference sentence marks correct paraphrases wrong, which it
+        # did repeatedly here ("Depreciation spreads the cost of a tangible
+        # asset ... across its useful life" scored 0).
+        correct = rubric_match(prediction, item["required_any"])
+        record["match_type"] = "rubric"
+        record["concept_overlap"] = round(concept_overlap(prediction, item.get("answer", "")), 3)
     elif category == "terminology":
         correct = normalized_match(prediction, item["answer"], item.get("acceptable"))
         record["match_type"] = "normalized"
