@@ -49,6 +49,7 @@ from financial_calculator import CALCULATIONS, CalculationError, calculate
 from derived_calculations import solve as solve_derived
 from financial_router import Route, classify, extract_financial_values
 from glossary import FINANCIAL_KNOWLEDGE_BASE
+from knowledge_retrieval import retrieve_definition
 from models import DeepSeekConfig, DeepSeekV3
 from quality import analyze_output
 
@@ -165,6 +166,20 @@ def answer(question, max_new_tokens, temperature):
     if known:
         return known
 
+    # Retrieval: the lookup above needs a glossary term to appear literally, so
+    # "how is a company financed by borrowing rather than issuing shares?"
+    # misses every entry. Conservative by design - below its threshold it
+    # returns nothing and the question falls through to the model, which is
+    # labelled as unreliable rather than served as fact.
+    try:
+        hit = retrieve_definition(question, FINANCIAL_KNOWLEDGE_BASE)
+    except Exception:
+        hit = None
+    if hit:
+        return (f"{hit['text']}\\n\\n_Closest match in the glossary: "
+                f"'{hit['term']}' (similarity {hit['score']}). "
+                f"Retrieved, not model-generated._")
+
     text = generate(f"Question: {question}\\nAnswer:", int(max_new_tokens), float(temperature))
     report = analyze_output(text)
     if report.is_degenerate:
@@ -205,6 +220,9 @@ REQUIREMENTS = """torch>=2.2
 tiktoken>=0.5
 safetensors>=0.4
 gradio>=4.0
+# Semantic retrieval over the glossary. Optional: without it
+# knowledge_retrieval.py falls back to a TF-IDF index (numpy only).
+sentence-transformers>=3.0
 """
 
 
@@ -282,6 +300,22 @@ and instruction sets). Continuation runs used peak LR 3e-5, cosine decay to
 1e-5, 500-step warmup after each resume, gradient clipping 1.0 and fp16 loss
 scaling.
 
+## How a question is answered
+
+1. **figures present** -> deterministic calculator (including multi-step
+   identities: ROE from assets and liabilities, P/E from net income and share
+   count, EBIT from EBITDA, growth between periods);
+2. **a glossary term appears** -> curated definition;
+3. **asked in other words** -> retrieval over the same glossary (MiniLM
+   embeddings, TF-IDF fallback), so "how is a company financed by borrowing
+   rather than issuing shares?" reaches the leverage entry;
+4. **otherwise** -> the model, shown only if it passes a degeneracy guard.
+
+Retrieval is tuned for precision: below its threshold it returns nothing and
+the question falls through, because a confidently wrong definition is worse
+than an answer labelled unreliable. Every answer states which of the four
+produced it.
+
 ## Numbers are not generated
 
 The bundled demo routes any question containing figures to a deterministic
@@ -353,6 +387,19 @@ def main():
     services = os.path.join(ROOT, "app", "backend", "services")
     shutil.copy2(os.path.join(services, "financial_router.py"), out)
     shutil.copy2(os.path.join(services, "quality.py"), out)
+
+    # knowledge_retrieval imports content_words from the evaluation package,
+    # which the Space does not ship; copy that module beside it and rewrite the
+    # import so the bundle stays self-contained.
+    shutil.copy2(os.path.join(ROOT, "evaluation", "financial_metrics.py"),
+                 os.path.join(out, "text_metrics.py"))
+    with open(os.path.join(services, "knowledge_retrieval.py"), encoding="utf-8") as f:
+        retrieval_src = f.read()
+    retrieval_src = retrieval_src.replace(
+        "from evaluation.financial_metrics import content_words",
+        "from text_metrics import content_words")
+    with open(os.path.join(out, "knowledge_retrieval.py"), "w", encoding="utf-8") as f:
+        f.write(retrieval_src)
 
     # The glossary lives inside chat_service.py, which pulls in the whole app.
     # Lift just that one assignment out by parsing the source, so the Space
