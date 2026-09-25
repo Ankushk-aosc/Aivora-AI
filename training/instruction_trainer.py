@@ -264,6 +264,15 @@ def train_instruction(base_checkpoint: str, data_path: str = DEFAULT_DATA,
     if best_ckpt_path and best_val_loss < last_val_loss:
         print(f"Best checkpoint (val {best_val_loss:.4f}): {best_ckpt_path}")
         chosen = best_ckpt_path
+        # Load those weights back into the returned model. Without this the
+        # caller evaluates the LAST step's weights while the best checkpoint
+        # sits unused on disk - which is exactly what early stopping exists to
+        # avoid, since training past the best point is overfitting.
+        if os.path.exists(chosen):
+            state = torch.load(chosen, map_location="cpu")["model_state_dict"]
+            target = model.module if isinstance(model, torch.nn.DataParallel) else model
+            target.load_state_dict(state)
+            print(f"Reloaded best weights (val {best_val_loss:.4f}) into the returned model.")
     else:
         chosen = ckpt_path
     # Return the bare model, not the multi-GPU wrapper: callers read
