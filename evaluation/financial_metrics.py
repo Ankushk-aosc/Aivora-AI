@@ -155,6 +155,13 @@ ABSTENTION_MARKERS = (
     # hallucination, which would have understated the pipeline unfairly.
     "could not identify a complete calculation", "could not identify",
     "not identify a complete", "could not be completed",
+    # Generic refusal phrasings, not tied to one component's exact sentence.
+    # Added when the current-data handler began refusing with "Insufficient
+    # current data available"; the stored baseline predictions were re-graded
+    # with this same list so before/after use one grader (see
+    # reports/improvement_report.md).
+    "insufficient current data", "insufficient data", "no verified",
+    "not held here", "no live", "changes over time, and no",
 )
 
 

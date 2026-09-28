@@ -91,6 +91,74 @@ def solve(question, values):
                                {f"prior_{key}": first, f"current_{key}": second},
                                [f"change = {second:,.2f} - {first:,.2f} = {second - first:,.2f}"])
 
+    # ------------------------------------------------------------------
+    # Statement questions: the figure asked for is not stated, but the lines
+    # above it are. The baseline measured 66 of these answered with an
+    # unrelated ratio (asking for shareholders' equity returned an "Income
+    # Statement Analysis" dump), so each identity is spelled out here and
+    # shows its working.
+    # ------------------------------------------------------------------
+    def _value(*names, default=None):
+        for name in names:
+            if values.get(name) is not None:
+                return values[name]
+        return default
+
+    assets = _value("total_assets")
+    liabilities = _value("total_liabilities", "liabilities")
+    revenue = _value("revenue")
+    cogs = _value("cogs")
+
+    # Equity from the accounting equation.
+    if ("equity" in q or "book value" in q) and "equity" not in values \
+            and assets is not None and liabilities is not None:
+        equity = assets - liabilities
+        return Derived("Shareholders' Equity", equity, "",
+                       "Total Assets - Total Liabilities",
+                       {"total_assets": assets, "total_liabilities": liabilities},
+                       [f"equity = {assets:,.2f} - {liabilities:,.2f} = {equity:,.2f}"])
+
+    # The income-statement chain, using whichever lines are present.
+    if revenue is not None and cogs is not None:
+        opex = _value("operating_expenses", default=0.0)
+        da = _value("depreciation_amortization", default=None)
+        if da is None:
+            da = _value("depreciation", default=0.0) + _value("amortization", default=0.0)
+        interest = _value("interest_expense", default=0.0)
+        tax_rate = _value("tax_rate", default=None)
+        gross = revenue - cogs
+        ebitda_calc = gross - opex
+        ebit = ebitda_calc - da
+
+        asks_ebit = ("ebit" in q or "operating income" in q) and "ebitda" not in q
+        if asks_ebit and "operating_income" not in values:
+            return Derived("EBIT", ebit, "",
+                           "Revenue - COGS - Operating Expenses - D&A",
+                           {"revenue": revenue, "cogs": cogs,
+                            "operating_expenses": opex, "depreciation_amortization": da},
+                           [f"gross profit = {revenue:,.2f} - {cogs:,.2f} = {gross:,.2f}",
+                            f"EBITDA = {gross:,.2f} - {opex:,.2f} = {ebitda_calc:,.2f}",
+                            f"EBIT = {ebitda_calc:,.2f} - {da:,.2f} = {ebit:,.2f}"])
+
+        asks_net = ("net income" in q or "net profit" in q or "net earnings" in q) \
+            and "margin" not in q
+        if asks_net and "net_income" not in values and tax_rate is not None:
+            pbt = ebit - interest
+            tax = round(pbt * tax_rate, 2)
+            net = pbt - tax
+            return Derived("Net Income", net, "",
+                           "Revenue - COGS - OpEx - D&A - Interest - Tax",
+                           {"revenue": revenue, "cogs": cogs,
+                            "operating_expenses": opex,
+                            "depreciation_amortization": da,
+                            "interest_expense": interest, "tax_rate": tax_rate},
+                           [f"gross profit = {gross:,.2f}",
+                            f"EBITDA = {ebitda_calc:,.2f}",
+                            f"EBIT = {ebit:,.2f}",
+                            f"profit before tax = {ebit:,.2f} - {interest:,.2f} = {pbt:,.2f}",
+                            f"tax at {tax_rate:.0%} = {tax:,.2f}",
+                            f"net income = {pbt:,.2f} - {tax:,.2f} = {net:,.2f}"])
+
     # EPS from net income and share count.
     if ("eps" in q or "earnings per share" in q) and "net_income" in values:
         shares = values.get("shares") or values.get("shares_outstanding")

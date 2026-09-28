@@ -58,6 +58,23 @@ CALC_INTENTS = [
     ("ev_to_ebitda", ("enterprise_value", "ebitda"), ["ev/ebitda", "ev to ebitda", "enterprise value"]),
     ("pe_ratio", ("price_per_share", "earnings_per_share"), ["p/e", "pe ratio", "price to earnings", "price-to-earnings"]),
     ("roic", ("nopat", "invested_capital"), ["roic", "return on invested capital"]),
+    # Added with the calculations themselves. "quick ratio" must be able to win
+    # over "current ratio": both have the current-asset figures, and the
+    # baseline measured 14 quick-ratio questions answered with the current
+    # ratio. The loop below prefers an intent whose phrase is actually
+    # mentioned, so listing it is enough.
+    ("quick_ratio", ("current_assets", "inventory", "current_liabilities"),
+     ["quick ratio", "acid test", "acid-test"]),
+    ("asset_turnover", ("revenue", "total_assets"),
+     ["asset turnover", "asset utilisation", "asset utilization"]),
+    ("interest_coverage", ("operating_income", "interest_expense"),
+     ["interest coverage", "times interest earned", "interest cover"]),
+    ("dividend_payout", ("dividends", "net_income"),
+     ["dividend payout", "payout ratio", "dividend ratio"]),
+    ("enterprise_value", ("market_cap", "total_debt"),
+     ["enterprise value", "ev"]),
+    ("wacc", ("equity_weight", "cost_of_equity", "cost_of_debt"),
+     ["wacc", "weighted average cost of capital", "cost of capital"]),
 ]
 
 # Maps the router's extracted keys onto calculator argument names.
@@ -74,6 +91,18 @@ ARG_ALIASES = {
     "cogs": "cogs",
     "operating_expenses": "operating_expenses",
     "interest_expense": "interest_expense",
+    "total_debt": "total_debt",
+    "market_cap": "market_cap",
+    "cash": "cash",
+    "inventory": "inventory",
+    "dividends": "dividends",
+    "equity_weight": "equity_weight",
+    "debt_weight": "debt_weight",
+    "cost_of_equity": "cost_of_equity",
+    "cost_of_debt": "cost_of_debt",
+    "tax_rate": "tax_rate",
+    "operating_income": "operating_income",
+    "total_assets": "total_assets",
 }
 
 DISCLAIMER = (
@@ -386,6 +415,46 @@ class FinancialChat:
              "inputs": result.inputs, "formula": result.formula},
         )
 
+    def _handle_extraction(self, query, decision):
+        """Read back a figure the question itself states.
+
+        The baseline measured 77 questions of the form "Financial summary: ...
+        Total debt: 3,735.00 ... What is Total debt?" answered with an EBITDA
+        margin computed from other lines, because formula selection ran before
+        anyone asked what the question wanted. Returns None when the wanted
+        field is not actually present, so the caller can fall through to a
+        calculation instead of this becoming a new way to answer wrongly.
+        """
+        from app.backend.services.financial_values import (
+            asked_field, parse_financial_values,
+        )
+
+        wanted = asked_field(query)
+        if not wanted:
+            return None
+        found = {value.field: value for value in parse_financial_values(query)}
+        hit = found.get(wanted)
+        if hit is None:
+            return None
+
+        label = wanted.replace("_", " ").title()
+        if hit.unit == "percent":
+            rendered = f"{hit.value:,.2f}%"
+        elif hit.unit in ("count", "years"):
+            rendered = f"{hit.value:,.2f}"
+        else:
+            prefix = {"USD": "$", "INR": "₹", "EUR": "€", "GBP": "£"}.get(hit.currency, "")
+            rendered = f"{prefix}{hit.value:,.2f}"
+
+        answer = (f"Answer: {label}\n"
+                  f"Value: {rendered}\n"
+                  f"Read directly from the figures provided: \"{hit.source_span}\"")
+        return ChatResponse(answer, Route.EXTRACTION.value, "STATEMENT EXTRACTION",
+                             {"field": hit.field, "value": hit.value,
+                              "unit": hit.unit, "currency": hit.currency,
+                              "scale": hit.scale, "source_span": hit.source_span,
+                              "confidence": hit.confidence})
+
     def _handle_document(self, query, decision):
         if self.document_store is None or not self.document_store.chunks:
             return ChatResponse(
@@ -497,7 +566,11 @@ class FinancialChat:
             source = "NOT AVAILABLE (model output withheld - quality guard)"
         else:
             answer = generated
-            if route == Route.FINANCIAL_KNOWLEDGE:
+            # The disclaimer belongs to the served presentation. With the guard
+            # ablated, the model's raw output is what is being measured, and
+            # appending text to it would make the model_only row incomparable
+            # with the same row measured before a routing change.
+            if route == Route.FINANCIAL_KNOWLEDGE and self.use_guard:
                 answer += f"\n\n({DISCLAIMER})"
 
         return ChatResponse(answer, route.value, source,
@@ -510,7 +583,12 @@ class FinancialChat:
         decision = classify(query, has_document=has_document)
         route = decision.route
 
-        if route == Route.NUMERICAL and self.use_calculator:
+        if route == Route.EXTRACTION and self.use_calculator:
+            # Falls through to the calculator when the field turns out not to
+            # be stated after all.
+            response = (self._handle_extraction(query, decision)
+                        or self._handle_numerical(query, decision))
+        elif route == Route.NUMERICAL and self.use_calculator:
             response = self._handle_numerical(query, decision)
         elif route == Route.DOCUMENT:
             response = self._handle_document(query, decision)
@@ -520,7 +598,11 @@ class FinancialChat:
             response = ChatResponse("I could not interpret that question.",
                                      route.value, "NOT AVAILABLE")
         else:
-            response = self._handle_model(query, decision, route)
+            model_route = (Route.FINANCIAL_KNOWLEDGE
+                           if route in (Route.EXTRACTION, Route.NUMERICAL, Route.LIVE_DATA,
+                                        Route.UNKNOWN)
+                           else route)
+            response = self._handle_model(query, decision, model_route)
 
         response.detail["routing"] = decision.to_dict()
         return response

@@ -4,11 +4,26 @@ Classifies an incoming request so the chat layer knows which component
 should answer it:
 
   GENERAL             -> ordinary language, answered by the model
-  FINANCIAL_KNOWLEDGE -> financial concept/definition, answered by the model
+  FINANCIAL_KNOWLEDGE -> financial concept/definition (CONCEPT intent)
+  EXTRACTION          -> the figure asked for is stated in the question; read
+                         it back rather than computing something else
   NUMERICAL           -> arithmetic, answered by the deterministic calculator
+                         (CALCULATION and multi-step REASONING intents)
   DOCUMENT            -> question about an uploaded document, answered via RAG
-  LIVE_DATA           -> current market data; never fabricated
+                         (RETRIEVAL intent over uploaded text)
+  LIVE_DATA           -> CURRENT_DATA: a value that changes with time and is
+                         not held here; abstained, never fabricated
   UNKNOWN             -> could not classify
+
+ABSTENTION is not a route: it is the outcome when a route's handler finds the
+information absent, so an honest refusal comes from the component that knows
+what was missing.
+
+Classification order is deliberate: current data, then document, then
+EXTRACTION, then calculation, then concept. EXTRACTION must precede calculation
+because the baseline measured 77 questions where a figure was stated in the text
+and the calculator answered with an unrelated ratio computed from the other
+figures - "What is Total debt?" answered with an EBITDA margin.
 
 This is a deterministic rule-based classifier, not a model: routing must
 be predictable and inspectable.
@@ -18,9 +33,12 @@ import re
 from dataclasses import dataclass, field
 from enum import Enum
 
+from app.backend.services.financial_values import asked_field, parse_financial_values
+
 
 class Route(str, Enum):
     GENERAL = "GENERAL"
+    EXTRACTION = "EXTRACTION"
     FINANCIAL_KNOWLEDGE = "FINANCIAL_KNOWLEDGE"
     NUMERICAL = "NUMERICAL"
     DOCUMENT = "DOCUMENT"
@@ -28,7 +46,11 @@ class Route(str, Enum):
     UNKNOWN = "UNKNOWN"
 
 
-LIVE_DATA_UNAVAILABLE = "Current market data is not available."
+LIVE_DATA_UNAVAILABLE = (
+    "Insufficient current data available. This question asks for a value that "
+    "changes over time, and no verified live source is connected, so no figure "
+    "is given here."
+)
 
 # Terms that signal the finance domain.
 FINANCIAL_TERMS = [
@@ -55,7 +77,21 @@ LIVE_DATA_TERMS = [
     "current price", "market price", "latest price", "trading at", "quote for",
     "market cap right now", "current market", "live price", "real-time",
     "right now", "as of today", "latest quarter results",
+    # Added after the baseline: "What is the current Federal Reserve interest
+    # rate today?" matched none of the above and was answered with a glossary
+    # DEFINITION of interest rates, which is not an answer to a question about
+    # today's value. A definition of X must never stand in for the current
+    # value of X.
+    "today", "tomorrow", "yesterday", "currently", "at the moment",
+    "this quarter", "last quarter", "this month", "last month", "this week",
+    "last week", "current rate", "current interest rate", "current fed",
+    "latest figures", "up to date", "so far this year", "year to date",
+    "at present", "these days",
 ]
+
+# Words that make a time reference part of a definition rather than a request
+# for a current value ("What is a stock split?" ... "over time").
+_TIMELESS_CONTEXT = ["over time", "at a point in time", "point in time"]
 
 # References to an uploaded document.
 DOCUMENT_TERMS = [
@@ -114,12 +150,16 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
     # a calculation, not a live-data request.
     live_hits = [t for t in _find(text, LIVE_DATA_TERMS)
                  if not re.search(re.escape(t) + r"\s*(?:is|of|=|:|was)?\s*[₹$€£]?\s*\d", text)]
+    if any(phrase in text for phrase in _TIMELESS_CONTEXT):
+        live_hits = [t for t in live_hits if t not in ("today", "currently",
+                                                      "at the moment", "these days")]
     doc_hits = _find(text, DOCUMENT_TERMS)
     fin_hits = _find(text, FINANCIAL_TERMS)
     calc_hits = _find(text, CALC_VERBS)
     assignments = _ASSIGNMENT_RE.findall(query)
     currency = _CURRENCY_RE.findall(query)
     has_digits = bool(_NUMBER_RE.search(query))
+    rich_values = parse_financial_values(query)
 
     # 1. Live market data wins: it must never be answered from model memory.
     if live_hits:
@@ -128,26 +168,62 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
 
     # 2. Explicit reference to a document.
     if doc_hits:
+        definitional = any(p in text for p in ("what is a", "what is an", "what is the purpose",
+                                               "what are the", "define", "what does a"))
+        if not has_document and definitional:
+            # "What is a 10-K?" names a filing type but asks for a definition.
+            # Answering "no document is loaded" is a non-answer, which is what
+            # the baseline measured for the reporting category.
+            reasons.append(f"filing term {doc_hits} in a definitional question, "
+                           "and no document is loaded")
+            return RouteDecision(Route.FINANCIAL_KNOWLEDGE, 0.75, reasons, doc_hits)
         reasons.append(f"matched document reference(s): {doc_hits}")
         if not has_document:
             reasons.append("no document is loaded in this session")
         return RouteDecision(Route.DOCUMENT, 0.85 if has_document else 0.6, reasons, doc_hits)
 
-    # 3. Numerical: needs both a computation intent (or supplied figures)
+    # 3. Extraction: the question names a field whose value is stated right
+    #    there. Reading it back is deterministic and cannot be improved on by
+    #    computing something else from the neighbouring figures.
+    wanted = asked_field(query)
+    if wanted and wanted in {v.field for v in rich_values}:
+        reasons.append(f"question asks for '{wanted}', which is stated in the text")
+        return RouteDecision(Route.EXTRACTION, 0.95, reasons, [wanted])
+
+    # 4. Numerical: needs both a computation intent (or supplied figures)
     #    and actual numbers to work with.
-    numeric_signal = bool(assignments) or bool(currency) or (has_digits and calc_hits)
-    if numeric_signal and (calc_hits or assignments):
+    # Two or more labelled figures ARE the numeric signal, even when no
+    # calculation verb appears: "An investment grew from 400.00 to 644.20 over
+    # 3 years. What is the CAGR?" matched none of the old assignment patterns
+    # and was answered with a definition of CAGR instead of a number.
+    named_figures = [v for v in rich_values if v.confidence >= 0.7]
+    numeric_signal = (bool(assignments) or bool(currency)
+                      or (has_digits and calc_hits) or len(named_figures) >= 2)
+    if numeric_signal and (calc_hits or assignments or len(named_figures) >= 2):
+        if len(named_figures) >= 2:
+            reasons.append("two or more labelled figures were parsed: "
+                           + ", ".join(f"{v.field}={v.value:g}" for v in named_figures[:6]))
         reasons.append("numeric inputs present with a calculation intent")
         if assignments:
             reasons.append(f"parsed value assignments: {assignments}")
         return RouteDecision(Route.NUMERICAL, 0.9, reasons, calc_hits + fin_hits)
 
-    # 4. Financial concept question.
+    # 4b. An explicit instruction to compute, with no figures supplied. This
+    #     belongs to the calculator so that it can say what is missing:
+    #     "Calculate ROE." was being answered with the DEFINITION of ROE, which
+    #     is not a refusal and not an answer.
+    explicit_compute = [v for v in calc_hits
+                        if v in ("calculate", "compute", "work out", "derive")]
+    if explicit_compute and not has_digits:
+        reasons.append(f"explicit calculation request {explicit_compute} with no figures")
+        return RouteDecision(Route.NUMERICAL, 0.8, reasons, explicit_compute)
+
+    # 5. Financial concept question.
     if fin_hits:
         reasons.append(f"matched financial term(s): {fin_hits}")
         return RouteDecision(Route.FINANCIAL_KNOWLEDGE, 0.8, reasons, fin_hits)
 
-    # 5. Otherwise general language.
+    # 6. Otherwise general language.
     reasons.append("no financial, numeric, document, or live-data signal")
     return RouteDecision(Route.GENERAL, 0.5, reasons)
 
@@ -251,4 +327,32 @@ def extract_financial_values(query: str) -> dict:
     if years_match:
         values["years"] = float(years_match.group(1))
 
+    # Anything the patterns above missed, from the normalized parser in
+    # financial_values.py. The baseline measured 116 questions declined with
+    # the needed figure present in the text: "dividends paid are 362.00",
+    # "360.00 shares outstanding", "Equity is 70% of capital at a cost of 8%".
+    # The patterns above are kept and take precedence, so no behaviour that
+    # already worked changes; this only fills gaps.
+    from app.backend.services.financial_values import (
+        parse_financial_values, values_dict,
+    )
+
+    for key, amount in values_dict(parse_financial_values(query)).items():
+        values.setdefault(key, amount)
+        # Both spellings, because the calculator's intent table predates the
+        # canonical names used by financial_values.FIELDS.
+        for alias in _LEGACY_ALIASES.get(key, ()):
+            values.setdefault(alias, amount)
+
     return values
+
+
+# canonical name in financial_values.FIELDS -> names the calculator already uses
+_LEGACY_ALIASES = {
+    "total_liabilities": ("liabilities",),
+    "shares_outstanding": ("shares",),
+    "total_debt": ("debt",),
+    "capex": ("capital_expenditure",),
+    "operating_income": ("ebit",),
+    "equity": ("shareholders_equity",),
+}

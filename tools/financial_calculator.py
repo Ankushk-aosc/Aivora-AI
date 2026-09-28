@@ -238,13 +238,118 @@ def ev_to_ebitda(enterprise_value: float, ebitda: float) -> CalcResult:
     )
 
 
+def dcf(cash_flow: float, discount_rate: float,
+        growth_rate: float = 5.0, years: float = 5.0,
+        terminal_rate: float = 2.0) -> CalcResult:
+    _require_nonzero(cash_flow, "cash_flow")
+    _require_nonzero(discount_rate, "discount_rate")
+    _require_nonzero(years, "years")
+    r = discount_rate / 100.0
+    g = growth_rate / 100.0
+    g_term = terminal_rate / 100.0
+    if r <= g_term:
+        raise CalculationError(
+            f"Discount rate ({discount_rate}%) must exceed terminal growth rate ({terminal_rate}%)"
+        )
+    num_years = max(1, int(round(years)))
+    pv_sum = 0.0
+    cf_t = cash_flow
+    for t in range(1, num_years + 1):
+        if t > 1:
+            cf_t = cf_t * (1.0 + g)
+        pv_sum += cf_t / ((1.0 + r) ** t)
+    terminal_val = (cf_t * (1.0 + g_term)) / (r - g_term)
+    pv_terminal = terminal_val / ((1.0 + r) ** num_years)
+    total_val = pv_sum + pv_terminal
+    return CalcResult(
+        "Discounted Cash Flow (DCF)", total_val, "",
+        f"Sum(CF_t / (1+r)^t) + PV(Terminal Value) [r={discount_rate}%, g={growth_rate}%, years={num_years}]",
+        {"cash_flow": cash_flow, "discount_rate": discount_rate,
+         "growth_rate": growth_rate, "years": num_years, "terminal_rate": terminal_rate},
+    )
+
+
 # ----------------------------------------------------------------------
 # Registry used by the query router
 # ----------------------------------------------------------------------
 
+
+# ----------------------------------------------------------------------
+# Added after the baseline measured them missing: 41 benchmark questions
+# supplied every figure these need and were declined because no formula
+# existed, and quick-ratio questions were answered with the current ratio.
+# ----------------------------------------------------------------------
+
+def quick_ratio(current_assets: float, inventory: float,
+                current_liabilities: float) -> CalcResult:
+    _require_nonzero(current_liabilities, "current_liabilities")
+    value = (current_assets - inventory) / current_liabilities
+    return CalcResult(
+        "Quick Ratio", value, "x",
+        "(Current Assets - Inventory) / Current Liabilities",
+        {"current_assets": current_assets, "inventory": inventory,
+         "current_liabilities": current_liabilities},
+    )
+
+
+def asset_turnover(revenue: float, total_assets: float) -> CalcResult:
+    _require_nonzero(total_assets, "total_assets")
+    return CalcResult(
+        "Asset Turnover", revenue / total_assets, "x",
+        "Revenue / Total Assets",
+        {"revenue": revenue, "total_assets": total_assets},
+    )
+
+
+def interest_coverage(operating_income: float, interest_expense: float) -> CalcResult:
+    _require_nonzero(interest_expense, "interest_expense")
+    return CalcResult(
+        "Interest Coverage Ratio", operating_income / interest_expense, "x",
+        "EBIT / Interest Expense",
+        {"ebit": operating_income, "interest_expense": interest_expense},
+    )
+
+
+def dividend_payout(dividends: float, net_income: float) -> CalcResult:
+    value = _ratio_pct(dividends, net_income, "net_income")
+    return CalcResult(
+        "Dividend Payout Ratio", value, "%",
+        "Dividends / Net Income x 100",
+        {"dividends": dividends, "net_income": net_income},
+    )
+
+
+def enterprise_value(market_cap: float, total_debt: float,
+                     cash: float = 0.0) -> CalcResult:
+    value = market_cap + total_debt - cash
+    return CalcResult(
+        "Enterprise Value", value, "",
+        "Market Capitalisation + Total Debt - Cash",
+        {"market_cap": market_cap, "total_debt": total_debt, "cash": cash},
+    )
+
+
+def wacc(equity_weight: float, cost_of_equity: float, cost_of_debt: float,
+         tax_rate: float = 0.0, debt_weight: float = None) -> CalcResult:
+    """Weights and rates are fractions (0.7, not 70) - see
+    financial_values.values_dict, which converts percentages for these fields."""
+    if debt_weight is None:
+        debt_weight = 1.0 - equity_weight
+    value = 100.0 * (equity_weight * cost_of_equity
+                     + debt_weight * cost_of_debt * (1.0 - tax_rate))
+    return CalcResult(
+        "WACC", value, "%",
+        "We x Re + Wd x Rd x (1 - tax rate)",
+        {"equity_weight": equity_weight, "cost_of_equity": cost_of_equity,
+         "debt_weight": debt_weight, "cost_of_debt": cost_of_debt,
+         "tax_rate": tax_rate},
+    )
+
+
 CALCULATIONS = {
     "revenue_growth": revenue_growth,
     "cagr": cagr,
+    "dcf": dcf,
     "simple_profit": simple_profit,
     "gross_margin": gross_margin,
     "operating_margin": operating_margin,
@@ -261,6 +366,12 @@ CALCULATIONS = {
     "eps": eps,
     "pe_ratio": pe_ratio,
     "ev_to_ebitda": ev_to_ebitda,
+    "quick_ratio": quick_ratio,
+    "asset_turnover": asset_turnover,
+    "interest_coverage": interest_coverage,
+    "dividend_payout": dividend_payout,
+    "enterprise_value": enterprise_value,
+    "wacc": wacc,
 }
 
 
