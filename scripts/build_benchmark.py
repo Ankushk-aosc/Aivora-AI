@@ -34,13 +34,9 @@ if ROOT not in sys.path:
 
 OUT_DIR = os.path.join("data", "benchmark")
 
-# Phrases that count as a refusal for abstention items.
-ABSTENTION_MARKERS = [
-    "insufficient information", "not enough information", "cannot be determined",
-    "can't be determined", "cannot determine", "not available", "i don't know",
-    "i do not know", "no information", "unable to answer", "need more information",
-    "not provided", "cannot answer",
-]
+# The grading markers live with the scorer, not here, so the two can never
+# drift apart. Imported only to record them in the manifest.
+from evaluation.financial_metrics import ABSTENTION_MARKERS  # noqa: E402
 
 
 # --------------------------------------------------------------------------
@@ -465,7 +461,7 @@ def main():
                 "rubric": sum(1 for i in dev + test if i.get("required_any")),
                 "abstention": sum(1 for i in dev + test if i.get("must_abstain")),
             },
-            "abstention_markers": ABSTENTION_MARKERS,
+            "abstention_markers": list(ABSTENTION_MARKERS),
             "note": ("test.jsonl is the hidden split: never used for training, tuning, "
                      "prompt design or glossary edits."),
         }

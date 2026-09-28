@@ -150,6 +150,11 @@ ABSTENTION_MARKERS = (
     "not provided", "cannot answer", "don't have access", "do not have access",
     "cannot be calculated", "can't calculate", "cannot calculate",
     "would need", "is not given", "are not given", "was not provided",
+    # The calculator's own refusal, found by reading what the pipeline actually
+    # says: without these the scorer counted an honest decline as a
+    # hallucination, which would have understated the pipeline unfairly.
+    "could not identify a complete calculation", "could not identify",
+    "not identify a complete", "could not be completed",
 )
 
 

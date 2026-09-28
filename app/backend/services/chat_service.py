@@ -228,10 +228,21 @@ class ChatResponse:
 class FinancialChat:
     def __init__(self, model=None, device="cpu", document_store=None,
                  max_new_tokens=None, temperature=None, top_k=None,
-                 top_p=None, repetition_penalty=None, backend=None):
+                 top_p=None, repetition_penalty=None, backend=None,
+                 use_calculator=True, use_knowledge=True, use_guard=True):
         # `backend` lets the app serve any model (see services/generation.py);
         # passing `model` keeps the original behaviour for this project's own
         # checkpoints, so existing callers and tests are unaffected.
+        # Ablation switches, all on by default so serving behaviour is
+        # unchanged. They exist so the evaluation can measure THIS pipeline
+        # with a component removed, rather than a re-implementation of it:
+        #   use_calculator - the deterministic calculator / derived identities
+        #   use_knowledge  - the curated glossary and the retrieval layer
+        #   use_guard      - the output-quality guard and the canned
+        #                    "not available" answers for live-data questions
+        self.use_calculator = use_calculator
+        self.use_knowledge = use_knowledge
+        self.use_guard = use_guard
         self.model = model
         self.backend = backend
         if backend is None and model is not None:
@@ -432,7 +443,7 @@ class FinancialChat:
         # ("What are current liabilities?" matched no term, since its list has
         # the singular "liability"). A checked definition beats generated prose
         # whichever bucket the router chose.
-        if route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL):
+        if self.use_knowledge and route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL):
             definitional_phrases = ["what is", "what are", "define", "meaning of", "explain", "tell me about", "what does", "definition", "difference between"]
             lowered = query.lower().strip()
             if any(p in lowered for p in definitional_phrases):
@@ -446,7 +457,7 @@ class FinancialChat:
         # above needs a glossary term to appear literally, so "how do I know if
         # a company can pay its short-term bills?" misses every entry and would
         # otherwise be answered by a 101M model that gets it wrong.
-        if route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL):
+        if self.use_knowledge and route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL):
             try:
                 from app.backend.services.knowledge_retrieval import retrieve_definition
 
@@ -461,11 +472,18 @@ class FinancialChat:
                                      {"model_output": None, "knowledge_source": "retrieval",
                                       "term": hit["term"], "score": hit["score"]})
 
-        generated, report = self.generate_checked(f"Question: {query}\nAnswer:", max_sentences=3)
+        prompt = f"Question: {query}\nAnswer:"
+        if self.use_guard:
+            generated, report = self.generate_checked(prompt, max_sentences=3)
+        else:
+            # Ablation: the model's raw output, degenerate or not.
+            generated, report = self._raw_generate(
+                prompt, self.max_new_tokens, self.temperature, self.top_k,
+                self.top_p, self.repetition_penalty), None
         source = "MODEL KNOWLEDGE" if route == Route.FINANCIAL_KNOWLEDGE else "MODEL"
 
         if generated is None:
-            if route == Route.FINANCIAL_KNOWLEDGE:
+            if self.use_knowledge and route == Route.FINANCIAL_KNOWLEDGE:
                 fallback_knowledge = self._lookup_financial_knowledge(query)
                 if fallback_knowledge:
                     answer = f"{fallback_knowledge}\n\n({DISCLAIMER})"
@@ -492,13 +510,13 @@ class FinancialChat:
         decision = classify(query, has_document=has_document)
         route = decision.route
 
-        if route == Route.NUMERICAL:
+        if route == Route.NUMERICAL and self.use_calculator:
             response = self._handle_numerical(query, decision)
         elif route == Route.DOCUMENT:
             response = self._handle_document(query, decision)
-        elif route == Route.LIVE_DATA:
+        elif route == Route.LIVE_DATA and self.use_guard:
             response = self._handle_live_data(query, decision)
-        elif route == Route.UNKNOWN:
+        elif route == Route.UNKNOWN and self.use_guard:
             response = ChatResponse("I could not interpret that question.",
                                      route.value, "NOT AVAILABLE")
         else:

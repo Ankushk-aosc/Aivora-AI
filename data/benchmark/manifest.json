@@ -49,7 +49,20 @@
     "unable to answer",
     "need more information",
     "not provided",
-    "cannot answer"
+    "cannot answer",
+    "don't have access",
+    "do not have access",
+    "cannot be calculated",
+    "can't calculate",
+    "cannot calculate",
+    "would need",
+    "is not given",
+    "are not given",
+    "was not provided",
+    "could not identify a complete calculation",
+    "could not identify",
+    "not identify a complete",
+    "could not be completed"
   ],
   "note": "test.jsonl is the hidden split: never used for training, tuning, prompt design or glossary edits."
 }
