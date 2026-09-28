@@ -279,6 +279,21 @@ without any training on this data. A 101M model trained on 1.9B tokens cannot
 compete with models pretrained on trillions - that is the honest conclusion of
 this project, not a bug.
 
+## Is it undertrained?
+
+No - it ran the full planned schedule and then stopped improving, which was
+measured rather than assumed:
+
+| what was tried | result |
+| --- | --- |
+| 4 pretraining sessions to the planned {meta['step']:,} steps | val settled at ~4.43; the last 10,488 steps (the learning-rate anneal to 1e-5) moved it by nothing |
+| instruction tuning at 2e-5 and at 5e-6 | both overfitted within 500 steps |
+| distillation from a 1.5B teacher | answers became fluent and well-formed; the facts stayed wrong |
+| Mixture-of-Experts routing check | balanced across all 8 layers (entropy 0.95-1.00), so no dead experts and no hidden capacity |
+
+The limit is capacity: 101M parameters trained on ~2B tokens. Style can be
+taught to a model this size; knowledge cannot.
+
 ## Architecture
 
 | | |

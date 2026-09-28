@@ -46,3 +46,4 @@ data/documents/*
 hf_export/
 hf_lora_export/
 checkpoints/qwen_finance_lora/
+checkpoints/final/
