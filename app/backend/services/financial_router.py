@@ -169,8 +169,20 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
     # 2. Explicit reference to a document.
     if doc_hits:
         definitional = any(p in text for p in ("what is a", "what is an", "what is the purpose",
-                                               "what are the", "define", "what does a"))
-        if not has_document and definitional:
+                                               "what are the", "define", "what does a",
+                                               # "What is the MD&A section of an annual
+                                               # report?" asks what a section IS, while
+                                               # "What is the revenue in this report?"
+                                               # asks to read one, so the test is the
+                                               # word "section", not "what is the".
+                                               "section of", "section in",
+                                               "what is the md&a", "section is"))
+        # An interpretive question that merely mentions a report type ("Why do
+        # regulators require quarterly reporting?") was answered "no document is
+        # currently loaded", which answers nothing.
+        from app.backend.services.question_focus import is_interpretive
+
+        if not has_document and (definitional or is_interpretive(query)):
             # "What is a 10-K?" names a filing type but asks for a definition.
             # Answering "no document is loaded" is a non-answer, which is what
             # the baseline measured for the reporting category.

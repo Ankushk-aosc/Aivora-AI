@@ -179,10 +179,48 @@ def index_kind():
     return type(_INDEX).__name__ if _INDEX else "not built"
 
 
+# Above this similarity the embedding is trusted on its own; below it, the
+# retrieved term also has to be what the question is about.
+FOCUS_EXEMPT_SCORE = 0.75
+
+# Entries whose NAME is built from words common across finance are false-positive
+# magnets for similarity search: they share vocabulary with half the domain while
+# meaning something specific. They stay in the glossary - the keyword path needs
+# the literal term and is precise - but they are not offered as paraphrase
+# matches. "What happens to prices when money loses value over time?" (the answer
+# is inflation) retrieved "time value of money" at 0.545, above legitimate
+# paraphrase matches at 0.455-0.488, so no threshold separates them.
+RETRIEVAL_EXCLUDED_TERMS = {"time value of money"}
+
+
 def retrieve_definition(question, knowledge_base):
-    """Best glossary entry for a paraphrased question, or None."""
-    hits = get_index(knowledge_base).search(question, top_k=1)
+    """Best glossary entry for a paraphrased question, or None.
+
+    The focus check is the precision guard measured as necessary in
+    reports/remaining_bottleneck.md: 10 of 33 remaining failures were a
+    confidently retrieved entry about something adjacent - "the difference
+    between an operating lease and a finance lease" answered with operating cash
+    flow. A near-miss definition is worse than no answer, because the pipeline's
+    fallback is honest about not knowing.
+    """
+    from app.backend.services.question_focus import (
+        has_explicit_subject, matches_focus,
+    )
+
+    hits = get_index(knowledge_base).search(question, top_k=3)
     if not hits:
         return None
-    score, keys, text = hits[0]
-    return {"text": text, "score": round(score, 3), "term": keys[0]}
+
+    # Only a question that NAMES its subject can have a retrieved term checked
+    # against it. For a paraphrase that describes a situation, the existing score
+    # and shared-stem gating in SemanticIndex/GlossaryIndex is what decides.
+    check_focus = has_explicit_subject(question)
+    for score, keys, text in hits:
+        if any(key in RETRIEVAL_EXCLUDED_TERMS for key in keys):
+            continue
+        if score >= FOCUS_EXEMPT_SCORE:
+            return {"text": text, "score": round(score, 3), "term": keys[0]}
+        if check_focus and not any(matches_focus(key, question) for key in keys):
+            continue
+        return {"text": text, "score": round(score, 3), "term": keys[0]}
+    return None

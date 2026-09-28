@@ -121,6 +121,41 @@ INSUFFICIENT_TRAINING_MESSAGE = (
 
 # Comprehensive financial knowledge glossary for domain concepts
 FINANCIAL_KNOWLEDGE_BASE = {
+    # --- reporting and filings (measured coverage gap) ---
+    ("10-k", "10k", "annual report on form 10-k"): "A 10-K is the annual report a US public company files with the SEC: audited financial statements, a description of the business, risk factors, and management's discussion and analysis. It is far more detailed than the glossy annual report sent to shareholders.",
+    ("10-q", "10q", "quarterly filing"): "A 10-Q is the quarterly report filed with the SEC. It carries unaudited financial statements and an update on the business, and is due within 40-45 days of the quarter end.",
+    ("8-k", "8k", "current report"): "An 8-K is a report of a material event filed with the SEC between the periodic reports - an acquisition, a change of auditor or executive, bankruptcy, or any development investors need promptly rather than at quarter end.",
+    ("annual report",): "An Annual Report presents a company's audited financial statements and management's account of the year to shareholders and regulators. It exists so the people who own the company, and the market pricing it, can see what happened without relying on management's informal word.",
+    ("md&a", "management discussion and analysis", "management's discussion"): "MD&A - Management's Discussion and Analysis - is the section of an annual or quarterly report where management explains the results in their own words: what drove revenue and margins, the liquidity position, known trends and risks, and the outlook. It is management's narrative, not the auditor's.",
+    ("proxy statement", "def 14a", "proxy"): "A Proxy Statement is the document sent to shareholders before a vote, usually ahead of the annual meeting. It sets out the matters to be voted on - election of directors, auditor ratification, executive compensation, shareholder resolutions - so owners can vote informedly or appoint a proxy to vote for them.",
+    ("internal control over financial reporting", "internal control", "internal controls", "icfr"): "Internal Control over Financial Reporting is the set of processes that give reasonable assurance the reported figures are reliable: authorisation, reconciliation, segregation of duties, review. Management must assess it and, for larger filers, the auditor must attest to it, because prevention and detection of error or fraud is what makes the statements trustworthy.",
+    ("materiality", "material information"): "Materiality is the threshold at which information matters: an item is material if omitting or misstating it would change the decision of a reasonable investor. It is judged by size and by nature - a small payment can be material if it is a bribe.",
+    ("restatement", "restate", "restated financials"): "A Restatement is a correction of previously issued financial statements that were materially wrong. It signals that the original figures could not be relied on, and the cause - error, control failure, or fraud - matters more than the size of the adjustment.",
+    ("going concern", "going-concern qualification"): "Going Concern is the assumption that a business will continue operating for at least the next twelve months. When the auditor doubts it, the accounts carry a going-concern qualification: not a prediction of failure, but a statement that survival depends on things not yet secured, such as refinancing.",
+    ("subsequent event", "subsequent events"): "A Subsequent Event is something material that happens after the reporting period ends but before the statements are issued - a large acquisition, a fire, a lawsuit settled. Depending on whether it reveals a condition that existed at the period end, it is either reflected in the figures or disclosed in the notes.",
+    ("notes to the financial statements", "footnotes", "notes to the accounts"): "The Notes to the Financial Statements explain the accounting policies applied and give the detail behind the headline numbers: segment breakdowns, debt maturities, lease commitments, contingencies, assumptions behind estimates. The statements cannot be read honestly without them.",
+    ("segment disclosure", "segment reporting", "segment information"): "Segment Disclosure breaks results down by business line or geography, reported the way management actually runs the company. It is what lets an outsider see which parts earn money and which are carried by the rest.",
+    ("related-party transaction", "related party transaction", "related parties"): "A Related-Party Transaction is a dealing with an insider or an affiliated entity - a director, a major shareholder, a subsidiary, a family member. It must be disclosed because it may not be at arm's length, and terms set by someone on both sides of a deal cannot be assumed fair.",
+    ("ifrs", "us gaap", "gaap", "accounting standards"): "IFRS and US GAAP are the two main frameworks of accounting standards - IFRS used across most of the world, US GAAP in the United States. They agree on most principles but differ in rules and in style: IFRS is more principles-based, US GAAP more prescriptive, with concrete differences in inventory (LIFO is barred under IFRS), development costs, and lease and impairment treatment. The same business can report different profits under each.",
+    ("unqualified opinion", "clean opinion", "audit opinion", "auditor's opinion"): "An Unqualified - or clean - audit opinion states that the financial statements are fairly presented in accordance with the applicable standards, with no reservations. It is an opinion on the statements, not a verdict on whether the business is a good one.",
+    ("contingent liability", "contingent liabilities"): "A Contingent Liability is a possible obligation whose existence depends on the outcome of a future event, typically litigation or a guarantee. If the outflow is probable and measurable it is provided for; if merely possible it is disclosed in the notes.",
+    # --- accounting concepts (measured coverage gap) ---
+    ("accounting equation", "balance sheet equation"): "The Accounting Equation is Assets = Liabilities + Shareholders' Equity. Everything a company controls was financed either by borrowing or by its owners, which is why a balance sheet balances by construction rather than by luck.",
+    ("double-entry bookkeeping", "double entry", "debits and credits"): "Double-Entry Bookkeeping records every transaction twice, as a debit in one account and an equal credit in another, so the books always balance. The discipline is what makes errors detectable: a single missing entry shows up as an imbalance.",
+    ("revenue recognition", "recognise revenue", "recognize revenue"): "Revenue Recognition is the rule for when revenue may be recorded: when control of the goods or services transfers to the customer, not when the order is placed or the cash arrives. Cash received in advance is a liability until the obligation is performed.",
+    ("provision", "provisions"): "A Provision is a liability recognised for a probable future cost whose exact amount is uncertain and must be estimated - warranty claims, restructuring, litigation. It charges profit in the period the obligation arises rather than when the cash is eventually paid.",
+    ("deferred revenue", "deferred revenue liability", "unearned revenue"): "Deferred Revenue is cash received before the goods or services have been delivered. It sits as a liability because the company owes the performance, not the money, and becomes revenue only as the obligation is fulfilled.",
+    ("accrued expenses", "accruals", "accrued liabilities"): "Accrued Expenses are costs already incurred but not yet paid or invoiced - wages earned, interest accumulated, services received. They are recorded as liabilities so the period bears the cost it actually caused.",
+    ("capitalising a cost", "capitalise", "capitalize", "capitalisation of costs"): "Capitalising a cost puts it on the balance sheet as an asset and spreads it through depreciation or amortization, instead of charging it to profit at once. The choice moves profit between periods without changing the cash spent, which is why the policy matters when comparing companies.",
+    ("operating lease", "finance lease", "capital lease", "lease accounting"): "A Finance (or capital) lease transfers substantially all the risks and rewards of ownership to the lessee, which therefore recognises the asset and the debt; an Operating lease does not, and is closer to renting. Under current standards most leases appear on the balance sheet either way, but the distinction still drives how the cost is split between depreciation and interest.",
+    ("impairment", "impairment charge", "write-down"): "An Impairment Charge is recognised when an asset's recoverable amount falls below its carrying value on the balance sheet - the value written down to what it is actually worth. It is non-cash, and for goodwill it is the only route by which the balance sheet admits an acquisition disappointed.",
+    ("inventory accounting", "fifo", "lifo"): "FIFO and LIFO are inventory cost-flow assumptions. FIFO charges the oldest costs to cost of goods sold, LIFO the newest. With prices rising, FIFO reports higher profit and higher closing inventory, LIFO lower profit and lower tax. The goods on the shelf are identical - only the cost assignment differs.",
+    # --- valuation and concepts (measured coverage gap) ---
+    ("discounting", "discount rate", "present value"): "Discounting converts a future cash flow into what it is worth today, dividing by (1 + r)^n where r is the required rate of return. It is the arithmetic of the time value of money: a pound next year is worth less than a pound now, because the pound now can earn a return in the meantime.",
+    ("time value of money",): "The Time Value of Money is the principle that a sum today is worth more than the same sum later, because it can be invested and earn a return in between. Every discounting and compounding calculation in finance follows from it.",
+    ("market capitalisation", "market capitalization", "market cap"): "Market Capitalisation is the share price multiplied by the number of shares outstanding - the market's valuation of the company's equity. It excludes debt, which is why enterprise value is used when comparing businesses financed differently.",
+    ("capital expenditure", "capex", "capital spending"): "Capital Expenditure is spending on long-lived assets - property, plant, equipment, and capitalised software. It is investment rather than an operating cost: the cash goes out now and the expense reaches the income statement later through depreciation.",
+    ("dividend payout ratio", "payout ratio"): "The Dividend Payout Ratio is dividends divided by net income - the share of profit returned to shareholders rather than retained. A high ratio leaves less to fund growth or repay debt; a ratio above 100% is being paid out of reserves or borrowing.",
     # --- core accounting ---
     ("depreciation",): "Depreciation spreads the cost of a tangible asset (machinery, vehicles, buildings) across its useful life instead of expensing it all at once. It is a non-cash charge: profit falls, but no cash leaves the business that period.",
     ("amortization", "amortisation"): "Amortization spreads the cost of an intangible asset (patents, licences, software, goodwill) across its useful life. It is the intangible-asset equivalent of depreciation, and likewise non-cash. The word also describes paying off a loan in instalments of principal plus interest.",
@@ -154,7 +189,7 @@ FINANCIAL_KNOWLEDGE_BASE = {
     ("wacc", "cost of capital", "weighted average cost of capital"): "WACC stands for Weighted Average Cost of Capital: the blended cost of a company's debt and equity, weighted by how much of each it uses. It is the usual discount rate for valuing its cash flows.",
     ("payback period",): "The Payback Period is how long an investment takes to repay its initial cost from its cash inflows. It is simple but ignores everything that happens after payback, and the time value of money.",
     ("ipo", "initial public offering"): "An Initial Public Offering is the first sale of a private company's shares to the public, raising capital and creating a listed market in its stock.",
-    ("share buyback", "buyback", "share repurchase"): "A Share Buyback is a company purchasing its own shares, reducing the share count so each remaining share represents a larger claim on earnings. It is an alternative to paying dividends.",
+    ("share buyback", "buyback", "share repurchase"): "A Share Buyback is a company repurchasing its own shares, reducing the share count so each remaining share represents a larger claim on earnings. It is an alternative to paying dividends.",
     ("stock split",): "A Stock Split divides existing shares into more shares at a proportionally lower price. The holding's total value is unchanged; only the unit price and share count move.",
     ("preferred stock", "preference shares"): "Preferred Stock pays a fixed dividend and ranks ahead of common stock for dividends and in liquidation, but usually carries no voting rights.",
     ("common stock", "ordinary shares"): "Common Stock represents ordinary ownership in a company, usually carrying voting rights and a residual claim on profits and assets after all other claims are settled.",
@@ -174,7 +209,7 @@ FINANCIAL_KNOWLEDGE_BASE = {
     ("bull market",): "A Bull Market is a sustained period of rising prices and optimism, conventionally a rise of 20% or more from recent lows.",
     ("bear market",): "A Bear Market is a sustained period of falling prices, conventionally a decline of 20% or more from recent highs.",
     # --- economics ---
-    ("inflation",): "Inflation is the rate at which the general price level rises, reducing what each unit of currency buys. Central banks typically target around 2% a year.",
+    ("inflation", "purchasing power", "rising prices"): "Inflation is the rate at which the general price level rises, reducing what each unit of currency buys: prices go up and money loses purchasing power over time. Central banks typically target around 2% a year.",
     ("deflation",): "Deflation is a sustained fall in the general price level. It raises the real burden of debt and can cause spending to be postponed, deepening downturns.",
     ("interest rate",): "An Interest Rate is the price of borrowing money, expressed as a percentage of the amount borrowed per period. Policy rates set by central banks influence rates across the economy.",
     ("monetary policy",): "Monetary Policy is a central bank's management of interest rates and money supply to influence inflation and economic activity.",
@@ -494,16 +529,48 @@ class FinancialChat:
         return ChatResponse(LIVE_DATA_UNAVAILABLE, Route.LIVE_DATA.value, "NOT AVAILABLE",
                              {"note": "No live market-data provider is configured."})
 
-    def _lookup_financial_knowledge(self, query: str):
+    def _lookup_financial_knowledge(self, query: str, require_focus: bool = True):
+        """The glossary entry for this question, or None.
+
+        `require_focus` is the precision guard. A key appearing ANYWHERE in the
+        question used to be enough, which is how "What is discounting in a
+        valuation?" was answered with the definition of valuation, and how "A
+        company is profitable but keeps running out of cash" was answered with
+        the definition of EPS. The key now has to be what the question is
+        about - see question_focus.matches_focus - and when it is not, this
+        returns None so a wrong definition is never presented as an answer.
+        """
+        from app.backend.services.question_focus import matches_focus
+
         lowered = query.lower().strip()
         # Longest key first: "shareholders equity" must win over "equity",
         # otherwise "What is shareholders equity?" is answered with the
         # definition of a stock, which is what used to happen.
-        best_text, best_len = None, 0
+        from app.backend.services.question_focus import focus_phrases
+
+        phrases = [p.lower() for p in focus_phrases(query)]
+
+        def focus_rank(key):
+            """Which focus phrase this key answers; 0 is the question's subject.
+
+            Ranking by specificity, not just key length, is what makes "the MD&A
+            section of an annual report" return MD&A rather than the (longer)
+            annual-report entry."""
+            for index, phrase in enumerate(phrases):
+                if key in phrase or phrase in key:
+                    return index
+            return len(phrases)
+
+        best_text, best_score = None, None
         for keys, text in FINANCIAL_KNOWLEDGE_BASE.items():
             for key in keys:
-                if key in lowered and len(key) > best_len:
-                    best_text, best_len = text, len(key)
+                if key not in lowered:
+                    continue
+                if require_focus and not matches_focus(key, query):
+                    continue
+                score = (focus_rank(key), -len(key))
+                if best_score is None or score < best_score:
+                    best_text, best_score = text, score
         return best_text
 
     def _handle_model(self, query, decision, route):
@@ -513,9 +580,33 @@ class FinancialChat:
         # the singular "liability"). A checked definition beats generated prose
         # whichever bucket the router chose.
         if self.use_knowledge and route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL):
+            # A diagnostic question ("EBITDA rose while EBIT fell - why?") is not
+            # asking for a definition, and answering it with one is how the
+            # baseline's interpretation category scored 25%. These are checked
+            # first, and a definition is not offered at all when the question is
+            # interpretive.
+            from app.backend.services.analysis_patterns import match_pattern
+            from app.backend.services.question_focus import is_interpretive
+
+            pattern = match_pattern(query)
+            if pattern:
+                answer = f"{pattern['text']}\n\n({DISCLAIMER})"
+                return ChatResponse(answer, route.value,
+                                     "FINANCIAL ANALYSIS PATTERN (CURATED)",
+                                     {"model_output": None,
+                                      "knowledge_source": "analysis_pattern",
+                                      "pattern": pattern["pattern"],
+                                      "signals": pattern["signals"]})
+            # An interpretive question can still be answered by the entry for
+            # its own subject: "Why is depreciation called a non-cash expense?"
+            # is answered by the depreciation entry, which says exactly that.
+            # What must stay blocked is an entry about something adjacent, and
+            # the focus check already enforces that.
+            interpretive = is_interpretive(query)
+
             definitional_phrases = ["what is", "what are", "define", "meaning of", "explain", "tell me about", "what does", "definition", "difference between"]
             lowered = query.lower().strip()
-            if any(p in lowered for p in definitional_phrases):
+            if interpretive or any(p in lowered for p in definitional_phrases):
                 knowledge = self._lookup_financial_knowledge(query)
                 if knowledge:
                     answer = f"{knowledge}\n\n({DISCLAIMER})"
@@ -526,7 +617,8 @@ class FinancialChat:
         # above needs a glossary term to appear literally, so "how do I know if
         # a company can pay its short-term bills?" misses every entry and would
         # otherwise be answered by a 101M model that gets it wrong.
-        if self.use_knowledge and route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL):
+        if self.use_knowledge and route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL) \
+                and not is_interpretive(query):
             try:
                 from app.backend.services.knowledge_retrieval import retrieve_definition
 
