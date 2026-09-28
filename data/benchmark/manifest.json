@@ -1,0 +1,55 @@
+{
+  "dev_examples": 795,
+  "test_examples": 204,
+  "duplicates_dropped": {
+    "dev": 28,
+    "test": 5
+  },
+  "test_items_removed_for_overlapping_dev": 6,
+  "by_kind": {
+    "generated": 896,
+    "authored": 103
+  },
+  "by_category": {
+    "concepts": 31,
+    "extraction": 125,
+    "accounting": 53,
+    "corporate_finance": 116,
+    "valuation": 125,
+    "statements": 146,
+    "hallucination": 46,
+    "reasoning": 134,
+    "ratios": 175,
+    "reporting": 18,
+    "interpretation": 18,
+    "general": 12
+  },
+  "by_level": {
+    "2": 286,
+    "1": 142,
+    "3": 344,
+    "4": 86,
+    "5": 141
+  },
+  "graded_by": {
+    "numeric_tolerance": 850,
+    "rubric": 103,
+    "abstention": 46
+  },
+  "abstention_markers": [
+    "insufficient information",
+    "not enough information",
+    "cannot be determined",
+    "can't be determined",
+    "cannot determine",
+    "not available",
+    "i don't know",
+    "i do not know",
+    "no information",
+    "unable to answer",
+    "need more information",
+    "not provided",
+    "cannot answer"
+  ],
+  "note": "test.jsonl is the hidden split: never used for training, tuning, prompt design or glossary edits."
+}

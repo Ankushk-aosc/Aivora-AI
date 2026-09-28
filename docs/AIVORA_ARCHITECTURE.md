@@ -194,8 +194,8 @@ checkpoint contradicts the evidence above.
 | plan phase | status |
 | --- | --- |
 | 1 baseline preservation | tracker exists; needs per-experiment dirs for the new work |
-| 2 benchmark (~1,000 q) | **45 + 50 exist.** Building 1,000 is the single largest task and needs authored, licence-clean content |
-| 3 baseline evaluation | partly: per-category scores exist; no hallucination/abstention or extraction metrics |
+| 2 benchmark (~1,000 q) | **built: 999 items** (795 dev / 204 hidden test) in `data/benchmark/`, 896 generated with computed answers + 103 authored with rubrics, 46 abstention items; `tests/test_benchmark.py` recomputes 204 answers and verifies split hygiene |
+| 3 baseline evaluation | scorer built (`evaluation/benchmark.py`: hallucination rate, abstention accuracy, over-abstention, per-level, extraction); the report itself is next |
 | 4–5 dataset + reasoning levels | builder exists (38k); no difficulty levels, no statement-analysis data |
 | 6 instruction tuning | 2 runs done; 1e-6…5e-6 untested |
 | 7 distillation v2 | v1 done; verifier stage **not** built |

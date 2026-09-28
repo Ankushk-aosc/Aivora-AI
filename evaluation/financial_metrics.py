@@ -9,7 +9,9 @@ import re
 
 _PUNCT_RE = re.compile(r"[^\w\s%./-]")
 _WS_RE = re.compile(r"\s+")
-_NUMBER_RE = re.compile(r"-?\d+(?:\.\d+)?")
+# Thousands separators must be part of the token: without the first branch,
+# "4,532.00" parses as 4 and 532.0 and a correct answer scores zero.
+_NUMBER_RE = re.compile(r"-?\d{1,3}(?:,\d{3})+(?:\.\d+)?|-?\d+(?:\.\d+)?")
 
 
 def normalize(text: str) -> str:
@@ -47,7 +49,7 @@ def keyword_coverage(prediction: str, keywords) -> float:
 
 
 def extract_numbers(text: str):
-    return [float(n) for n in _NUMBER_RE.findall(text or "")]
+    return [float(n.replace(",", "")) for n in _NUMBER_RE.findall(text or "")]
 
 
 def numeric_match(prediction: str, expected_value: float, tolerance: float = 0.01) -> bool:
@@ -135,6 +137,26 @@ def rubric_match(prediction: str, required_any) -> bool:
         if not any(normalize(option) in pred for option in options):
             return False
     return True
+
+
+# Phrasings that count as declining to answer. An abstention is the CORRECT
+# answer when the question cannot be answered from what was given, and a wrong
+# answer to such a question is a hallucination - so this list decides which of
+# the two a response was.
+ABSTENTION_MARKERS = (
+    "insufficient information", "not enough information", "cannot be determined",
+    "can't be determined", "cannot determine", "not available", "i don't know",
+    "i do not know", "no information", "unable to answer", "need more information",
+    "not provided", "cannot answer", "don't have access", "do not have access",
+    "cannot be calculated", "can't calculate", "cannot calculate",
+    "would need", "is not given", "are not given", "was not provided",
+)
+
+
+def abstained(prediction: str) -> bool:
+    """True if the response declines rather than asserting an answer."""
+    pred = normalize(prediction)
+    return any(normalize(marker) in pred for marker in ABSTENTION_MARKERS)
 
 
 def aggregate(results):
