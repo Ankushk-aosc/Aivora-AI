@@ -1,0 +1,71 @@
+# E1 - format-controlled comparison. See docs/AIVORA_TRAINING_DECISION.md.
+#
+# Two arms train from scratch on the SAME corpus with the SAME budget and the
+# same seed. They differ only in three data-format flags:
+#
+#   arm 1 (control): document_separator=false, template=false, mask_prompt=false
+#                    - reproduces the pipeline that produced checkpoint_247850
+#   arm 2 (treated): all three true
+#
+# The question: is the model weak because it was under-fed (data), or because it
+# was trained to continue text rather than to answer and stop (format)?
+#
+# Everything below is identical for both arms. The arm is chosen by the
+# TrainingFormat passed to prepare_dataset, not by this file.
+
+name: e1_format
+description: "E1 format-controlled comparison, fresh start, same corpus both arms."
+
+# Same corpus budget as the completed run, so the comparison is against a known
+# quantity: 120,857,129 unique tokens were produced from this budget.
+train_tokens: 121500000
+validation_tokens: 4900000
+
+# Token PASSES, not unique tokens: 2 epochs over ~121M. The notebook converts
+# this into max_steps using the actual per-step token count, because that
+# depends on how many GPUs Kaggle assigns (4,096 tokens/step on one, 8,192 on
+# two) - the mistake that made the original run's step target ambiguous.
+train_token_passes: 242000000
+max_steps: 29541  # 242,000,000 / 8,192 - the two-GPU case; recomputed at runtime
+
+# Fresh start, so the from-scratch learning rate applies. No `continuation`
+# block: resuming is not part of this experiment.
+learning_rate: 3.0e-4
+min_lr: 3.0e-5
+warmup_steps: 2000
+grad_clip: 1.0
+
+# batch_size 4 is what actually fits on the P100 this account is assigned
+# (8 and 16 both OOM at seq_len 1024 - measured, see configs/financial_poc.yaml).
+batch_size: 4
+seq_len: 1024
+
+# DEVIATION FROM THE BASELINE RECIPE, stated because it matters: the completed
+# run used gradient_accumulation_steps 32 (effective batch 128). This run is
+# ~30k micro-steps, and at accumulation 32 that is only ~920 optimizer updates -
+# too few to learn anything, which would make a null result meaningless. At 4 it
+# is ~7,400 updates with an effective batch of 16 sequences. Both arms use the
+# same value, so the comparison is unaffected; only the comparison to the
+# original checkpoint is loosened.
+gradient_accumulation_steps: 4
+
+eval_interval: 1000
+eval_iters: 50
+keep_last_checkpoints: 3
+divergence_val_threshold: 12.0
+
+# Kaggle cuts sessions at ~12 hours. At the measured ~10,500 tokens/second this
+# run is ~6.4 hours, leaving room for preparation in the same session.
+max_train_seconds: 30600  # 8.5 hours
+
+dataset_mix:
+  financial_instruction: 0.05
+  financial_qa: 0.15
+  financial_reasoning: 0.10
+  financial_reports: 0.10
+  financial_text: 0.20
+  fineweb_edu: 0.20
+  general_dialogue: 0.05
+  general_instruction: 0.05
+  general_qa: 0.05
+  general_reasoning: 0.05
