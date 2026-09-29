@@ -1,0 +1,880 @@
+{
+  "split": "dev",
+  "examples": 60,
+  "checkpoint": "checkpoints\\final\\checkpoint_247850.pt",
+  "checkpoint_sha256": "6e9e50ca59e5d5beb70b555a9ff07e0d30bcbd1097232e64bc04c4142eb4b004",
+  "seed": 1234,
+  "benchmarks": {
+    "system": {
+      "benchmark": "system",
+      "description": "the served pipeline: every layer enabled, Aivora as fallback",
+      "flags": {},
+      "examples": 60,
+      "seconds": 0.6,
+      "seconds_per_question": 0.01,
+      "summary": {
+        "overall": {
+          "total": 60,
+          "correct": 60,
+          "accuracy": 100.0
+        },
+        "answerable": {
+          "total": 57,
+          "correct": 57,
+          "accuracy": 100.0
+        },
+        "by_category": {
+          "accounting": {
+            "total": 2,
+            "correct": 2,
+            "accuracy": 100.0
+          },
+          "concepts": {
+            "total": 2,
+            "correct": 2,
+            "accuracy": 100.0
+          },
+          "corporate_finance": {
+            "total": 9,
+            "correct": 9,
+            "accuracy": 100.0
+          },
+          "extraction": {
+            "total": 16,
+            "correct": 16,
+            "accuracy": 100.0
+          },
+          "hallucination": {
+            "total": 3,
+            "correct": 3,
+            "accuracy": 100.0
+          },
+          "ratios": {
+            "total": 9,
+            "correct": 9,
+            "accuracy": 100.0
+          },
+          "reasoning": {
+            "total": 6,
+            "correct": 6,
+            "accuracy": 100.0
+          },
+          "statements": {
+            "total": 4,
+            "correct": 4,
+            "accuracy": 100.0
+          },
+          "valuation": {
+            "total": 9,
+            "correct": 9,
+            "accuracy": 100.0
+          }
+        },
+        "by_level": {
+          "1": {
+            "total": 16,
+            "correct": 16,
+            "accuracy": 100.0
+          },
+          "2": {
+            "total": 13,
+            "correct": 13,
+            "accuracy": 100.0
+          },
+          "3": {
+            "total": 22,
+            "correct": 22,
+            "accuracy": 100.0
+          },
+          "4": {
+            "total": 3,
+            "correct": 3,
+            "accuracy": 100.0
+          },
+          "5": {
+            "total": 6,
+            "correct": 6,
+            "accuracy": 100.0
+          }
+        },
+        "by_kind": {
+          "authored": {
+            "total": 3,
+            "correct": 3,
+            "accuracy": 100.0
+          },
+          "generated": {
+            "total": 57,
+            "correct": 57,
+            "accuracy": 100.0
+          }
+        },
+        "hallucination_rate": 0.0,
+        "over_abstention_rate": 0.0,
+        "abstention_accuracy": 100.0,
+        "abstention_items": 3,
+        "extraction_accuracy": 100.0,
+        "invocation_pct": {
+          "calculator": 68.33,
+          "extraction": 26.67,
+          "glossary": 5.0
+        },
+        "correct_by_component": {
+          "glossary": {
+            "answered": 3,
+            "correct": 3,
+            "accuracy": 100.0
+          },
+          "extraction": {
+            "answered": 16,
+            "correct": 16,
+            "accuracy": 100.0
+          },
+          "calculator": {
+            "answered": 41,
+            "correct": 41,
+            "accuracy": 100.0
+          }
+        }
+      },
+      "details": [
+        {
+          "id": "dev_auth_0028",
+          "category": "concepts",
+          "level": 2,
+          "kind": "authored",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "rubric",
+          "prediction": "Amortization spreads the cost of an intangible asset (patents, licences, software, goodwill) across its useful life. It is the intangible-asset equivalent of depreciation, and likewise non-cash. The word also describes paying off a loan in instalments of principal plus interest.\n\n(Educational information from a research POC model - not personalized financial advice.)",
+          "component": "glossary",
+          "route": "FINANCIAL_KNOWLEDGE"
+        },
+        {
+          "id": "dev_extract_0041",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Debt\nValue: 3,735.00\nRead directly from the figures provided: \"Total debt: 3,735.00\"",
+          "field": "Total debt",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_stmt_0028",
+          "category": "accounting",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Shareholders' Equity\nFormula / Breakdown: Total Assets - Total Liabilities\nInputs: total_assets = 11,240.00, total_liabilities = 3,372.00\nequity = 11,240.00 - 3,372.00 = 7,868.00\nResult: 7,868.00",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0066",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Liabilities\nValue: 2,965.00\nRead directly from the figures provided: \"Total liabilities: 2,965.00\"",
+          "field": "Total liabilities",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_corp_0085",
+          "category": "corporate_finance",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Dividend Payout Ratio\nFormula / Breakdown: Dividends / Net Income x 100\nInputs: dividends = 362.00, net_income = 905.00\nResult: 40.00%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_val_0053",
+          "category": "valuation",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: CAGR\nFormula / Breakdown: ((Ending / Beginning)^(1/Years) - 1) x 100\nInputs: beginning_value = 260.00, ending_value = 454.74, years = 4.00\nResult: 15.00%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_stmt_0098",
+          "category": "statements",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: EBIT\nFormula / Breakdown: Revenue - COGS - Operating Expenses - D&A\nInputs: revenue = 6,805.00, cogs = 4,423.25, operating_expenses = 680.50, depreciation_amortization = 136.10\ngross profit = 6,805.00 - 4,423.25 = 2,381.75\nEBITDA = 2,381.75 - 680.50 = 1,701.25\nEBIT = 1,701.25 - 136.10 = 1,565.15\nResult: 1,565.15",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_val_0034",
+          "category": "valuation",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: EPS\nFormula / Breakdown: Net Income / Shares Outstanding\nInputs: net_income = 220.00, shares_outstanding = 360.00\nResult: 0.61",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_corp_0064",
+          "category": "corporate_finance",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: WACC\nFormula / Breakdown: We x Re + Wd x Rd x (1 - tax rate)\nInputs: equity_weight = 0.70, cost_of_equity = 0.08, debt_weight = 0.30, cost_of_debt = 0.05, tax_rate = 0.20\nResult: 6.80%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_corp_0079",
+          "category": "corporate_finance",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Debt/EBITDA\nFormula / Breakdown: Total Debt / EBITDA\nInputs: total_debt = 4,875.00, ebitda = 1,210.00\nResult: 4.03x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0000",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Revenue\nValue: 7,170.00\nRead directly from the figures provided: \"Revenue: 7,170.00\"",
+          "field": "Revenue",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_val_0067",
+          "category": "valuation",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: P/E\nFormula / Breakdown: Price per Share / Earnings per Share\nInputs: price_per_share = 150.25, earnings_per_share = 4.02\nResult: 37.38x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_abstain_0012",
+          "category": "hallucination",
+          "level": 4,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_abstention",
+          "graded_by": "abstention",
+          "prediction": "I could not identify a complete calculation from the values provided. Values I parsed: {'revenue': 2420.0}. Available calculations: asset_turnover, cagr, current_ratio, dcf, debt_to_ebitda, debt_to_equity, dividend_payout, ebitda_margin, enterprise_value, eps, ev_to_ebitda, free_cash_flow, gross_margin, income_statement_breakdown, interest_coverage, net_profit_margin, operating_margin, pe_ratio, quick_ratio, revenue_growth, roa, roe, roic, simple_profit, wacc.",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0076",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Cash\nValue: 2,700.00\nRead directly from the figures provided: \"Cash: 2,700.00\"",
+          "field": "Cash",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_extract_0059",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Debt\nValue: 3,105.00\nRead directly from the figures provided: \"Total debt: 3,105.00\"",
+          "field": "Total debt",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_extract_0014",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Debt\nValue: 2,925.00\nRead directly from the figures provided: \"Total debt: 2,925.00\"",
+          "field": "Total debt",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_corp_0050",
+          "category": "corporate_finance",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Free Cash Flow\nFormula / Breakdown: Operating Cash Flow - Capital Expenditure\nInputs: operating_cash_flow = 2,275.00, capital_expenditure = 735.00\nResult: 1,540.00",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0091",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Net Income\nValue: 370.00\nRead directly from the figures provided: \"Net income: 370.00\"",
+          "field": "Net income",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_multi_0073",
+          "category": "reasoning",
+          "level": 5,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: P/E Ratio\nFormula / Breakdown: Share Price / (Net Income / Shares Outstanding)\nInputs: net_income = 385.00, shares = 175.00, price_per_share = 197.90\nEPS = 385.00 / 175.00 = 2.20\nResult: 89.95x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0074",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Assets\nValue: 5,510.00\nRead directly from the figures provided: \"Total assets: 5,510.00\"",
+          "field": "Total assets",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_abstain_0030",
+          "category": "hallucination",
+          "level": 4,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_abstention",
+          "graded_by": "abstention",
+          "prediction": "I could not identify a complete calculation from the values provided. Values I parsed: {'current_assets': 1060.0}. Available calculations: asset_turnover, cagr, current_ratio, dcf, debt_to_ebitda, debt_to_equity, dividend_payout, ebitda_margin, enterprise_value, eps, ev_to_ebitda, free_cash_flow, gross_margin, income_statement_breakdown, interest_coverage, net_profit_margin, operating_margin, pe_ratio, quick_ratio, revenue_growth, roa, roe, roic, simple_profit, wacc.",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_ratio_0013",
+          "category": "ratios",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Debt/Equity\nFormula / Breakdown: Total Debt / Shareholders' Equity\nInputs: total_debt = 1,580.00, shareholders_equity = 960.00\nResult: 1.65x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_val_0042",
+          "category": "valuation",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: P/E\nFormula / Breakdown: Price per Share / Earnings per Share\nInputs: price_per_share = 253.93, earnings_per_share = 10.30\nResult: 24.65x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_multi_0005",
+          "category": "reasoning",
+          "level": 5,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: P/E Ratio\nFormula / Breakdown: Share Price / (Net Income / Shares Outstanding)\nInputs: net_income = 610.00, shares = 250.00, price_per_share = 76.14\nEPS = 610.00 / 250.00 = 2.44\nResult: 31.20x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_val_0079",
+          "category": "valuation",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: EPS\nFormula / Breakdown: Net Income / Shares Outstanding\nInputs: net_income = 835.00, shares_outstanding = 330.00\nResult: 2.53",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_corp_0077",
+          "category": "corporate_finance",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Dividend Payout Ratio\nFormula / Breakdown: Dividends / Net Income x 100\nInputs: dividends = 454.50, net_income = 1,515.00\nResult: 30.00%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_multi_0009",
+          "category": "reasoning",
+          "level": 5,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: P/E Ratio\nFormula / Breakdown: Share Price / (Net Income / Shares Outstanding)\nInputs: net_income = 785.00, shares = 240.00, price_per_share = 122.49\nEPS = 785.00 / 240.00 = 3.27\nResult: 37.45x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0068",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Debt\nValue: 3,855.00\nRead directly from the figures provided: \"Total debt: 3,855.00\"",
+          "field": "Total debt",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_abstain_0040",
+          "category": "hallucination",
+          "level": 4,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_abstention",
+          "graded_by": "abstention",
+          "prediction": "I could not identify a complete calculation from the values provided. Values I parsed: {'ebitda': 540.0}. Available calculations: asset_turnover, cagr, current_ratio, dcf, debt_to_ebitda, debt_to_equity, dividend_payout, ebitda_margin, enterprise_value, eps, ev_to_ebitda, free_cash_flow, gross_margin, income_statement_breakdown, interest_coverage, net_profit_margin, operating_margin, pe_ratio, quick_ratio, revenue_growth, roa, roe, roic, simple_profit, wacc.",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_multi_0080",
+          "category": "reasoning",
+          "level": 5,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: ROE\nFormula / Breakdown: Net Income / (Total Assets - Total Liabilities) x 100\nInputs: net_income = 680.00, total_assets = 7,470.00, liabilities = 2,241.00\nequity = 7,470.00 - 2,241.00 = 5,229.00\nResult: 13.00%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_corp_0016",
+          "category": "corporate_finance",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: WACC\nFormula / Breakdown: We x Re + Wd x Rd x (1 - tax rate)\nInputs: equity_weight = 0.60, cost_of_equity = 0.10, debt_weight = 0.40, cost_of_debt = 0.03, tax_rate = 0.25\nResult: 6.90%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0083",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Assets\nValue: 13,805.00\nRead directly from the figures provided: \"Total assets: 13,805.00\"",
+          "field": "Total assets",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_val_0059",
+          "category": "valuation",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: EPS\nFormula / Breakdown: Net Income / Shares Outstanding\nInputs: net_income = 100.00, shares_outstanding = 375.00\nResult: 0.27",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_ratio_0067",
+          "category": "ratios",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Quick Ratio\nFormula / Breakdown: (Current Assets - Inventory) / Current Liabilities\nInputs: current_assets = 1,395.00, inventory = 395.00, current_liabilities = 505.00\nResult: 1.98x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0027",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Revenue\nValue: 4,960.00\nRead directly from the figures provided: \"Revenue: 4,960.00\"",
+          "field": "Revenue",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_ratio_0056",
+          "category": "ratios",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: EBITDA Margin\nFormula / Breakdown: EBITDA / Revenue x 100\nInputs: ebitda = 264.50, revenue = 2,645.00\nResult: 10.00%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0095",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Debt\nValue: 1,045.00\nRead directly from the figures provided: \"Total debt: 1,045.00\"",
+          "field": "Total debt",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_auth_0037",
+          "category": "concepts",
+          "level": 3,
+          "kind": "authored",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "rubric",
+          "prediction": "Discounting converts a future cash flow into what it is worth today, dividing by (1 + r)^n where r is the required rate of return. It is the arithmetic of the time value of money: a pound next year is worth less than a pound now, because the pound now can earn a return in the meantime.\n\n(Educational information from a research POC model - not personalized financial advice.)",
+          "component": "glossary",
+          "route": "FINANCIAL_KNOWLEDGE"
+        },
+        {
+          "id": "dev_ratio_0122",
+          "category": "ratios",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Current Ratio\nFormula / Breakdown: Current Assets / Current Liabilities\nInputs: current_assets = 405.00, current_liabilities = 730.00\nResult: 0.55x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_stmt_0042",
+          "category": "statements",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Income Statement Analysis\nFormula / Breakdown: Gross Profit = 3,622.50 (50.0% margin), Operating Income = 2,535.75 (35.0% margin), Profit Before Tax (PBT) = 2,510.75\nInputs: revenue = 7,245.00, cogs = 3,622.50, operating_expenses = 1,086.75, interest_expense = 25.00, tax_expense = 0.00\nResult: 2,510.75",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_ratio_0054",
+          "category": "ratios",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: ROA\nFormula / Breakdown: Net Income / Total Assets x 100\nInputs: net_income = 85.00, total_assets = 6,565.00\nResult: 1.29%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_ratio_0078",
+          "category": "ratios",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Asset Turnover\nFormula / Breakdown: Revenue / Total Assets\nInputs: revenue = 2,070.00, total_assets = 7,955.00\nResult: 0.26x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_corp_0074",
+          "category": "corporate_finance",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Free Cash Flow\nFormula / Breakdown: Operating Cash Flow - Capital Expenditure\nInputs: operating_cash_flow = 2,305.00, capital_expenditure = 830.00\nResult: 1,475.00",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_corp_0055",
+          "category": "corporate_finance",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Debt/EBITDA\nFormula / Breakdown: Total Debt / EBITDA\nInputs: total_debt = 4,925.00, ebitda = 385.00\nResult: 12.79x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_auth_0012",
+          "category": "accounting",
+          "level": 2,
+          "kind": "authored",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "rubric",
+          "prediction": "A Finance (or capital) lease transfers substantially all the risks and rewards of ownership to the lessee, which therefore recognises the asset and the debt; an Operating lease does not, and is closer to renting. Under current standards most leases appear on the balance sheet either way, but the distinction still drives how the cost is split between depreciation and interest.\n\n(Educational information from a research POC model - not personalized financial advice.)",
+          "component": "glossary",
+          "route": "GENERAL"
+        },
+        {
+          "id": "dev_stmt_0089",
+          "category": "statements",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Income Statement Analysis\nFormula / Breakdown: Gross Profit = 1,968.00 (40.0% margin), Operating Income = 1,230.00 (25.0% margin), Profit Before Tax (PBT) = 1,120.00\nInputs: revenue = 4,920.00, cogs = 2,952.00, operating_expenses = 738.00, interest_expense = 110.00, tax_expense = 0.00\nResult: 1,120.00",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_val_0097",
+          "category": "valuation",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: P/E\nFormula / Breakdown: Price per Share / Earnings per Share\nInputs: price_per_share = 153.07, earnings_per_share = 4.55\nResult: 33.64x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_val_0098",
+          "category": "valuation",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: CAGR\nFormula / Breakdown: ((Ending / Beginning)^(1/Years) - 1) x 100\nInputs: beginning_value = 665.00, ending_value = 879.46, years = 2.00\nResult: 15.00%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_multi_0100",
+          "category": "reasoning",
+          "level": 5,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: ROE\nFormula / Breakdown: Net Income / (Total Assets - Total Liabilities) x 100\nInputs: net_income = 390.00, total_assets = 8,680.00, liabilities = 2,604.00\nequity = 8,680.00 - 2,604.00 = 6,076.00\nResult: 6.42%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_corp_0084",
+          "category": "corporate_finance",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: WACC\nFormula / Breakdown: We x Re + Wd x Rd x (1 - tax rate)\nInputs: equity_weight = 0.60, cost_of_equity = 0.12, debt_weight = 0.40, cost_of_debt = 0.03, tax_rate = 0.20\nResult: 8.16%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0002",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Assets\nValue: 19,555.00\nRead directly from the figures provided: \"Total assets: 19,555.00\"",
+          "field": "Total assets",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_extract_0009",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Revenue\nValue: 1,420.00\nRead directly from the figures provided: \"Revenue: 1,420.00\"",
+          "field": "Revenue",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_extract_0075",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Liabilities\nValue: 5,470.00\nRead directly from the figures provided: \"Total liabilities: 5,470.00\"",
+          "field": "Total liabilities",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_ratio_0127",
+          "category": "ratios",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Quick Ratio\nFormula / Breakdown: (Current Assets - Inventory) / Current Liabilities\nInputs: current_assets = 1,135.00, inventory = 330.00, current_liabilities = 185.00\nResult: 4.35x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_multi_0010",
+          "category": "reasoning",
+          "level": 5,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: EBIT\nFormula / Breakdown: EBITDA - Depreciation - Amortization\nInputs: ebitda = 2,780.00, depreciation = 195.00, amortization = 190.00\nEBIT = 2,780.00 - 195.00 - 190.00 = 2,395.00\nResult: 2,395.00",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_ratio_0025",
+          "category": "ratios",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: ROIC\nFormula / Breakdown: NOPAT / Invested Capital x 100\nInputs: nopat = 315.00, invested_capital = 4,260.00\nResult: 7.39%",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_ratio_0028",
+          "category": "ratios",
+          "level": 2,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Asset Turnover\nFormula / Breakdown: Revenue / Total Assets\nInputs: revenue = 1,560.00, total_assets = 3,345.00\nResult: 0.47x",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_val_0075",
+          "category": "valuation",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Enterprise Value\nFormula / Breakdown: Market Capitalisation + Total Debt - Cash\nInputs: market_cap = 3,090.00, total_debt = 415.00, cash = 1,000.00\nResult: 2,505.00",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        },
+        {
+          "id": "dev_extract_0057",
+          "category": "extraction",
+          "level": 1,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Total Liabilities\nValue: 2,605.00\nRead directly from the figures provided: \"Total liabilities: 2,605.00\"",
+          "field": "Total liabilities",
+          "component": "extraction",
+          "route": "EXTRACTION"
+        },
+        {
+          "id": "dev_stmt_0025",
+          "category": "statements",
+          "level": 3,
+          "kind": "generated",
+          "correct": true,
+          "outcome": "correct_answer",
+          "graded_by": "numeric",
+          "prediction": "Answer: Income Statement Analysis\nFormula / Breakdown: Gross Profit = 1,716.00 (40.0% margin), Operating Income = 858.00 (20.0% margin), Profit Before Tax (PBT) = 748.00\nInputs: revenue = 4,290.00, cogs = 2,574.00, operating_expenses = 858.00, interest_expense = 110.00, tax_expense = 0.00\nResult: 748.00",
+          "component": "calculator",
+          "route": "NUMERICAL"
+        }
+      ]
+    }
+  }
+}

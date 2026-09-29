@@ -137,6 +137,40 @@ def test_pattern_selection_by_evidence():
     check("every pattern requires >= 2 signal groups", not thin, str(thin))
 
 
+def test_retrieval_definition_vs_explanation():
+    """Part 16: the same topic, two kinds of question, two kinds of answer."""
+    chat = FinancialChat(model=None)
+
+    definition = chat.ask("What is inflation?")
+    check("definition question gets the definition",
+          "price" in definition.answer.lower()
+          and "GLOSSARY" in definition.source or "RETRIEVED" in definition.source,
+          f"{definition.source}: {definition.answer[:60]}")
+
+    # The explanation question must not be served the bare definition. Either a
+    # curated pattern answers it, or the system declines - both are honest; what
+    # it must not do is present a definition as the answer.
+    explanation = chat.ask("Why does inflation affect purchasing power?")
+    served_definition = (explanation.detail.get("knowledge_source") == "domain_glossary"
+                         and "rate at which the general price level" in explanation.answer)
+    check("explanation question is not served a bare definition",
+          not served_definition, f"{explanation.source}: {explanation.answer[:70]}")
+
+
+def test_current_data_never_answered_from_the_glossary():
+    """Part 10: a definition of X is not the current value of X."""
+    chat = FinancialChat(model=None)
+    for question in ("What is the Fed rate today?",
+                     "What is today's CPI?",
+                     "What is the current inflation rate?",
+                     "What is Apple's stock price now?"):
+        response = chat.ask(question)
+        check(f"current-data question abstains: {question[:40]}",
+              abstained(response.answer)
+              and response.detail.get("knowledge_source") != "domain_glossary",
+              f"{response.source}: {response.answer[:60]}")
+
+
 def test_routing():
     """The intent must be decided before any tool runs."""
     cases = [
@@ -295,6 +329,8 @@ def test_missing_information_still_abstains():
 def main():
     test_routing()
     test_interpretation_outranks_figures()
+    test_retrieval_definition_vs_explanation()
+    test_current_data_never_answered_from_the_glossary()
     test_definition_is_not_an_explanation()
     test_pattern_selection_by_evidence()
     test_extraction()

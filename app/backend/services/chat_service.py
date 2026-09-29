@@ -293,7 +293,8 @@ class FinancialChat:
     def __init__(self, model=None, device="cpu", document_store=None,
                  max_new_tokens=None, temperature=None, top_k=None,
                  top_p=None, repetition_penalty=None, backend=None,
-                 use_calculator=True, use_knowledge=True, use_guard=True):
+                 use_calculator=True, use_knowledge=True, use_guard=True,
+                 withhold_unsupported_model_answers=False):
         # `backend` lets the app serve any model (see services/generation.py);
         # passing `model` keeps the original behaviour for this project's own
         # checkpoints, so existing callers and tests are unaffected.
@@ -307,6 +308,11 @@ class FinancialChat:
         self.use_calculator = use_calculator
         self.use_knowledge = use_knowledge
         self.use_guard = use_guard
+        # When nothing deterministic covers a question, present nothing rather
+        # than the model's prose. Off by default: the trade-off between honesty
+        # and usefulness is the operator's to make, and both settings are
+        # measured in reports/system_after_fixes.md.
+        self.withhold_unsupported_model_answers = withhold_unsupported_model_answers
         self.model = model
         self.backend = backend
         if backend is None and model is not None:
@@ -646,6 +652,19 @@ class FinancialChat:
                                      "FINANCIAL KNOWLEDGE BASE (RETRIEVED)",
                                      {"model_output": None, "knowledge_source": "retrieval",
                                       "term": hit["term"], "score": hit["score"]})
+
+        if self.withhold_unsupported_model_answers:
+            # Nothing deterministic covered this question. Measured on 144 unseen
+            # authored prose questions: the model answered 96 and was right in 6,
+            # so presenting its prose is a hallucination roughly 94 times in 100.
+            return ChatResponse(
+                "I cannot answer this from verified sources. No calculation, "
+                "glossary entry, retrieved definition or analysis pattern covers "
+                "it, and this model's own prose is not reliable enough to present "
+                "as an answer.",
+                route.value, "NOT AVAILABLE (no verified source)",
+                {"model_output": None, "knowledge_source": None,
+                 "withheld": "unsupported_model_answer"})
 
         prompt = f"Question: {query}\nAnswer:"
         if self.use_guard:

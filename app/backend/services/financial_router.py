@@ -103,6 +103,19 @@ LIVE_DATA_TERMS = [
 # for a current value ("What is a stock split?" ... "over time").
 _TIMELESS_CONTEXT = ["over time", "at a point in time", "point in time"]
 
+# Asking for the present value of a named measure. A list of literal phrases
+# cannot cover this - "the current inflation rate" and "today's CPI" were both
+# answered from the glossary - so the shape of the request is matched instead.
+_CURRENT_VALUE_PATTERNS = [
+    re.compile(r"\bcurrent\s+(?:[a-z]+\s+){0,2}(rate|price|value|level|yield|"
+               r"figure|reading|number|inflation|cpi)\b", re.IGNORECASE),
+    re.compile(r"\btoday'?s\s+[a-z]+", re.IGNORECASE),
+    re.compile(r"\b(?:what|where)\s+(?:is|are)\b[^?]*\b(now|today|currently|"
+               r"at present|right now|this week|this month)\b", re.IGNORECASE),
+    re.compile(r"\blatest\s+(?:[a-z]+\s+){0,2}(rate|price|figure|number|result|"
+               r"reading)\b", re.IGNORECASE),
+]
+
 # References to an uploaded document.
 DOCUMENT_TERMS = [
     "this report", "the report", "this document", "the document", "attached",
@@ -160,6 +173,11 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
     # a calculation, not a live-data request.
     live_hits = [t for t in _find(text, LIVE_DATA_TERMS)
                  if not re.search(re.escape(t) + r"\s*(?:is|of|=|:|was)?\s*[₹$€£]?\s*\d", text)]
+    if not live_hits and any(p.search(query) for p in _CURRENT_VALUE_PATTERNS):
+        matched = [p.pattern[:28] for p in _CURRENT_VALUE_PATTERNS if p.search(query)]
+        live_hits = ["asks for a present value"]
+        reasons.append(f"matches a current-value request: {matched}")
+
     if any(phrase in text for phrase in _TIMELESS_CONTEXT):
         live_hits = [t for t in live_hits if t not in ("today", "currently",
                                                       "at the moment", "these days")]
