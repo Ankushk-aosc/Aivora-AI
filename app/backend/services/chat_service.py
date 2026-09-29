@@ -574,19 +574,26 @@ class FinancialChat:
         return best_text
 
     def _handle_model(self, query, decision, route):
+        from app.backend.services.question_focus import (
+            is_interpretive, supports_question,
+        )
+
         # For explicit definitional / conceptual financial questions, provide the verified domain knowledge.
         # GENERAL is included because the router misses some finance terms
         # ("What are current liabilities?" matched no term, since its list has
         # the singular "liability"). A checked definition beats generated prose
         # whichever bucket the router chose.
-        if self.use_knowledge and route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL):
+        if self.use_knowledge and route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL,
+                                            Route.INTERPRETATION):
             # A diagnostic question ("EBITDA rose while EBIT fell - why?") is not
             # asking for a definition, and answering it with one is how the
             # baseline's interpretation category scored 25%. These are checked
             # first, and a definition is not offered at all when the question is
             # interpretive.
             from app.backend.services.analysis_patterns import match_pattern
-            from app.backend.services.question_focus import is_interpretive
+            from app.backend.services.question_focus import (
+            is_interpretive, supports_question,
+        )
 
             pattern = match_pattern(query)
             if pattern:
@@ -608,6 +615,13 @@ class FinancialChat:
             lowered = query.lower().strip()
             if interpretive or any(p in lowered for p in definitional_phrases):
                 knowledge = self._lookup_financial_knowledge(query)
+                # An explanation question needs an entry that explains. A
+                # definition of the right subject is still not an answer to
+                # "why does X happen?", so it is withheld and the question
+                # continues to the model rather than being answered beside the
+                # point.
+                if knowledge and interpretive and not supports_question(knowledge, query):
+                    knowledge = None
                 if knowledge:
                     answer = f"{knowledge}\n\n({DISCLAIMER})"
                     return ChatResponse(answer, route.value, "FINANCIAL KNOWLEDGE BASE (DOMAIN GLOSSARY)",
@@ -618,7 +632,7 @@ class FinancialChat:
         # a company can pay its short-term bills?" misses every entry and would
         # otherwise be answered by a 101M model that gets it wrong.
         if self.use_knowledge and route in (Route.FINANCIAL_KNOWLEDGE, Route.GENERAL) \
-                and not is_interpretive(query):
+                and route != Route.INTERPRETATION and not is_interpretive(query):
             try:
                 from app.backend.services.knowledge_retrieval import retrieve_definition
 
@@ -646,6 +660,11 @@ class FinancialChat:
         if generated is None:
             if self.use_knowledge and route == Route.FINANCIAL_KNOWLEDGE:
                 fallback_knowledge = self._lookup_financial_knowledge(query)
+                # Same rule as above: this fallback runs after the model's output
+                # is withheld, and it was handing back a definition for "why does
+                # X happen?" questions, bypassing the check entirely.
+                if fallback_knowledge and is_interpretive(query)                         and not supports_question(fallback_knowledge, query):
+                    fallback_knowledge = None
                 if fallback_knowledge:
                     answer = f"{fallback_knowledge}\n\n({DISCLAIMER})"
                     source = "FINANCIAL KNOWLEDGE BASE (DOMAIN GLOSSARY)"
@@ -684,15 +703,16 @@ class FinancialChat:
             response = self._handle_numerical(query, decision)
         elif route == Route.DOCUMENT:
             response = self._handle_document(query, decision)
-        elif route == Route.LIVE_DATA and self.use_guard:
+        elif route in (Route.CURRENT_DATA, Route.LIVE_DATA) and self.use_guard:
             response = self._handle_live_data(query, decision)
         elif route == Route.UNKNOWN and self.use_guard:
             response = ChatResponse("I could not interpret that question.",
                                      route.value, "NOT AVAILABLE")
         else:
             model_route = (Route.FINANCIAL_KNOWLEDGE
-                           if route in (Route.EXTRACTION, Route.NUMERICAL, Route.LIVE_DATA,
-                                        Route.UNKNOWN)
+                           if route in (Route.EXTRACTION, Route.NUMERICAL,
+                                        Route.CURRENT_DATA, Route.LIVE_DATA,
+                                        Route.INTERPRETATION, Route.UNKNOWN)
                            else route)
             response = self._handle_model(query, decision, model_route)
 

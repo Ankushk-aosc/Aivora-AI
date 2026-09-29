@@ -60,6 +60,16 @@ INTERPRETIVE_MARKERS = [
     "should you worry", "might that worry", "does that worry",
 ]
 
+# "What does a high inventory turnover suggest?" asks for the meaning of an
+# observation, not the definition of the measure. Matched as a pattern because
+# the subject sits between the two halves.
+_INTERPRETIVE_PATTERNS = [
+    re.compile(r"what\s+does\b.*\b(suggest|indicate|imply|tell (?:you|us)|mean for)\b"),
+    re.compile(r"what\s+(?:is|are)\b.*\b(implication|implications|consequence|consequences)\b"),
+    re.compile(r"\bwhy\s+(?:is|are|was|were|do|does|did|can|could|would|might|might not)\b"),
+    re.compile(r"\bhow\s+(?:is|can|could|does|do)\b.*\bpossible\b"),
+]
+
 _SPLIT_TAIL = re.compile(
     r"\s+(?:in|of|on|for|within|under|from|about|across|during|when|with)\s+")
 
@@ -93,6 +103,8 @@ def is_interpretive(question: str) -> bool:
     """True when the asker has stated an observation and wants it explained."""
     text = (question or "").lower()
     if any(marker in text for marker in INTERPRETIVE_MARKERS):
+        return True
+    if any(pattern.search(text) for pattern in _INTERPRETIVE_PATTERNS):
         return True
     clause = asking_clause(question).lower()
     # A bare "How?" or "Why?" after a described situation.
@@ -232,3 +244,93 @@ def has_explicit_subject(question: str) -> bool:
         return False
     words = set(re.findall(r"[a-z&0-9-]+", phrases[0]))
     return bool(words - _NON_SUBJECT)
+
+# Wording that makes a glossary entry an EXPLANATION rather than a bare naming:
+# it states a consequence, a cause or a mechanism.
+# Deliberately narrow. Generic connectives ("while", "but", "is not", "the
+# effect", "increases") appear in almost every definition, and including them
+# made the EBITDA entry look like an explanation because it contains "the
+# effect". Only wording that asserts a cause or a consequence counts.
+_EXPLANATORY_MARKERS = [
+    "because", "so that", "which means", "meaning that", "as a result",
+    "therefore", "which is why", "leads to", "results in", "that is why",
+    "signals that", "indicates that", "suggests that", "implies that",
+    "the reason", "warning sign", "the trade-off", "the cost is",
+    "no cash leaves", "without any cash", "non-cash",
+]
+
+
+def explains(text: str) -> bool:
+    """Does this text explain something, or only name it?
+
+    An interpretation question needs an answer that gives a mechanism or a
+    consequence. Measured on the hidden split: five of eleven remaining failures
+    were a correct-subject DEFINITION offered for a "why" question - the
+    definition of "interest rate" for "why do rate rises reduce equity
+    valuations?", the definition of "inventory turnover" for "what does a high
+    inventory turnover suggest?". The entry was about the right thing and still
+    did not answer.
+    """
+    if not text:
+        return False
+    lowered = f" {text.lower()} "
+    return any(marker in lowered for marker in _EXPLANATORY_MARKERS)
+
+# Words that carry no subject matter, so they cannot show that an entry answers
+# a question.
+_PREDICATE_STOPWORDS = {
+    "what", "why", "how", "when", "which", "does", "do", "did", "is", "are",
+    "was", "were", "be", "been", "the", "a", "an", "and", "or", "but", "of",
+    "in", "on", "for", "to", "from", "with", "that", "this", "it", "its",
+    "you", "your", "would", "could", "should", "might", "may", "can", "will",
+    "usually", "often", "sometimes", "always", "still", "also", "about",
+    "called", "mean", "means", "meaning", "suggest", "suggests", "indicate",
+    "indicates", "imply", "implies", "tell", "company", "companies", "firm",
+}
+
+
+def predicate_words(question: str):
+    """The content words of a question beyond its subject.
+
+    "Why is depreciation called a non-cash expense?" has subject "depreciation"
+    and predicate {non-cash, expense}. Those predicate words are what an answer
+    has to engage with.
+    """
+    clause = asking_clause(question)
+    subject = _strip_question_words(clause).lower()
+    phrases = [p.lower() for p in focus_phrases(question)]
+    subject_words = set(re.findall(r"[a-z&-]+", " ".join(phrases) or subject))
+    words = set(re.findall(r"[a-z&-]+", clause.lower()))
+    return {w for w in words - subject_words - _PREDICATE_STOPWORDS if len(w) > 3}
+
+
+def supports_question(text: str, question: str) -> bool:
+    """Does this entry address what the question asks, not just its topic?
+
+    The general form of a defect measured on the hidden split: five of eleven
+    failures were an entry about the right SUBJECT offered for a question about
+    something else concerning that subject.
+
+        "Why do interest rate rises reduce equity valuations?"
+            -> the definition of an interest rate. Subject correct; it says
+               nothing about rises, equity or valuations.
+        "Why is EBITDA criticised as a profit measure?"
+            -> the definition of EBITDA. Nothing about criticism.
+        "Why is depreciation called a non-cash expense?"
+            -> the depreciation entry, which DOES say "non-cash". Supported.
+
+    So an answer must contain at least one of the question's predicate words, or
+    state a cause or consequence outright. This is a property of the pair, not a
+    list of phrases per question.
+    """
+    if not text:
+        return False
+    wanted = predicate_words(question)
+    if not wanted:
+        return explains(text)
+    present = set(re.findall(r"[a-z&-]+", text.lower()))
+    stems = {_stem(w) for w in present}
+    for word in wanted:
+        if word in present or _stem(word) in stems:
+            return True
+    return False

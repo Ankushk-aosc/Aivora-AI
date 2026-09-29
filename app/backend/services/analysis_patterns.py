@@ -210,21 +210,59 @@ ANALYSIS_PATTERNS = [
 ]
 
 
-def _matches(groups, text):
-    return all(any(option in text for option in group) for group in groups)
+def _score(groups, text):
+    """Evidence for one pattern, or None when a required group is missing.
+
+    Declaration order used to decide ties, which let a general pattern shadow a
+    specific one: "Operating margin improved while gross margin fell" matched the
+    general gross-vs-operating pattern rather than the one written for exactly
+    that divergence. Scoring replaces order.
+
+    Returns (groups_required, options_matched, longest_option) - more required
+    groups means a more specific pattern, more matched options means more
+    corroborating signals, and a longer matched phrase is more particular than a
+    single word.
+    """
+    options_matched, longest = 0, 0
+    for group in groups:
+        hits = [option for option in group if option in text]
+        if not hits:
+            return None
+        options_matched += len(hits)
+        longest = max(longest, max(len(option) for option in hits))
+    return (len(groups), options_matched, longest)
 
 
-def match_pattern(question: str):
-    """The curated diagnostic answer for this question, or None.
+# A pattern needs at least this many groups before it may answer, so that one
+# keyword can never trigger a diagnostic: "profit" alone must not select a
+# profitability-deterioration explanation.
+MIN_REQUIRED_GROUPS = 2
 
-    Returns a dict shaped like the retrieval layer's hit so the chat service can
-    treat both the same way.
+
+def match_pattern(question: str, min_groups: int = MIN_REQUIRED_GROUPS):
+    """The best-supported curated diagnostic answer, or None.
+
+    Every candidate is scored and the strongest wins, so adding a pattern cannot
+    silently shadow an existing one by being declared earlier.
     """
     if not question:
         return None
     text = re.sub(r"\s+", " ", question.lower())
+
+    best = None
     for index, (groups, answer) in enumerate(ANALYSIS_PATTERNS):
-        if _matches(groups, text):
-            signals = [group[0] for group in groups]
-            return {"text": answer, "pattern": index, "signals": signals}
-    return None
+        if len(groups) < min_groups:
+            continue
+        score = _score(groups, text)
+        if score is None:
+            continue
+        candidate = (score, index, groups, answer)
+        if best is None or candidate[0] > best[0]:
+            best = candidate
+    if best is None:
+        return None
+    score, index, groups, answer = best
+    return {"text": answer, "pattern": index,
+            "signals": [group[0] for group in groups],
+            "required_groups": score[0], "options_matched": score[1],
+            "confidence": round(min(0.95, 0.6 + 0.1 * score[0] + 0.02 * score[1]), 2)}

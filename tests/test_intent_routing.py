@@ -66,6 +66,77 @@ def numeric(chat, question, expected, tolerance=0.02):
     return numeric_match(answer, expected, tolerance), answer.replace("\n", " | ")[:100]
 
 
+def test_interpretation_outranks_figures():
+    """Part 6: what was requested outranks what the text contains.
+
+    A rule of the form "two numbers -> calculator" sent "Debt/EBITDA rose from
+    2x to 5x. What does that imply?" to the calculator, which answered
+    "Debt/EBITDA = 5.00" from the 2 and the 5. Measured on the hidden split.
+    """
+    cases = [
+        "Debt/EBITDA rose from 2x to 5x in a year. What does that imply?",
+        "Days sales outstanding rose from 30 to 75. What happened?",
+        "Operating margin improved while gross margin fell. How is that possible?",
+        "Gross margin is 60% but operating margin is 2%. What does that tell you?",
+        "Interest coverage fell from 8x to 1.5x. What is the implication?",
+    ]
+    chat = FinancialChat(model=None)
+    for question in cases:
+        route = classify(question).route
+        check(f"routes INTERPRETATION despite figures: {question[:40]}",
+              route == Route.INTERPRETATION, f"got {route.value}")
+        answer = chat.ask(question).answer
+        check(f"  and is not answered with arithmetic: {question[:34]}",
+              "Formula / Breakdown" not in answer, answer[:70])
+
+    # The converse must still hold: an explicit calculation stays a calculation.
+    for question in ("Calculate ROE from net income of 60.00 and equity of 400.00.",
+                     "Revenue is 1,000.00 and net income is 120.00. What is the net profit margin?"):
+        route = classify(question).route
+        check(f"still NUMERICAL: {question[:44]}", route == Route.NUMERICAL,
+              f"got {route.value}")
+
+
+def test_definition_is_not_an_explanation():
+    """Part 11: an entry about the right subject can still be the wrong answer."""
+    chat = FinancialChat(model=None)
+    # Asks about a property the entry does not discuss -> must not be answered
+    # with that entry.
+    for question, forbidden in (
+            ("Why do interest rate rises usually reduce equity valuations?",
+             "price of borrowing"),
+            ("What does a high inventory turnover suggest?",
+             "how many times inventory is sold")):
+        answer = chat.ask(question).answer
+        check(f"withholds a bare definition: {question[:40]}",
+              forbidden not in answer, answer[:70])
+
+    # Asks about a property the entry DOES state -> the entry is a fair answer.
+    answer = chat.ask("Why is depreciation called a non-cash expense?").answer
+    check("an entry that states the asked property may answer",
+          "non-cash" in answer.lower(), answer[:70])
+
+
+def test_pattern_selection_by_evidence():
+    """Parts 13/14: the best-supported pattern wins, not the first declared."""
+    from app.backend.services.analysis_patterns import ANALYSIS_PATTERNS, match_pattern
+
+    specific = match_pattern("Operating margin improved while gross margin fell. "
+                             "How is that possible?")
+    check("specific pattern beats the general one",
+          specific is not None and "fell by more than" in specific["text"],
+          (specific or {}).get("text", "")[:70])
+
+    # One keyword must never trigger a diagnostic.
+    for weak in ("What is profit?", "Tell me about margins", "inventory"):
+        check(f"no pattern fires on a single keyword: {weak[:30]}",
+              match_pattern(weak) is None, str(match_pattern(weak))[:60])
+
+    # Every pattern carries at least two required groups, so evidence is needed.
+    thin = [i for i, (groups, _) in enumerate(ANALYSIS_PATTERNS) if len(groups) < 2]
+    check("every pattern requires >= 2 signal groups", not thin, str(thin))
+
+
 def test_routing():
     """The intent must be decided before any tool runs."""
     cases = [
@@ -76,10 +147,10 @@ def test_routing():
          Route.NUMERICAL),
         ("What is EBITDA?", Route.FINANCIAL_KNOWLEDGE),
         ("What is working capital?", Route.FINANCIAL_KNOWLEDGE),
-        ("What is the Fed rate today?", Route.LIVE_DATA),
-        ("What is Tesla's share price right now?", Route.LIVE_DATA),
-        ("What was Apple's revenue yesterday?", Route.LIVE_DATA),
-        ("How much did Microsoft earn this quarter?", Route.LIVE_DATA),
+        ("What is the Fed rate today?", Route.CURRENT_DATA),
+        ("What is Tesla's share price right now?", Route.CURRENT_DATA),
+        ("What was Apple's revenue yesterday?", Route.CURRENT_DATA),
+        ("How much did Microsoft earn this quarter?", Route.CURRENT_DATA),
     ]
     for question, expected in cases:
         got = classify(question).route
@@ -223,6 +294,9 @@ def test_missing_information_still_abstains():
 
 def main():
     test_routing()
+    test_interpretation_outranks_figures()
+    test_definition_is_not_an_explanation()
+    test_pattern_selection_by_evidence()
     test_extraction()
     test_parser_gaps()
     test_calculations()

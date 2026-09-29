@@ -11,8 +11,12 @@ should answer it:
                          (CALCULATION and multi-step REASONING intents)
   DOCUMENT            -> question about an uploaded document, answered via RAG
                          (RETRIEVAL intent over uploaded text)
-  LIVE_DATA           -> CURRENT_DATA: a value that changes with time and is
-                         not held here; abstained, never fabricated
+  INTERPRETATION      -> an observation the asker wants explained. Decided
+                         BEFORE any figure is noticed, because "Debt/EBITDA rose
+                         from 2x to 5x - what does that indicate?" contains
+                         numbers and is not a calculation
+  CURRENT_DATA        -> a value that changes with time and is not held here;
+                         abstained, never fabricated (was LIVE_DATA)
   UNKNOWN             -> could not classify
 
 ABSTENTION is not a route: it is the outcome when a route's handler finds the
@@ -34,22 +38,28 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from app.backend.services.financial_values import asked_field, parse_financial_values
+from app.backend.services.question_focus import is_interpretive
 
 
 class Route(str, Enum):
     GENERAL = "GENERAL"
     EXTRACTION = "EXTRACTION"
+    INTERPRETATION = "INTERPRETATION"
+    CURRENT_DATA = "CURRENT_DATA"
     FINANCIAL_KNOWLEDGE = "FINANCIAL_KNOWLEDGE"
     NUMERICAL = "NUMERICAL"
     DOCUMENT = "DOCUMENT"
+    # The previous name for CURRENT_DATA. Kept so stored evaluation results, the
+    # frontend and older callers keep resolving; classify() returns CURRENT_DATA.
     LIVE_DATA = "LIVE_DATA"
     UNKNOWN = "UNKNOWN"
 
 
 LIVE_DATA_UNAVAILABLE = (
-    "Insufficient current data available. This question asks for a value that "
-    "changes over time, and no verified live source is connected, so no figure "
-    "is given here."
+    "I cannot verify the current value from the available data. This question "
+    "asks for a figure that changes over time, and no verified live source is "
+    "connected, so no number is given here - a definition of the measure would "
+    "not be an answer to what was asked."
 )
 
 # Terms that signal the finance domain.
@@ -164,7 +174,7 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
     # 1. Live market data wins: it must never be answered from model memory.
     if live_hits:
         reasons.append(f"matched live-data phrase(s): {live_hits}")
-        return RouteDecision(Route.LIVE_DATA, 0.9, reasons, live_hits)
+        return RouteDecision(Route.CURRENT_DATA, 0.9, reasons, live_hits)
 
     # 2. Explicit reference to a document.
     if doc_hits:
@@ -179,9 +189,9 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
                                                "what is the md&a", "section is"))
         # An interpretive question that merely mentions a report type ("Why do
         # regulators require quarterly reporting?") was answered "no document is
-        # currently loaded", which answers nothing.
-        from app.backend.services.question_focus import is_interpretive
-
+        # currently loaded", which answers nothing. is_interpretive is imported
+        # at module level; a local import here made it a local name for the whole
+        # function and broke the interpretation check below.
         if not has_document and (definitional or is_interpretive(query)):
             # "What is a 10-K?" names a filing type but asks for a definition.
             # Answering "no document is loaded" is a non-answer, which is what
@@ -194,7 +204,21 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
             reasons.append("no document is loaded in this session")
         return RouteDecision(Route.DOCUMENT, 0.85 if has_document else 0.6, reasons, doc_hits)
 
-    # 3. Extraction: the question names a field whose value is stated right
+    # 3. Interpretation, BEFORE anything looks at the figures. This ordering is
+    #    the point: a rule of the form "two numbers -> calculator" sends
+    #    "Debt/EBITDA rose from 2x to 5x. What does that indicate?" to the
+    #    calculator, which then reports Debt/EBITDA = 5.00 from the 2 and the 5.
+    #    What the asker requested outranks what the text happens to contain.
+    #    An explicit instruction to compute ("calculate", "work out") is not an
+    #    interpretation request even when phrased with "why".
+    explicit_compute_verbs = [v for v in calc_hits
+                              if v in ("calculate", "compute", "work out", "derive")]
+    if is_interpretive(query) and not explicit_compute_verbs:
+        reasons.append("the question asks for an explanation of a stated "
+                       "observation, so the figures in it are context, not inputs")
+        return RouteDecision(Route.INTERPRETATION, 0.85, reasons, fin_hits)
+
+    # 4. Extraction: the question names a field whose value is stated right
     #    there. Reading it back is deterministic and cannot be improved on by
     #    computing something else from the neighbouring figures.
     wanted = asked_field(query)
@@ -202,7 +226,7 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
         reasons.append(f"question asks for '{wanted}', which is stated in the text")
         return RouteDecision(Route.EXTRACTION, 0.95, reasons, [wanted])
 
-    # 4. Numerical: needs both a computation intent (or supplied figures)
+    # 5. Numerical: needs both a computation intent (or supplied figures)
     #    and actual numbers to work with.
     # Two or more labelled figures ARE the numeric signal, even when no
     # calculation verb appears: "An investment grew from 400.00 to 644.20 over
@@ -220,7 +244,7 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
             reasons.append(f"parsed value assignments: {assignments}")
         return RouteDecision(Route.NUMERICAL, 0.9, reasons, calc_hits + fin_hits)
 
-    # 4b. An explicit instruction to compute, with no figures supplied. This
+    # 5b. An explicit instruction to compute, with no figures supplied. This
     #     belongs to the calculator so that it can say what is missing:
     #     "Calculate ROE." was being answered with the DEFINITION of ROE, which
     #     is not a refusal and not an answer.
@@ -230,12 +254,12 @@ def classify(query: str, has_document: bool = False) -> RouteDecision:
         reasons.append(f"explicit calculation request {explicit_compute} with no figures")
         return RouteDecision(Route.NUMERICAL, 0.8, reasons, explicit_compute)
 
-    # 5. Financial concept question.
+    # 6. Financial concept question.
     if fin_hits:
         reasons.append(f"matched financial term(s): {fin_hits}")
         return RouteDecision(Route.FINANCIAL_KNOWLEDGE, 0.8, reasons, fin_hits)
 
-    # 6. Otherwise general language.
+    # 7. Otherwise general language.
     reasons.append("no financial, numeric, document, or live-data signal")
     return RouteDecision(Route.GENERAL, 0.5, reasons)
 
