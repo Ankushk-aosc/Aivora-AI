@@ -1,0 +1,53 @@
+=== STEP 3: four-group comparison (204 hidden items) ===
+  system correct / model correct        7    3.43%
+  system correct / model wrong        189   92.65%
+  system wrong / model correct          0    0.00%
+  system wrong / model wrong            8    3.92%
+  total                               204
+
+=== STEP 2: generation metrics (re-run with stop-reason traces) ===
+  mean generated tokens   : 39.9
+  median generated tokens : 40
+  min / max               : 19 / 40
+  stop reasons            : {'max_new_tokens': 201, 'repeated_token': 3}
+  EOS stops               : 0  (0.0%)
+  max-token stops         : 201
+  repetition stops        : 3
+  premature (<20 tokens)  : 1  (0.5%)
+  empty / near-empty      : 0  (0.0%)
+  eot emitted anywhere    : 0
+
+  abstention rate (declined at all) : 0.00%
+  abstention accuracy               : 0/10
+
+  by kind:
+    generated      3/174 = 1.72%
+    authored       4/30 = 13.33%
+  by category:
+    accounting           0/13 = 0.00%
+    concepts             2/8 = 25.00%
+    corporate_finance    0/19 = 0.00%
+    extraction           0/25 = 0.00%
+    general              0/4 = 0.00%
+    hallucination        0/10 = 0.00%
+    interpretation       2/6 = 33.33%
+    ratios               2/35 = 5.71%
+    reasoning            0/25 = 0.00%
+    reporting            0/5 = 0.00%
+    statements           0/29 = 0.00%
+    valuation            1/25 = 4.00%
+  by difficulty:
+    level 1              1/28 = 3.57%
+    level 2              3/62 = 4.84%
+    level 3              1/67 = 1.49%
+    level 4              1/19 = 5.26%
+    level 5              1/28 = 3.57%
+  by intent:
+    concept        2/30 = 6.67%
+    calculation    3/108 = 2.78%
+    interpretation 2/6 = 33.33%
+    extraction     0/25 = 0.00%
+    reasoning      0/25 = 0.00%
+    abstention     0/10 = 0.00%
+
+[exited with code 0]
