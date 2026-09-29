@@ -1,0 +1,44 @@
+{
+  "path": "data\\sft\\financial_sft_v1.jsonl",
+  "sha256": "329372998e3a39c7cb6cae8d4d46677853f682ed1f29465f66396936f40aac94",
+  "seed": 20260930,
+  "examples": 7849,
+  "duplicates_dropped": 248,
+  "benchmark_collisions_dropped": 526,
+  "calculator_mismatches_rejected": 0,
+  "numeric_answers": 3890,
+  "by_task_type": {
+    "calculation": 3083,
+    "extraction": 2373,
+    "definition": 610,
+    "interpretation": 483,
+    "abstention": 473,
+    "reasoning": 407,
+    "grounded": 400,
+    "explanation": 20
+  },
+  "by_domain": {
+    "ratios": 2462,
+    "statements": 1978,
+    "valuation": 1111,
+    "concepts": 610,
+    "interpretation": 503,
+    "accounting": 429,
+    "cash_flow": 402,
+    "risk": 225,
+    "corporate_finance": 122,
+    "markets": 7
+  },
+  "by_verification_status": {
+    "verified_present_in_context": 2373,
+    "verified_arithmetic": 2183,
+    "verified_arithmetic_and_calculator": 1144,
+    "verified_curated": 630,
+    "verified_pattern": 483,
+    "verified_insufficient": 466,
+    "verified_grounded": 400,
+    "verified_arithmetic_and_substitution": 163,
+    "verified_current_data": 7
+  },
+  "rule": "no numeric answer enters this dataset unless this script computed it; where the production calculator implements the same formula the row is cross-checked against it and dropped on disagreement"
+}
