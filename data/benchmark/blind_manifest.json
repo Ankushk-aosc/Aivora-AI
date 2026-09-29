@@ -1,0 +1,37 @@
+{
+  "examples": 144,
+  "target_examples": 1050,
+  "completion_pct": 13.7,
+  "by_category": {
+    "accounting": 25,
+    "concepts": 25,
+    "corporate_finance": 15,
+    "general": 9,
+    "interpretation": 15,
+    "reporting": 25,
+    "risk": 15,
+    "valuation": 15
+  },
+  "target_by_category": {
+    "accounting": 150,
+    "reporting": 150,
+    "interpretation": 150,
+    "corporate_finance": 150,
+    "valuation": 150,
+    "risk": 100,
+    "concepts": 150,
+    "general": 50
+  },
+  "by_level": {
+    "1": 13,
+    "2": 73,
+    "3": 43,
+    "4": 10,
+    "5": 5
+  },
+  "duplicates_dropped": 0,
+  "removed_for_overlap_with_dev_or_test": [],
+  "all_rubric_graded": true,
+  "authorship": "written by Claude in the same session as the pipeline it measures: a fair test of the code's generalisation, not a blind test of the glossary. Treat scores as an upper bound.",
+  "usage": "measurement only - never used for training, and no glossary entry, pattern or rule may be added because an item here fails without first reproducing the failure on dev."
+}
