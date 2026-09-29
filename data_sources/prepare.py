@@ -27,7 +27,11 @@ def prepare_dataset(
     seed: int = 42,
     min_text_length: int = 20,
     allow_unverified: bool = False,
+    training_format=None,
 ):
+    """training_format: a data_sources.training_format.TrainingFormat, or None
+    for the original behaviour - no separators, no template, no prompt masking.
+    Experiment E1 is exactly this argument being set or not."""
     entry = get_entry(name)
 
     if entry.verification_status != VERIFIED and not allow_unverified:
@@ -49,9 +53,15 @@ def prepare_dataset(
     cleaned_records = clean_and_filter(raw_records, min_length=min_text_length,
                                         stats=clean_stats, eval_questions=eval_questions)
 
+    from data_sources.training_format import TrainingFormat
+
+    fmt = training_format or TrainingFormat()
+    needs_masks = fmt.mask_prompt
     enc = get_encoding()
-    train_writer = ShardWriter(os.path.join(shards_root, name, "train"))
-    val_writer = ShardWriter(os.path.join(shards_root, name, "validation"))
+    train_writer = ShardWriter(os.path.join(shards_root, name, "train"),
+                               write_masks=needs_masks)
+    val_writer = ShardWriter(os.path.join(shards_root, name, "validation"),
+                             write_masks=needs_masks)
 
     train_tokens = 0
     val_tokens = 0
@@ -59,15 +69,15 @@ def prepare_dataset(
     val_records = 0
 
     for split, record in split_stream(cleaned_records, train_fraction=train_fraction, seed=seed):
-        ids = enc.encode_ordinary(record["text"])
+        ids, mask = fmt.encode(record)
         if not ids:
             continue
         if split == "train":
-            train_writer.write_tokens(ids)
+            train_writer.write_tokens(ids, mask if needs_masks else None)
             train_tokens += len(ids)
             train_records += 1
         else:
-            val_writer.write_tokens(ids)
+            val_writer.write_tokens(ids, mask if needs_masks else None)
             val_tokens += len(ids)
             val_records += 1
 

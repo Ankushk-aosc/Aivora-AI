@@ -11,18 +11,26 @@ from .tokenizer import get_encoding
 
 DEFAULT_SHARD_TOKENS = 1_000_000  # tokens per shard file
 DTYPE = np.uint16  # GPT-2 vocab (50257) fits in uint16
+MASK_DTYPE = np.uint8  # 1 = train on this token, 0 = ignore it
 
 
 class ShardWriter:
-    def __init__(self, out_dir: str, shard_tokens: int = DEFAULT_SHARD_TOKENS):
+    def __init__(self, out_dir: str, shard_tokens: int = DEFAULT_SHARD_TOKENS,
+                 write_masks: bool = False):
         self.out_dir = out_dir
         self.shard_tokens = shard_tokens
+        # Experiment E1: a parallel uint8 stream marking which tokens carry
+        # loss. Off by default, so existing shards and their index.json are
+        # byte-identical to before.
+        self.write_masks = write_masks
         os.makedirs(out_dir, exist_ok=True)
         self._buffer = []
+        self._mask_buffer = []
         self._buffer_len = 0
         self._shard_index = 0
         self._shards = []  # list of {"file": ..., "tokens": ...}
         self.total_tokens = 0
+        self.masked_tokens = 0
 
     def _flush(self, force: bool = False):
         while self._buffer_len >= self.shard_tokens or (force and self._buffer_len > 0):
@@ -34,7 +42,20 @@ class ShardWriter:
             path = os.path.join(self.out_dir, fname)
             chunk.astype(DTYPE).tofile(path)
 
-            self._shards.append({"file": fname, "tokens": int(len(chunk))})
+            shard_record = {"file": fname, "tokens": int(len(chunk))}
+
+            if self.write_masks:
+                mask_arr = (np.concatenate(self._mask_buffer)
+                            if len(self._mask_buffer) > 1 else self._mask_buffer[0])
+                mask_chunk, mask_rest = mask_arr[:take], mask_arr[take:]
+                mask_name = f"mask_{self._shard_index:03d}.bin"
+                mask_chunk.astype(MASK_DTYPE).tofile(
+                    os.path.join(self.out_dir, mask_name))
+                shard_record["mask_file"] = mask_name
+                self.masked_tokens += int((mask_chunk == 0).sum())
+                self._mask_buffer = [mask_rest] if len(mask_rest) > 0 else []
+
+            self._shards.append(shard_record)
             self.total_tokens += len(chunk)
             self._shard_index += 1
 
@@ -44,10 +65,18 @@ class ShardWriter:
             if not force:
                 break
 
-    def write_tokens(self, token_ids):
+    def write_tokens(self, token_ids, mask=None):
         arr = np.array(token_ids, dtype=DTYPE)
         if len(arr) == 0:
             return
+        if self.write_masks:
+            if mask is None:
+                mask = [1] * len(arr)
+            if len(mask) != len(arr):
+                raise ValueError(
+                    f"mask length {len(mask)} does not match {len(arr)} tokens - "
+                    "a misaligned mask would silently train on the wrong tokens")
+            self._mask_buffer.append(np.array(mask, dtype=MASK_DTYPE))
         self._buffer.append(arr)
         self._buffer_len += len(arr)
         self._flush(force=False)
@@ -55,8 +84,12 @@ class ShardWriter:
     def close(self):
         self._flush(force=True)
         index_path = os.path.join(self.out_dir, "index.json")
+        index = {"shards": self._shards, "total_tokens": self.total_tokens}
+        if self.write_masks:
+            index["has_masks"] = True
+            index["masked_tokens"] = self.masked_tokens
         with open(index_path, "w") as f:
-            json.dump({"shards": self._shards, "total_tokens": self.total_tokens}, f, indent=2)
+            json.dump(index, f, indent=2)
         return self.total_tokens
 
 

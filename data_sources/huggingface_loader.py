@@ -32,6 +32,38 @@ def _extract_text(entry: DatasetEntry, example: dict) -> str:
     return "\n".join(parts)
 
 
+# Field names holding the request and the response in instruction-style
+# datasets. Used only to expose the structure; the joined "text" is unchanged.
+_PROMPT_FIELDS = ("instruction", "question", "prompt", "query", "input", "context")
+_COMPLETION_FIELDS = ("output", "response", "answer", "completion", "text_output")
+
+
+def _extract_pair(entry: DatasetEntry, example: dict):
+    """(prompt, completion) when the record has that shape, else (None, None).
+
+    The old pipeline joined these fields with newlines and trained on the
+    result, so nothing distinguished the question from the answer. Exposing the
+    pair lets data_sources/training_format.py apply a template and a loss mask
+    (experiment E1), while callers that only read "text" are unaffected.
+    """
+    fields = set(entry.fields_used or ())
+    prompt_parts, completion = [], None
+    for name in _PROMPT_FIELDS:
+        if name in fields:
+            value = example.get(name)
+            if isinstance(value, str) and value.strip():
+                prompt_parts.append(value.strip())
+    for name in _COMPLETION_FIELDS:
+        if name in fields:
+            value = example.get(name)
+            if isinstance(value, str) and value.strip():
+                completion = value.strip()
+                break
+    if prompt_parts and completion:
+        return "\n".join(prompt_parts), completion
+    return None, None
+
+
 def stream_records(
     entry: DatasetEntry,
     max_records=None,
@@ -76,7 +108,11 @@ def stream_records(
         if n_tokens == 0:
             continue
 
-        yield {"text": text, "tokens": n_tokens}
+        record = {"text": text, "tokens": n_tokens}
+        prompt, completion = _extract_pair(entry, example)
+        if prompt and completion:
+            record["prompt"], record["completion"] = prompt, completion
+        yield record
 
         records_seen += 1
         tokens_seen += n_tokens

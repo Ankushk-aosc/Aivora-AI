@@ -4,7 +4,8 @@ import numpy as np
 import torch
 
 from data_sources.dataset_mixer import resolve_available_buckets
-from data_sources.shard_writer import load_shard_index
+from data_sources.shard_writer import MASK_DTYPE, load_shard_index
+from data_sources.training_format import IGNORE_INDEX
 
 DEFAULT_SHARDS_ROOT = os.path.join("data", "shards")
 
@@ -14,27 +15,36 @@ class ShardedDataset:
     entire split into RAM (Part 14)."""
 
     def __init__(self, shard_dirs):
-        self.shards = []  # list of (path, token_count)
+        self.shards = []  # list of (path, token_count, mask_path or None)
         for shard_dir in shard_dirs:
             index = load_shard_index(shard_dir)
             for s in index["shards"]:
-                self.shards.append((os.path.join(shard_dir, s["file"]), s["tokens"]))
-        self.total_tokens = sum(t for _, t in self.shards)
+                mask_file = s.get("mask_file")
+                mask_path = os.path.join(shard_dir, mask_file) if mask_file else None
+                self.shards.append(
+                    (os.path.join(shard_dir, s["file"]), s["tokens"], mask_path))
+        self.total_tokens = sum(t for _, t, _ in self.shards)
+        self.has_masks = any(m for _, _, m in self.shards)
 
     def sample_block(self, block_size: int, rng: np.random.Generator):
         if not self.shards or self.total_tokens <= block_size:
             return None
         # Pick a shard weighted by its token count so bigger shards are
         # sampled proportionally more often.
-        weights = np.array([t for _, t in self.shards], dtype=np.float64)
+        weights = np.array([t for _, t, _ in self.shards], dtype=np.float64)
         weights = weights / weights.sum()
-        path, n_tokens = self.shards[rng.choice(len(self.shards), p=weights)]
+        path, n_tokens, mask_path = self.shards[rng.choice(len(self.shards), p=weights)]
         if n_tokens <= block_size:
             return None
         data = np.memmap(path, dtype=np.uint16, mode="r")
         start = int(rng.integers(0, n_tokens - block_size))
         chunk = data[start:start + block_size + 1]
-        return chunk
+        if mask_path is None:
+            return chunk
+        # The mask must come from the SAME offsets as the tokens, or training
+        # silently ignores the wrong positions.
+        mask = np.memmap(mask_path, dtype=MASK_DTYPE, mode="r")
+        return chunk, mask[start:start + block_size + 1]
 
 
 class MixedShardedLoader:
@@ -61,11 +71,19 @@ class MixedShardedLoader:
                     "than block_size. Prepare more tokens or lower block_size."
                 )
             _, dataset = self.buckets[self.rng.choice(len(self.buckets), p=weights)]
-            chunk = dataset.sample_block(block_size, self.rng)
-            if chunk is None:
+            sampled = dataset.sample_block(block_size, self.rng)
+            if sampled is None:
                 continue
+            if isinstance(sampled, tuple):
+                chunk, mask = sampled
+                labels = chunk[1:].astype(np.int64).copy()
+                # Positions the mask marks as prompt are not predicted. -1 is
+                # what models/model.py passes as ignore_index.
+                labels[mask[1:] == 0] = IGNORE_INDEX
+            else:
+                chunk, labels = sampled, sampled[1:].astype(np.int64)
             xs.append(torch.from_numpy(chunk[:-1].astype(np.int64)))
-            ys.append(torch.from_numpy(chunk[1:].astype(np.int64)))
+            ys.append(torch.from_numpy(labels))
 
         x = torch.stack(xs)
         y = torch.stack(ys)
