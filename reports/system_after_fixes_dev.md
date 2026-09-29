@@ -1,10 +1,10 @@
 # Benchmark run: dev split
 
-60 items. Checkpoint `checkpoint_247850.pt`, sha256 `6e9e50ca59e5...`, seed 1234. No weights were modified to produce these numbers.
+795 items. Checkpoint `checkpoint_247850.pt`, sha256 `6e9e50ca59e5...`, seed 1234. No weights were modified to produce these numbers.
 
 | benchmark | accuracy | hallucination | over-abstention | abstention acc. | s/question |
 | --- | --- | --- | --- | --- | --- |
-| **system** | 100.0% (60/60) | 0.0% | 0.0% | 100.0% | 0.01 |
+| **system** | 100.0% (795/795) | 0.0% | 0.0% | 100.0% | 0.057 |
 
 ## system - the served pipeline: every layer enabled, Aivora as fallback
 
@@ -17,25 +17,32 @@
 
 | category | accuracy |
 | --- | --- |
-| accounting | 100.0% (2/2) |
-| concepts | 100.0% (2/2) |
-| corporate_finance | 100.0% (9/9) |
-| extraction | 100.0% (16/16) |
-| hallucination | 100.0% (3/3) |
-| ratios | 100.0% (9/9) |
-| reasoning | 100.0% (6/6) |
-| statements | 100.0% (4/4) |
-| valuation | 100.0% (9/9) |
+| accounting | 100.0% (40/40) |
+| concepts | 100.0% (23/23) |
+| corporate_finance | 100.0% (97/97) |
+| extraction | 100.0% (100/100) |
+| general | 100.0% (8/8) |
+| hallucination | 100.0% (36/36) |
+| interpretation | 100.0% (12/12) |
+| ratios | 100.0% (140/140) |
+| reasoning | 100.0% (109/109) |
+| reporting | 100.0% (13/13) |
+| statements | 100.0% (117/117) |
+| valuation | 100.0% (100/100) |
 
 | item kind | accuracy |
 | --- | --- |
-| authored | 100.0% (3/3) |
-| generated | 100.0% (57/57) |
+| authored | 100.0% (73/73) |
+| generated | 100.0% (722/722) |
 
 Which component answered, and how well:
 
 | component | share of questions | answered | correct | accuracy |
 | --- | --- | --- | --- | --- |
-| calculator | 68.33% | 41 | 41 | 100.0% |
-| extraction | 26.67% | 16 | 16 | 100.0% |
-| glossary | 5.0% | 3 | 3 | 100.0% |
+| calculator | 77.61% | 617 | 617 | 100.0% |
+| extraction | 12.58% | 100 | 100 | 100.0% |
+| glossary | 6.54% | 52 | 52 | 100.0% |
+| analysis_pattern | 1.89% | 15 | 15 | 100.0% |
+| abstention | 0.75% | 6 | 6 | 100.0% |
+| retrieval | 0.5% | 4 | 4 | 100.0% |
+| model | 0.13% | 1 | 1 | 100.0% |

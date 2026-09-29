@@ -4,7 +4,8 @@
 
 | benchmark | accuracy | hallucination | over-abstention | abstention acc. | s/question |
 | --- | --- | --- | --- | --- | --- |
-| **system** | 13.89% (20/144) | 82.64% | 3.47% | None% | 4.931 |
+| **system** | 13.89% (20/144) | 82.64% | 3.47% | None% | 3.694 |
+| **model** | 7.64% (11/144) | 92.36% | 0.0% | None% | 5.358 |
 
 ## system - the served pipeline: every layer enabled, Aivora as fallback
 
@@ -40,3 +41,34 @@ Which component answered, and how well:
 | calculator | 2.78% | 4 | 0 | 0.0% |
 | analysis_pattern | 1.39% | 2 | 1 | 50.0% |
 | abstention | 1.39% | 2 | 0 | 0.0% |
+
+## model - Aivora alone: calculator, glossary, retrieval, patterns and guard all off
+
+| metric | value |
+| --- | --- |
+| extraction accuracy | None% |
+| abstention accuracy | None% |
+| hallucination rate | 92.36% |
+| over-abstention rate | 0.0% |
+
+| category | accuracy |
+| --- | --- |
+| accounting | 4.0% (1/25) |
+| concepts | 4.0% (1/25) |
+| corporate_finance | 13.33% (2/15) |
+| general | 0.0% (0/9) |
+| interpretation | 6.67% (1/15) |
+| reporting | 12.0% (3/25) |
+| risk | 13.33% (2/15) |
+| valuation | 6.67% (1/15) |
+
+| item kind | accuracy |
+| --- | --- |
+| authored | 7.64% (11/144) |
+
+Which component answered, and how well:
+
+| component | share of questions | answered | correct | accuracy |
+| --- | --- | --- | --- | --- |
+| model | 99.31% | 143 | 11 | 7.69% |
+| abstention | 0.69% | 1 | 0 | 0.0% |

@@ -1,0 +1,611 @@
+{
+  "splits": {
+    "blind": {
+      "examples": 144,
+      "checkpoint_sha256": "6e9e50ca59e5d5beb70b555a9ff07e0d30bcbd1097232e64bc04c4142eb4b004",
+      "benchmarks": {
+        "system": {
+          "description": "the served pipeline: every layer enabled, Aivora as fallback",
+          "flags": {},
+          "summary": {
+            "overall": {
+              "total": 144,
+              "correct": 20,
+              "accuracy": 13.89
+            },
+            "answerable": {
+              "total": 144,
+              "correct": 20,
+              "accuracy": 13.89
+            },
+            "by_category": {
+              "accounting": {
+                "total": 25,
+                "correct": 6,
+                "accuracy": 24.0
+              },
+              "concepts": {
+                "total": 25,
+                "correct": 3,
+                "accuracy": 12.0
+              },
+              "corporate_finance": {
+                "total": 15,
+                "correct": 3,
+                "accuracy": 20.0
+              },
+              "general": {
+                "total": 9,
+                "correct": 2,
+                "accuracy": 22.22
+              },
+              "interpretation": {
+                "total": 15,
+                "correct": 0,
+                "accuracy": 0.0
+              },
+              "reporting": {
+                "total": 25,
+                "correct": 2,
+                "accuracy": 8.0
+              },
+              "risk": {
+                "total": 15,
+                "correct": 3,
+                "accuracy": 20.0
+              },
+              "valuation": {
+                "total": 15,
+                "correct": 1,
+                "accuracy": 6.67
+              }
+            },
+            "by_level": {
+              "1": {
+                "total": 13,
+                "correct": 3,
+                "accuracy": 23.08
+              },
+              "2": {
+                "total": 73,
+                "correct": 8,
+                "accuracy": 10.96
+              },
+              "3": {
+                "total": 43,
+                "correct": 9,
+                "accuracy": 20.93
+              },
+              "4": {
+                "total": 10,
+                "correct": 0,
+                "accuracy": 0.0
+              },
+              "5": {
+                "total": 5,
+                "correct": 0,
+                "accuracy": 0.0
+              }
+            },
+            "by_kind": {
+              "authored": {
+                "total": 144,
+                "correct": 20,
+                "accuracy": 13.89
+              }
+            },
+            "hallucination_rate": 82.64,
+            "over_abstention_rate": 3.47,
+            "abstention_accuracy": null,
+            "abstention_items": 0,
+            "extraction_accuracy": null,
+            "invocation_pct": {
+              "model": 66.67,
+              "glossary": 16.67,
+              "retrieval": 11.11,
+              "calculator": 2.78,
+              "analysis_pattern": 1.39,
+              "abstention": 1.39
+            },
+            "correct_by_component": {
+              "glossary": {
+                "answered": 24,
+                "correct": 6,
+                "accuracy": 25.0
+              },
+              "calculator": {
+                "answered": 4,
+                "correct": 0,
+                "accuracy": 0.0
+              },
+              "model": {
+                "answered": 96,
+                "correct": 6,
+                "accuracy": 6.25
+              },
+              "retrieval": {
+                "answered": 16,
+                "correct": 7,
+                "accuracy": 43.75
+              },
+              "analysis_pattern": {
+                "answered": 2,
+                "correct": 1,
+                "accuracy": 50.0
+              },
+              "abstention": {
+                "answered": 2,
+                "correct": 0,
+                "accuracy": 0.0
+              }
+            }
+          },
+          "seconds_per_question": 3.694
+        },
+        "model": {
+          "description": "Aivora alone: calculator, glossary, retrieval, patterns and guard all off",
+          "flags": {
+            "use_calculator": false,
+            "use_knowledge": false,
+            "use_guard": false
+          },
+          "summary": {
+            "overall": {
+              "total": 144,
+              "correct": 11,
+              "accuracy": 7.64
+            },
+            "answerable": {
+              "total": 144,
+              "correct": 11,
+              "accuracy": 7.64
+            },
+            "by_category": {
+              "accounting": {
+                "total": 25,
+                "correct": 1,
+                "accuracy": 4.0
+              },
+              "concepts": {
+                "total": 25,
+                "correct": 1,
+                "accuracy": 4.0
+              },
+              "corporate_finance": {
+                "total": 15,
+                "correct": 2,
+                "accuracy": 13.33
+              },
+              "general": {
+                "total": 9,
+                "correct": 0,
+                "accuracy": 0.0
+              },
+              "interpretation": {
+                "total": 15,
+                "correct": 1,
+                "accuracy": 6.67
+              },
+              "reporting": {
+                "total": 25,
+                "correct": 3,
+                "accuracy": 12.0
+              },
+              "risk": {
+                "total": 15,
+                "correct": 2,
+                "accuracy": 13.33
+              },
+              "valuation": {
+                "total": 15,
+                "correct": 1,
+                "accuracy": 6.67
+              }
+            },
+            "by_level": {
+              "1": {
+                "total": 13,
+                "correct": 2,
+                "accuracy": 15.38
+              },
+              "2": {
+                "total": 73,
+                "correct": 4,
+                "accuracy": 5.48
+              },
+              "3": {
+                "total": 43,
+                "correct": 4,
+                "accuracy": 9.3
+              },
+              "4": {
+                "total": 10,
+                "correct": 1,
+                "accuracy": 10.0
+              },
+              "5": {
+                "total": 5,
+                "correct": 0,
+                "accuracy": 0.0
+              }
+            },
+            "by_kind": {
+              "authored": {
+                "total": 144,
+                "correct": 11,
+                "accuracy": 7.64
+              }
+            },
+            "hallucination_rate": 92.36,
+            "over_abstention_rate": 0.0,
+            "abstention_accuracy": null,
+            "abstention_items": 0,
+            "extraction_accuracy": null,
+            "invocation_pct": {
+              "model": 99.31,
+              "abstention": 0.69
+            },
+            "correct_by_component": {
+              "model": {
+                "answered": 143,
+                "correct": 11,
+                "accuracy": 7.69
+              },
+              "abstention": {
+                "answered": 1,
+                "correct": 0,
+                "accuracy": 0.0
+              }
+            }
+          },
+          "seconds_per_question": 5.358
+        }
+      }
+    },
+    "dev": {
+      "examples": 795,
+      "checkpoint_sha256": "6e9e50ca59e5d5beb70b555a9ff07e0d30bcbd1097232e64bc04c4142eb4b004",
+      "benchmarks": {
+        "system": {
+          "description": "the served pipeline: every layer enabled, Aivora as fallback",
+          "flags": {},
+          "summary": {
+            "overall": {
+              "total": 795,
+              "correct": 795,
+              "accuracy": 100.0
+            },
+            "answerable": {
+              "total": 759,
+              "correct": 759,
+              "accuracy": 100.0
+            },
+            "by_category": {
+              "accounting": {
+                "total": 40,
+                "correct": 40,
+                "accuracy": 100.0
+              },
+              "concepts": {
+                "total": 23,
+                "correct": 23,
+                "accuracy": 100.0
+              },
+              "corporate_finance": {
+                "total": 97,
+                "correct": 97,
+                "accuracy": 100.0
+              },
+              "extraction": {
+                "total": 100,
+                "correct": 100,
+                "accuracy": 100.0
+              },
+              "general": {
+                "total": 8,
+                "correct": 8,
+                "accuracy": 100.0
+              },
+              "hallucination": {
+                "total": 36,
+                "correct": 36,
+                "accuracy": 100.0
+              },
+              "interpretation": {
+                "total": 12,
+                "correct": 12,
+                "accuracy": 100.0
+              },
+              "ratios": {
+                "total": 140,
+                "correct": 140,
+                "accuracy": 100.0
+              },
+              "reasoning": {
+                "total": 109,
+                "correct": 109,
+                "accuracy": 100.0
+              },
+              "reporting": {
+                "total": 13,
+                "correct": 13,
+                "accuracy": 100.0
+              },
+              "statements": {
+                "total": 117,
+                "correct": 117,
+                "accuracy": 100.0
+              },
+              "valuation": {
+                "total": 100,
+                "correct": 100,
+                "accuracy": 100.0
+              }
+            },
+            "by_level": {
+              "1": {
+                "total": 114,
+                "correct": 114,
+                "accuracy": 100.0
+              },
+              "2": {
+                "total": 224,
+                "correct": 224,
+                "accuracy": 100.0
+              },
+              "3": {
+                "total": 277,
+                "correct": 277,
+                "accuracy": 100.0
+              },
+              "4": {
+                "total": 67,
+                "correct": 67,
+                "accuracy": 100.0
+              },
+              "5": {
+                "total": 113,
+                "correct": 113,
+                "accuracy": 100.0
+              }
+            },
+            "by_kind": {
+              "authored": {
+                "total": 73,
+                "correct": 73,
+                "accuracy": 100.0
+              },
+              "generated": {
+                "total": 722,
+                "correct": 722,
+                "accuracy": 100.0
+              }
+            },
+            "hallucination_rate": 0.0,
+            "over_abstention_rate": 0.0,
+            "abstention_accuracy": 100.0,
+            "abstention_items": 36,
+            "extraction_accuracy": 100.0,
+            "invocation_pct": {
+              "calculator": 77.61,
+              "extraction": 12.58,
+              "glossary": 6.54,
+              "analysis_pattern": 1.89,
+              "abstention": 0.75,
+              "retrieval": 0.5,
+              "model": 0.13
+            },
+            "correct_by_component": {
+              "glossary": {
+                "answered": 52,
+                "correct": 52,
+                "accuracy": 100.0
+              },
+              "extraction": {
+                "answered": 100,
+                "correct": 100,
+                "accuracy": 100.0
+              },
+              "calculator": {
+                "answered": 617,
+                "correct": 617,
+                "accuracy": 100.0
+              },
+              "retrieval": {
+                "answered": 4,
+                "correct": 4,
+                "accuracy": 100.0
+              },
+              "analysis_pattern": {
+                "answered": 15,
+                "correct": 15,
+                "accuracy": 100.0
+              },
+              "abstention": {
+                "answered": 6,
+                "correct": 6,
+                "accuracy": 100.0
+              },
+              "model": {
+                "answered": 1,
+                "correct": 1,
+                "accuracy": 100.0
+              }
+            }
+          },
+          "seconds_per_question": 0.057
+        }
+      }
+    },
+    "test": {
+      "examples": 204,
+      "checkpoint_sha256": "6e9e50ca59e5d5beb70b555a9ff07e0d30bcbd1097232e64bc04c4142eb4b004",
+      "benchmarks": {
+        "system": {
+          "description": "the served pipeline: every layer enabled, Aivora as fallback",
+          "flags": {},
+          "summary": {
+            "overall": {
+              "total": 204,
+              "correct": 196,
+              "accuracy": 96.08
+            },
+            "answerable": {
+              "total": 194,
+              "correct": 186,
+              "accuracy": 95.88
+            },
+            "by_category": {
+              "accounting": {
+                "total": 13,
+                "correct": 11,
+                "accuracy": 84.62
+              },
+              "concepts": {
+                "total": 8,
+                "correct": 7,
+                "accuracy": 87.5
+              },
+              "corporate_finance": {
+                "total": 19,
+                "correct": 19,
+                "accuracy": 100.0
+              },
+              "extraction": {
+                "total": 25,
+                "correct": 25,
+                "accuracy": 100.0
+              },
+              "general": {
+                "total": 4,
+                "correct": 0,
+                "accuracy": 0.0
+              },
+              "hallucination": {
+                "total": 10,
+                "correct": 10,
+                "accuracy": 100.0
+              },
+              "interpretation": {
+                "total": 6,
+                "correct": 6,
+                "accuracy": 100.0
+              },
+              "ratios": {
+                "total": 35,
+                "correct": 35,
+                "accuracy": 100.0
+              },
+              "reasoning": {
+                "total": 25,
+                "correct": 25,
+                "accuracy": 100.0
+              },
+              "reporting": {
+                "total": 5,
+                "correct": 4,
+                "accuracy": 80.0
+              },
+              "statements": {
+                "total": 29,
+                "correct": 29,
+                "accuracy": 100.0
+              },
+              "valuation": {
+                "total": 25,
+                "correct": 25,
+                "accuracy": 100.0
+              }
+            },
+            "by_level": {
+              "1": {
+                "total": 28,
+                "correct": 28,
+                "accuracy": 100.0
+              },
+              "2": {
+                "total": 62,
+                "correct": 59,
+                "accuracy": 95.16
+              },
+              "3": {
+                "total": 67,
+                "correct": 62,
+                "accuracy": 92.54
+              },
+              "4": {
+                "total": 19,
+                "correct": 19,
+                "accuracy": 100.0
+              },
+              "5": {
+                "total": 28,
+                "correct": 28,
+                "accuracy": 100.0
+              }
+            },
+            "by_kind": {
+              "authored": {
+                "total": 30,
+                "correct": 22,
+                "accuracy": 73.33
+              },
+              "generated": {
+                "total": 174,
+                "correct": 174,
+                "accuracy": 100.0
+              }
+            },
+            "hallucination_rate": 4.12,
+            "over_abstention_rate": 0.0,
+            "abstention_accuracy": 100.0,
+            "abstention_items": 10,
+            "extraction_accuracy": 100.0,
+            "invocation_pct": {
+              "calculator": 73.04,
+              "extraction": 12.25,
+              "glossary": 8.33,
+              "analysis_pattern": 2.94,
+              "model": 2.94,
+              "retrieval": 0.49
+            },
+            "correct_by_component": {
+              "calculator": {
+                "answered": 149,
+                "correct": 149,
+                "accuracy": 100.0
+              },
+              "extraction": {
+                "answered": 25,
+                "correct": 25,
+                "accuracy": 100.0
+              },
+              "glossary": {
+                "answered": 17,
+                "correct": 14,
+                "accuracy": 82.35
+              },
+              "analysis_pattern": {
+                "answered": 6,
+                "correct": 6,
+                "accuracy": 100.0
+              },
+              "model": {
+                "answered": 6,
+                "correct": 1,
+                "accuracy": 16.67
+              },
+              "retrieval": {
+                "answered": 1,
+                "correct": 1,
+                "accuracy": 100.0
+              }
+            }
+          },
+          "seconds_per_question": 0.266
+        }
+      }
+    }
+  },
+  "note": "consolidated from per-split runs; no model weights were modified"
+}
