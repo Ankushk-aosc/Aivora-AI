@@ -1,0 +1,160 @@
+{
+  "tag": "AIVORA_PRE_TRAINING_BASELINE",
+  "tag_exists": true,
+  "tag_commit": "aec1a109832edd0154186a7b166b6712ffe1c6f9",
+  "head_commit": "04de8e338cd3bad96599f490301d0b2fa996956b",
+  "head_describes_tag": true,
+  "working_tree_clean": false,
+  "uncommitted_paths": [
+    "M README.md",
+    " M app/backend/services/inspector.py",
+    " M app/frontend/index.html",
+    " M main.py",
+    " M tools/runtime_detect.py",
+    " M training/kaggle/distill/Aivora_Distillation.ipynb",
+    "?? .claude/",
+    "?? app/backend/security.py",
+    "?? data/documents/",
+    "?? reports/after4/",
+    "?? reports/e1/",
+    "?? scripts/freeze_manifest.py",
+    "?? tests/test_api_security.py"
+  ],
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.14.5",
+  "checkpoint": {
+    "path": "checkpoints\\final\\checkpoint_247850.pt",
+    "sha256": "6e9e50ca59e5d5beb70b555a9ff07e0d30bcbd1097232e64bc04c4142eb4b004",
+    "bytes": 1259200718,
+    "metadata_sha256": "aacc45a8e2200ae822b1ac66675813ed9217a1899d32311238714672e8a5e455"
+  },
+  "tokenizer": {
+    "encoding": "gpt2",
+    "n_vocab": 50257,
+    "eot_token": 50256,
+    "vocab_probe_sha256": "5f7dddf7c6dc4e9e22610f2aa113a16352fe28ed7ca729ff2bb8140e0074af28",
+    "probe_description": "every 617th token decoded and concatenated"
+  },
+  "training_data": {
+    "available": true,
+    "datasets": 19,
+    "unique_train_tokens": 120857129,
+    "tokens_processed": 1964851200,
+    "epochs_over_corpus": 16.26,
+    "unique_tokens_per_parameter": 1.188,
+    "manifest_sha256": "d1e581797b0cc3f403a755bd83f0a4b00a702753ae15c548975f368eadb3d3e8",
+    "dataset_mix": {
+      "financial_instruction": 0.05,
+      "financial_qa": 0.15,
+      "financial_reasoning": 0.1,
+      "financial_reports": 0.1,
+      "financial_text": 0.2,
+      "fineweb_edu": 0.2,
+      "general_dialogue": 0.05,
+      "general_instruction": 0.05,
+      "general_qa": 0.05,
+      "general_reasoning": 0.05
+    },
+    "effective_hparams": {
+      "is_continuation": true,
+      "learning_rate": 3e-05,
+      "min_lr": 1e-05,
+      "warmup_steps": 500,
+      "grad_clip": 1.0,
+      "batch_size": 8,
+      "gradient_accumulation_steps": 16,
+      "effective_batch": 128,
+      "amp_dtype": "float16",
+      "grad_scaler_enabled": true,
+      "resumed_from": "/kaggle/input/aivora-ai-financial-poc-checkpoint-latest/checkpoint_237362.pt"
+    }
+  },
+  "benchmarks": {
+    "dev.jsonl": {
+      "sha256": "c00bbbe6c0449f73ce3389386ec583cc369cc3f567e2008af07071c12e011c6a",
+      "bytes": 259963
+    },
+    "test.jsonl": {
+      "sha256": "3aac98b056c3c3a1db5fb7f1e9c683101041fc2855be0004956e740965e30678",
+      "bytes": 67957
+    },
+    "blind.jsonl": {
+      "sha256": "507d0956df44a3325561a75d78f11d72e454345cd543cdd348d93051df8d8b4d",
+      "bytes": 62427
+    }
+  },
+  "code_sha256": {
+    "models/model.py": "2bdf34be0b7aafcbf4f646c7b4613aa0840a220ffa05a613ef6af524f3a54074",
+    "training/trainer.py": "e532b44baf14655e9d1d59bd184710733a47e86b3df5260c82f9c0ba429c8ff9",
+    "training/data_loader.py": "2104717f96bbab8dc0c1edf829424eb4bac841a83f21ae10d9d36a77f0dfbde7",
+    "inference/generator.py": "bf4e509f0926188d0929a3cba0ac3d5f0daa93baee1deba20f163d87abdf57f0",
+    "data_sources/tokenizer.py": "1884a87d828b401168686277de173a71788229031419396cc0551df684ca00d8",
+    "data_sources/prepare.py": "2dad6a8d44c2ae075d710eccbac132932ca1df6eb0046b86861f56ee548e29e8",
+    "data_sources/shard_writer.py": "4f5186a438e06939142782935f40ada81fc0afee7e3cf3825cead15337ba0618",
+    "data_sources/training_format.py": "74c490ad77d0184628b0096cab0be698011f8c839aac1b18a534e9991e7a0c2d",
+    "app/backend/services/generation.py": "4eebe4a56addcac39aa1cea3a6b973550ea2c9f41d50caa4bd69229e90655dba",
+    "app/backend/services/chat_service.py": "52d370fa33375c745de28f99905ffcd1fae8d44647c2133788e6453ac8caf109",
+    "app/backend/services/financial_router.py": "0a0afdf6d1fb8a06cfcdb6ab5990ea4260959ec275a90ad2a07f727ac5761fcf",
+    "app/backend/services/financial_values.py": "a0ade8370add8d5a20d16a9ae8ab49d95a1e35f0d4f03db7f9e5b4e02f8e7965",
+    "app/backend/services/question_focus.py": "6bcaf2362fa611ac1b336d2a9cb384774787af77486eccfca34b9f4112bb34ef",
+    "app/backend/services/analysis_patterns.py": "d3f8ed6ea4e2d4f142d97c32feb068fbbf98dca8226e5b15e388438d3f270afd",
+    "evaluation/benchmark.py": "79fd3b9e3f7f6b0882c74fd7661b3a881228c7487d63630f942a8332c213f7b9",
+    "evaluation/financial_metrics.py": "bffd7be7dedb682d2d1f26919a16f0c19364fe59174373cb06705357065657ee",
+    "evaluation/external.py": "71ba527d0a7278ef7db4fd2862a8a249df6e1e174513ec00353b41ec00e2e901",
+    "tools/financial_calculator.py": "39513dfa42356d24ef21a9d2c2ef33f7084571755cf15c8b50bd473c145ec068",
+    "tools/derived_calculations.py": "2562de652e38ae45a6d002cba728efefcae12c3c7dac5f663cacc23736dd0eab"
+  },
+  "inference_configuration": {
+    "device": "cpu (no local GPU)",
+    "dtype": "float32",
+    "kv_cache": false,
+    "context_length": 1024,
+    "prompt_template": "Question: {query}\\nAnswer:",
+    "eos_token_id": 50256,
+    "repetition_window_covers": "generated tokens only (fixed)"
+  },
+  "generation_configuration": {
+    "temperature": 0.7,
+    "top_k": 40,
+    "top_p": 0.9,
+    "repetition_penalty": 1.3,
+    "max_new_tokens": 64
+  },
+  "served_max_new_tokens": 40,
+  "measured_baseline": {
+    "dev": {
+      "system": 100.0,
+      "model_only": 1.64
+    },
+    "hidden": {
+      "system": 96.08,
+      "model_only": 3.43
+    },
+    "blind_prose": {
+      "system": 13.89,
+      "model_only": 7.64
+    },
+    "hidden_model_only": {
+      "correct": 7,
+      "total": 204,
+      "hallucination_rate": 96.39,
+      "abstention_accuracy": 0.0,
+      "extraction": "0/25",
+      "reasoning": "0/25",
+      "eos_stops": 0,
+      "max_token_stops": 201
+    },
+    "four_group_hidden": {
+      "system_correct_model_correct": 7,
+      "system_correct_model_wrong": 189,
+      "system_wrong_model_correct": 0,
+      "system_wrong_model_wrong": 8
+    }
+  },
+  "rules": [
+    "the baseline is never overwritten",
+    "hidden/test data is never modified",
+    "no benchmark answer is ever hardcoded",
+    "calculator and retrieval output is never reported as model capability"
+  ]
+}

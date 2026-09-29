@@ -1,0 +1,250 @@
+{
+  "arm": 1,
+  "seed": 1234,
+  "format": {
+    "document_separator": false,
+    "template": false,
+    "mask_prompt": false,
+    "prompt_template": null,
+    "separator_token": null
+  },
+  "corpus": {
+    "arm": 1,
+    "total_train_tokens": 97781614,
+    "separator_tokens": 0,
+    "masked_tokens": 0,
+    "format": {
+      "document_separator": false,
+      "template": false,
+      "mask_prompt": false,
+      "prompt_template": null,
+      "separator_token": null
+    }
+  },
+  "steps": 29541,
+  "tokens_per_step": 8192,
+  "token_passes": 242000000,
+  "checkpoint": "/kaggle/working/e1_arm1/checkpoint_29541.pt",
+  "eos_probe": {
+    "arm": 1,
+    "probes": 10,
+    "eos_emitted": 0,
+    "eos_rate_pct": 0.0,
+    "mean_generated_tokens": 128.0
+  },
+  "accuracy": {
+    "blind": {
+      "overall": {
+        "total": 144,
+        "correct": 15,
+        "accuracy": 10.42
+      },
+      "answerable": {
+        "total": 144,
+        "correct": 15,
+        "accuracy": 10.42
+      },
+      "by_category": {
+        "accounting": {
+          "total": 25,
+          "correct": 1,
+          "accuracy": 4.0
+        },
+        "concepts": {
+          "total": 25,
+          "correct": 3,
+          "accuracy": 12.0
+        },
+        "corporate_finance": {
+          "total": 15,
+          "correct": 3,
+          "accuracy": 20.0
+        },
+        "general": {
+          "total": 9,
+          "correct": 1,
+          "accuracy": 11.11
+        },
+        "interpretation": {
+          "total": 15,
+          "correct": 1,
+          "accuracy": 6.67
+        },
+        "reporting": {
+          "total": 25,
+          "correct": 3,
+          "accuracy": 12.0
+        },
+        "risk": {
+          "total": 15,
+          "correct": 2,
+          "accuracy": 13.33
+        },
+        "valuation": {
+          "total": 15,
+          "correct": 1,
+          "accuracy": 6.67
+        }
+      },
+      "by_level": {
+        "1": {
+          "total": 13,
+          "correct": 2,
+          "accuracy": 15.38
+        },
+        "2": {
+          "total": 73,
+          "correct": 10,
+          "accuracy": 13.7
+        },
+        "3": {
+          "total": 43,
+          "correct": 2,
+          "accuracy": 4.65
+        },
+        "4": {
+          "total": 10,
+          "correct": 1,
+          "accuracy": 10.0
+        },
+        "5": {
+          "total": 5,
+          "correct": 0,
+          "accuracy": 0.0
+        }
+      },
+      "by_kind": {
+        "authored": {
+          "total": 144,
+          "correct": 15,
+          "accuracy": 10.42
+        }
+      },
+      "hallucination_rate": 89.58,
+      "over_abstention_rate": 0.0,
+      "abstention_accuracy": null,
+      "abstention_items": 0,
+      "extraction_accuracy": null
+    },
+    "dev": {
+      "overall": {
+        "total": 200,
+        "correct": 7,
+        "accuracy": 3.5
+      },
+      "answerable": {
+        "total": 192,
+        "correct": 7,
+        "accuracy": 3.65
+      },
+      "by_category": {
+        "accounting": {
+          "total": 13,
+          "correct": 1,
+          "accuracy": 7.69
+        },
+        "concepts": {
+          "total": 10,
+          "correct": 2,
+          "accuracy": 20.0
+        },
+        "corporate_finance": {
+          "total": 29,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "extraction": {
+          "total": 34,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "hallucination": {
+          "total": 8,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "interpretation": {
+          "total": 2,
+          "correct": 1,
+          "accuracy": 50.0
+        },
+        "ratios": {
+          "total": 26,
+          "correct": 1,
+          "accuracy": 3.85
+        },
+        "reasoning": {
+          "total": 20,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "reporting": {
+          "total": 5,
+          "correct": 1,
+          "accuracy": 20.0
+        },
+        "statements": {
+          "total": 27,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "valuation": {
+          "total": 26,
+          "correct": 1,
+          "accuracy": 3.85
+        }
+      },
+      "by_level": {
+        "1": {
+          "total": 41,
+          "correct": 2,
+          "accuracy": 4.88
+        },
+        "2": {
+          "total": 49,
+          "correct": 2,
+          "accuracy": 4.08
+        },
+        "3": {
+          "total": 77,
+          "correct": 2,
+          "accuracy": 2.6
+        },
+        "4": {
+          "total": 13,
+          "correct": 1,
+          "accuracy": 7.69
+        },
+        "5": {
+          "total": 20,
+          "correct": 0,
+          "accuracy": 0.0
+        }
+      },
+      "by_kind": {
+        "authored": {
+          "total": 23,
+          "correct": 5,
+          "accuracy": 21.74
+        },
+        "generated": {
+          "total": 177,
+          "correct": 2,
+          "accuracy": 1.13
+        }
+      },
+      "hallucination_rate": 95.83,
+      "over_abstention_rate": 0.52,
+      "abstention_accuracy": 0.0,
+      "abstention_items": 8,
+      "extraction_accuracy": 0.0
+    }
+  },
+  "baseline_for_comparison": {
+    "checkpoint": "checkpoint_247850",
+    "model_only_dev": 1.64,
+    "model_only_blind": 7.64,
+    "eos_rate_pct": 0.0,
+    "note": "from AIVORA_PRE_TRAINING_BASELINE; different corpus SIZE is not being varied here, only the format"
+  }
+}

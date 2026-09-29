@@ -1,0 +1,15 @@
+{
+  "id": "aoscjkjhh/aivora-e1-arm2",
+  "title": "Aivora E1 Arm 2",
+  "code_file": "Aivora_E1_Arm2.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

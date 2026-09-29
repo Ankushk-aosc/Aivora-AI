@@ -11,8 +11,26 @@ way nobody recorded.
 import json
 import os
 
-OUT_DIR = os.path.join("training", "kaggle", "e1")
-NOTEBOOK = "Aivora_E1_Format_Experiment.ipynb"
+import argparse
+
+_parser = argparse.ArgumentParser()
+_parser.add_argument("--arm", type=int, default=1, choices=(1, 2))
+_ARGS, _ = _parser.parse_known_args()
+ARM_VALUE = _ARGS.arm
+
+# Arm 1 was pushed as "e1" / aivora-e1-format-experiment before this was
+# parameterised; arm 2 gets its own directory and kernel id so neither arm can
+# overwrite the other's outputs on Kaggle.
+if ARM_VALUE == 1:
+    OUT_DIR = os.path.join("training", "kaggle", "e1")
+    KERNEL_ID = "aoscjkjhh/aivora-e1-format-experiment"
+    KERNEL_TITLE = "Aivora E1 Format Experiment"
+else:
+    OUT_DIR = os.path.join("training", "kaggle", f"e1_arm{ARM_VALUE}")
+    KERNEL_ID = f"aoscjkjhh/aivora-e1-arm{ARM_VALUE}"
+    KERNEL_TITLE = f"Aivora E1 Arm {ARM_VALUE}"
+
+NOTEBOOK = f"Aivora_E1_Arm{ARM_VALUE}.ipynb"
 
 CELLS = []
 
@@ -54,7 +72,7 @@ Nothing here is simulated: every cell does the real thing or raises
 
 code('''# ============================================================
 # THE ONLY LINE THAT DIFFERS BETWEEN THE TWO ARMS
-ARM = 1          # 1 = control (old format), 2 = treated (all three fixes)
+ARM = __ARM__          # 1 = control (old format), 2 = treated (all three fixes)
 # ============================================================
 
 SEED = 1234      # identical for both arms
@@ -404,12 +422,13 @@ def main():
         "nbformat": 4, "nbformat_minor": 5,
     }
     path = os.path.join(OUT_DIR, NOTEBOOK)
+    body = json.dumps(notebook, indent=1).replace("__ARM__", str(ARM_VALUE))
     with open(path, "w", encoding="utf-8") as handle:
-        json.dump(notebook, handle, indent=1)
+        handle.write(body)
 
     metadata = {
-        "id": "aoscjkjhh/aivora-e1-format-experiment",
-        "title": "Aivora E1 Format Experiment",
+        "id": KERNEL_ID,
+        "title": KERNEL_TITLE,
         "code_file": NOTEBOOK,
         "language": "python",
         "kernel_type": "notebook",
