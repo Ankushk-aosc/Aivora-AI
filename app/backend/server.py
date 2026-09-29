@@ -96,6 +96,16 @@ def load_checkpoint(checkpoint_path):
             model=model, device=device,
             document_store=STATE.get("document_store"), max_new_tokens=40,
         )
+        # Build the retrieval index now, off the request path: the first chat
+        # request otherwise waits ~40s for sentence_transformers to import.
+        try:
+            from app.backend.services.chat_service import FINANCIAL_KNOWLEDGE_BASE
+            from app.backend.services.knowledge_retrieval import warm_index
+
+            warm_index(FINANCIAL_KNOWLEDGE_BASE)
+        except Exception:
+            pass
+
         STATE["orchestrator"] = AIOrchestrator(
             model=model, device=device, document_store=STATE.get("document_store"),
         )

@@ -54,8 +54,11 @@ class StubHF:
 generation.HFBackend = StubHF
 
 
-def request(method, path, body=None, headers=None):
-    conn = http.client.HTTPConnection("127.0.0.1", PORT, timeout=30)
+def request(method, path, body=None, headers=None, timeout=30):
+    # Chat requests pass a longer timeout: the retrieval index costs ~40s to
+    # build the first time in a process (sentence_transformers import, measured),
+    # and this test loads a stub backend rather than the server's warm-up path.
+    conn = http.client.HTTPConnection("127.0.0.1", PORT, timeout=timeout)
     conn.request(method, path, body=json.dumps(body).encode() if body is not None else None,
                  headers={"Content-Type": "application/json", **(headers or {})})
     r = conn.getresponse()
@@ -98,12 +101,14 @@ check("adapter path outside checkpoints/ -> 403", status == 403, f"HTTP {status}
 # text came from the backend rather than any canned source.
 SENTINEL = "SENTINEL-FROM-BACKEND"
 StubHF.generate = lambda self, prompt, **kw: f"{SENTINEL}: an answer from the model."
-status, body = request("POST", "/api/chat", {"query": "Tell me something interesting"})
+status, body = request("POST", "/api/chat", {"query": "Tell me something interesting"},
+                       timeout=180)
 check("chat answers via the loaded backend (sentinel present)",
       status == 200 and SENTINEL in str(body.get("answer", "")), str(body)[:200])
 
 status, body = request("POST", "/api/chat",
-                       {"query": "Calculate EBITDA margin for revenue 500 and EBITDA 100."})
+                       {"query": "Calculate EBITDA margin for revenue 500 and EBITDA 100."},
+                       timeout=180)
 check("calculator still handles numbers (not the model)",
       "20.00%" in str(body.get("answer", "")), str(body)[:160])
 

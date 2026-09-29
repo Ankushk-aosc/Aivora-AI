@@ -224,3 +224,24 @@ def retrieve_definition(question, knowledge_base):
             continue
         return {"text": text, "score": round(score, 3), "term": keys[0]}
     return None
+
+def warm_index(knowledge_base):
+    """Build the index on a background thread.
+
+    Measured on this machine: importing sentence_transformers costs 31.8s and
+    loading MiniLM another 8.9s, while embedding all glossary entries costs only
+    0.6s. So the delay is fixed import cost, not the number of entries, and
+    caching embeddings would not remove it - the query still needs the model.
+    Building it at startup means no user request pays the 40s.
+    """
+    import threading
+
+    def build():
+        try:
+            get_index(knowledge_base)
+        except Exception:
+            pass  # retrieval is optional; the glossary and calculator still work
+
+    thread = threading.Thread(target=build, daemon=True, name="retrieval-warmup")
+    thread.start()
+    return thread

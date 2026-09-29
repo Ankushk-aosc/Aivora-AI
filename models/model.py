@@ -159,7 +159,8 @@ class DeepSeekV3(nn.Module):
     @torch.no_grad()
     def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None,
                  top_p=None, repetition_penalty=1.0,
-                 stop_on_repetition=False, repetition_window=12, repetition_threshold=4):
+                 stop_on_repetition=False, repetition_window=12, repetition_threshold=4,
+                 eos_token_id=None, trace=None):
         """Autoregressive sampling.
 
         top_k / top_p / repetition_penalty / stop_on_repetition are all
@@ -180,7 +181,13 @@ class DeepSeekV3(nn.Module):
         full max_new_tokens budget.
         """
         batch_size = idx.size(0)
+        prompt_length = idx.size(1)
         finished = torch.zeros(batch_size, dtype=torch.bool, device=idx.device)
+        # `trace` is pure observation for scripts/validate_inference.py: it records
+        # WHY generation ended, which cannot be inferred from the output alone.
+        if trace is not None:
+            trace.update({"prompt_tokens": idx.size(1), "generated": 0,
+                          "stop_reason": "max_new_tokens", "stop_step": None})
 
         for _ in range(max_new_tokens):
             idx_cond = idx if idx.size(1) <= self.config.block_size else idx[:, -self.config.block_size:]
@@ -217,8 +224,28 @@ class DeepSeekV3(nn.Module):
             # so the batch stays aligned without corrupting unfinished rows.
             idx_next = torch.where(finished.unsqueeze(1), idx[:, -1:], idx_next)
             idx = torch.cat((idx, idx_next), dim=1)
+            if trace is not None:
+                trace["generated"] += 1
 
-            if stop_on_repetition and idx.size(1) >= repetition_window:
+            if eos_token_id is not None:
+                hit_eos = (idx_next.squeeze(1) == eos_token_id) & ~finished
+                if bool(hit_eos.any()):
+                    finished |= hit_eos
+                    if trace is not None:
+                        trace.update({"stop_reason": "eos",
+                                      "stop_step": trace["generated"]})
+                    if bool(finished.all()):
+                        break
+
+            # Only the generated tokens count. Measured on the 30-question
+            # diagnostic: with the prompt inside the window, 23 of 30 greedy
+            # answers were cut off after 1-3 tokens, because an answer that
+            # names the term it was asked about repeats a bigram from the
+            # question - "What is EBITDA?" produced " E","BIT" and stopped, the
+            # bigram having already appeared in the prompt. Premature-stop rate
+            # was 76.7% greedy, 20% at production settings.
+            generated_length = idx.size(1) - prompt_length
+            if stop_on_repetition and generated_length >= repetition_window:
                 window = idx[:, -repetition_window:]
                 for b in range(batch_size):
                     if finished[b]:
@@ -227,12 +254,24 @@ class DeepSeekV3(nn.Module):
                     last_tok = row[-1]
                     if row.count(last_tok) >= repetition_threshold:
                         finished[b] = True
+                        if trace is not None:
+                            trace.update({"stop_reason": "repeated_token",
+                                          "stop_step": trace["generated"],
+                                          "stop_detail": last_tok})
                         continue
                     if repetition_window >= 6:
                         bigram = tuple(row[-2:])
                         pairs = [tuple(row[i:i + 2]) for i in range(len(row) - 1)]
-                        if pairs.count(bigram) >= max(2, repetition_threshold // 2):
+                        # Three occurrences, not two: a phrase legitimately
+                        # recurring once ("...net margin... the net margin is")
+                        # is not degeneration.
+                        if pairs.count(bigram) >= max(3, repetition_threshold // 2):
                             finished[b] = True
+                            if trace is not None:
+                                trace.update({"stop_reason": "repeated_bigram",
+                                              "stop_step": trace["generated"],
+                                              "stop_detail": list(bigram),
+                                              "window": row})
                 if bool(finished.all()):
                     break
 

@@ -44,6 +44,11 @@ class DeepSeekBackend:
                 context, max_new_tokens, temperature=temperature, top_k=top_k,
                 top_p=top_p, repetition_penalty=repetition_penalty,
                 stop_on_repetition=True,
+                # The model was trained on documents separated by <|endoftext|>,
+                # so it is the only stop token it could have learned. It was
+                # never checked before, which meant a finished answer ran on
+                # into a fresh "Question:" instead of ending.
+                eos_token_id=self.enc.eot_token,
             )
         return self.enc.decode(out[0, len(ids):].tolist()).strip()
 
