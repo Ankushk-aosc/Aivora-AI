@@ -1,0 +1,233 @@
+{
+  "pretraining_corpus": {
+    "available": true,
+    "note": "the pretraining shards live in the Kaggle environment; this is from the manifest the checkpoint embedded, and record-level measures are not available locally",
+    "datasets": 19,
+    "unique_train_tokens": 120857129,
+    "tokens_processed": 1964851200,
+    "epochs": 16.26,
+    "exact_duplicates_removed_at_prepare": 6500,
+    "eval_leakage_removed_at_prepare": 1,
+    "by_dataset_tokens": {
+      "tinystories": 9495170,
+      "financial_instruction_alpaca": 2434114,
+      "fineweb_edu": 28535064,
+      "financial_text_investopedia": 9663359,
+      "financial_qa_sujet": 23499207,
+      "financial_reasoning_finqa": 67994,
+      "financial_reports_edgar": 18934426,
+      "general_wikipedia": 14113139,
+      "general_instruction_dolly": 2447489,
+      "general_dialogue_oasst1": 2411627,
+      "general_qa_squad": 2433624,
+      "general_reasoning_gsm8k": 922024,
+      "financial_reasoning_fino1": 2859245
+    }
+  },
+  "datasets": {
+    "financial_sft_v1": {
+      "path": "data\\sft\\financial_sft_v1.jsonl",
+      "sha256": "329372998e3a39c7cb6cae8d4d46677853f682ed1f29465f66396936f40aac94",
+      "records": 7849,
+      "usable_records": 7849,
+      "malformed_records": 0,
+      "total_tokens": 522736,
+      "mean_length_tokens": 66.6,
+      "median_length_tokens": 58,
+      "max_length_tokens": 156,
+      "p95_length_tokens": 130,
+      "exact_duplicates": 0,
+      "near_duplicate_rate_pct": 0.014,
+      "near_duplicate_sample": {
+        "records_sampled": 1200,
+        "pairs_compared": 28500,
+        "threshold_jaccard": 0.8
+      },
+      "rows_with_numeric_answer": 3890,
+      "numeric_answers_inconsistent_with_prose": 0,
+      "by_task_type": {
+        "calculation": 3083,
+        "extraction": 2373,
+        "definition": 610,
+        "interpretation": 483,
+        "abstention": 473,
+        "reasoning": 407,
+        "grounded": 400,
+        "explanation": 20
+      },
+      "by_verification_status": {
+        "verified_present_in_context": 2373,
+        "verified_arithmetic": 2183,
+        "verified_arithmetic_and_calculator": 1144,
+        "verified_curated": 630,
+        "verified_pattern": 483,
+        "verified_insufficient": 466,
+        "verified_grounded": 400,
+        "verified_arithmetic_and_substitution": 163,
+        "verified_current_data": 7
+      },
+      "by_source": {
+        "generated_verified": 4363,
+        "generated_statement": 2373,
+        "curated_glossary": 610,
+        "generated_from_pattern": 483,
+        "curated_pattern": 20
+      },
+      "domain_coverage_records": {
+        "ratios": 2900,
+        "cash_flow": 2155,
+        "financial_statements": 942,
+        "valuation": 915,
+        "corporate_finance": 909,
+        "accounting": 658,
+        "derivatives": 386,
+        "markets": 302,
+        "risk": 207,
+        "banking": 37,
+        "economics": 32,
+        "fixed_income": 16,
+        "portfolio_management": 10
+      },
+      "task_coverage_records": {
+        "definitions": 5387,
+        "reasoning": 4263,
+        "extraction": 2010,
+        "current_data": 1957,
+        "interpretation": 483,
+        "abstention": 473,
+        "calculations": 0
+      },
+      "synthetic_vs_sourced": {
+        "generated_or_curated_here": 7849,
+        "external_source": 0
+      }
+    },
+    "tiny_overfit": {
+      "path": "data\\tiny_overfit\\tiny_financial.jsonl",
+      "sha256": "1e538695a23e3898f6fa4edd26473da86f46e5b8e7a8a0a098e409ca7132cdfa",
+      "records": 54,
+      "usable_records": 54,
+      "malformed_records": 0,
+      "total_tokens": 1886,
+      "mean_length_tokens": 34.9,
+      "median_length_tokens": 34,
+      "max_length_tokens": 47,
+      "p95_length_tokens": 45,
+      "exact_duplicates": 0,
+      "near_duplicate_rate_pct": 0.0,
+      "near_duplicate_sample": {
+        "records_sampled": 54,
+        "pairs_compared": 996,
+        "threshold_jaccard": 0.8
+      },
+      "rows_with_numeric_answer": 12,
+      "numeric_answers_inconsistent_with_prose": 0,
+      "by_task_type": {
+        "definition": 12,
+        "extraction": 12,
+        "calculation": 12,
+        "explanation": 6,
+        "interpretation": 6,
+        "abstention": 6
+      },
+      "by_verification_status": {
+        "verified_definition": 12,
+        "verified_present_in_context": 12,
+        "verified_arithmetic": 12,
+        "verified_explanation": 6,
+        "verified_interpretation": 6,
+        "verified_insufficient": 4,
+        "verified_current_data": 2
+      },
+      "by_source": {
+        "authored": 54
+      },
+      "domain_coverage_records": {
+        "ratios": 21,
+        "cash_flow": 13,
+        "accounting": 6,
+        "corporate_finance": 5,
+        "risk": 3,
+        "markets": 2,
+        "financial_statements": 1,
+        "economics": 1,
+        "valuation": 0,
+        "banking": 0,
+        "portfolio_management": 0,
+        "fixed_income": 0,
+        "derivatives": 0
+      },
+      "task_coverage_records": {
+        "definitions": 40,
+        "reasoning": 12,
+        "interpretation": 6,
+        "abstention": 6,
+        "current_data": 5,
+        "extraction": 0,
+        "calculations": 0
+      },
+      "synthetic_vs_sourced": {
+        "generated_or_curated_here": 54,
+        "external_source": 0
+      }
+    },
+    "instruction_legacy": {
+      "path": "data\\instruction\\financial_instructions.jsonl",
+      "sha256": "4c1e83d60f93e2f3b503d3ccfac0c7743de1c4f2b3e99ceb4082d6bf82c1cb44",
+      "records": 800,
+      "usable_records": 800,
+      "malformed_records": 0,
+      "total_tokens": 194576,
+      "mean_length_tokens": 243.2,
+      "median_length_tokens": 181,
+      "max_length_tokens": 2070,
+      "p95_length_tokens": 627,
+      "exact_duplicates": 0,
+      "near_duplicate_rate_pct": 0.0,
+      "near_duplicate_sample": {
+        "records_sampled": 800,
+        "pairs_compared": 18900,
+        "threshold_jaccard": 0.8
+      },
+      "rows_with_numeric_answer": 0,
+      "numeric_answers_inconsistent_with_prose": 0,
+      "by_task_type": {
+        "unlabelled": 800
+      },
+      "by_verification_status": {
+        "none": 800
+      },
+      "by_source": {
+        "gbharti/finance-alpaca": 800
+      },
+      "domain_coverage_records": {
+        "banking": 250,
+        "derivatives": 187,
+        "ratios": 182,
+        "risk": 170,
+        "markets": 156,
+        "accounting": 150,
+        "economics": 87,
+        "valuation": 62,
+        "corporate_finance": 62,
+        "portfolio_management": 59,
+        "fixed_income": 57,
+        "cash_flow": 10,
+        "financial_statements": 5
+      },
+      "task_coverage_records": {
+        "reasoning": 346,
+        "current_data": 137,
+        "definitions": 69,
+        "calculations": 47,
+        "abstention": 7,
+        "interpretation": 4,
+        "extraction": 2
+      },
+      "synthetic_vs_sourced": {
+        "generated_or_curated_here": 0,
+        "external_source": 800
+      }
+    }
+  }
+}
