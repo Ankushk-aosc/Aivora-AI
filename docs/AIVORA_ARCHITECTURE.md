@@ -181,7 +181,14 @@ Training history, all measured: four pretraining sessions to the planned
 instruction tuning at 2e-5 and 5e-6 (both overfitted inside 500 steps);
 distillation (style improved, facts did not); MoE routing healthy.
 
-**Conclusion for planning:** the model's ceiling is capacity — 101M parameters
+**CORRECTION (see docs/AIVORA_TRAINING_DATA_AUDIT.md).** The conclusion below is
+wrong and is left in place with this note rather than quietly edited. It reads
+`tokens_processed` (1.965B) as unique tokens. The checkpoint's own manifest
+records **120,857,129 unique training tokens** - 1.19 per parameter against a
+compute-optimal ~20 - processed over **16.3 epochs**. Capacity was never tested,
+because the model was never fed. See docs/AIVORA_TRAINING_DECISION.md.
+
+**Conclusion for planning (superseded):** the model's ceiling is capacity — 101M parameters
 on ~2B tokens — not schedule, routing or data volume. Pipeline components
 (calculator, glossary, retrieval, guard) carry essentially all current
 accuracy. Any plan that expects a large gain from more pretraining of this
