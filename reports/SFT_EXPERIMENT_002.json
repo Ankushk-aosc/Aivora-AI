@@ -1,0 +1,103 @@
+{
+  "experiment": "SFT_EXPERIMENT_002",
+  "purpose": "sanity check before any GPU time: does the revised dataset move extraction without destroying copy ability?",
+  "dataset": {
+    "path": "data\\sft\\financial_sft_v2.jsonl",
+    "version": "financial_sft_v2",
+    "sha256": "c50bf41e82ce5dec6fd138a7599fcc248feee34854ccc1136bff7bfd0be10f55",
+    "rows": 12159,
+    "train": 11563,
+    "val": 596,
+    "skipped": 0,
+    "training_tokens": 1028429
+  },
+  "base_checkpoint": {
+    "path": "checkpoints\\final\\checkpoint_247850.pt",
+    "sha256": "6e9e50ca59e5d5beb70b555a9ff07e0d30bcbd1097232e64bc04c4142eb4b004"
+  },
+  "recipe_changes_from_001": {
+    "peak_lr": "5e-5 -> 2e-05",
+    "extraction_token_share": "10.0% -> 37.6%",
+    "replay_rows": "0 -> trained without a template",
+    "copy_rows": "0 -> 1200",
+    "early_stopping_signal": "validation loss -> copy retention + extraction",
+    "checkpoint_selection": "lowest loss -> best capability"
+  },
+  "optimizer": {
+    "name": "AdamW",
+    "betas": [
+      0.9,
+      0.95
+    ],
+    "weight_decay": 0.01
+  },
+  "schedule": {
+    "peak_lr": 2e-05,
+    "warmup_steps": 30,
+    "decay": "cosine to 10%"
+  },
+  "batch_size": 4,
+  "block_size": 224,
+  "steps_requested": 600,
+  "steps_run": 600,
+  "seed": 1234,
+  "device": "cpu",
+  "history": [
+    {
+      "step": 100,
+      "train_loss": 1.5374,
+      "val_loss": 2.1063,
+      "copy": "4/6",
+      "extraction": "0/10",
+      "minutes": 16.1
+    },
+    {
+      "step": 200,
+      "train_loss": 3.0811,
+      "val_loss": 1.4925,
+      "copy": "4/6",
+      "extraction": "0/10",
+      "minutes": 71.9
+    },
+    {
+      "step": 300,
+      "train_loss": 1.6345,
+      "val_loss": 1.2524,
+      "copy": "4/6",
+      "extraction": "1/10",
+      "minutes": 92.4
+    },
+    {
+      "step": 400,
+      "train_loss": 1.4904,
+      "val_loss": 1.1753,
+      "copy": "4/6",
+      "extraction": "0/10",
+      "minutes": 109.1
+    },
+    {
+      "step": 500,
+      "train_loss": 1.2735,
+      "val_loss": 1.0571,
+      "copy": "6/6",
+      "extraction": "1/10",
+      "minutes": 125.8
+    },
+    {
+      "step": 600,
+      "train_loss": 0.6523,
+      "val_loss": 1.0184,
+      "copy": "4/6",
+      "extraction": "2/10",
+      "minutes": 148.8
+    }
+  ],
+  "stopped_because": null,
+  "baseline_gates": {
+    "copy": "5/6",
+    "extraction": "0/20"
+  },
+  "checkpoint": "checkpoints\\sft_002\\sft_002_best.pt",
+  "checkpoint_sha256": "d3d0419951b37652c0279657af218a7c9ac81446747386e94db855a04178a05e",
+  "minutes": 149.3
+}

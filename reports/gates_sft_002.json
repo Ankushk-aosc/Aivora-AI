@@ -1,0 +1,202 @@
+{
+  "gate_a_copy": {
+    "score": 4,
+    "of": 6,
+    "detail": [
+      {
+        "need": "XK42",
+        "answer": "The access code is XK42.",
+        "ok": true
+      },
+      {
+        "need": "17",
+        "answer": "Alice has 17 -10 = >26.00.",
+        "ok": true
+      },
+      {
+        "need": "banana",
+        "answer": "The password is banana.",
+        "ok": true
+      },
+      {
+        "need": "4821",
+        "answer": "The widget count is 483,848.00.",
+        "ok": false
+      },
+      {
+        "need": "red blue green",
+        "answer": "The data given does not support that: the black green green green gree",
+        "ok": false
+      },
+      {
+        "need": "7Q9",
+        "answer": "The serial number is 7Q9.",
+        "ok": true
+      }
+    ]
+  },
+  "gate_b_extraction": {
+    "score": 2,
+    "of": 20,
+    "accuracy_pct": 10.0,
+    "detail": [
+      {
+        "expected": 5033.5,
+        "answer": "The figures give Gross profit as 5,701.25.",
+        "position": 1,
+        "ok": false
+      },
+      {
+        "expected": 6912.0,
+        "answer": "The figures give Cash as 6,912.00.",
+        "position": 4,
+        "ok": true
+      },
+      {
+        "expected": 2662.25,
+        "answer": "Interest expense is 2,559.25.",
+        "position": 3,
+        "ok": false
+      },
+      {
+        "expected": 338.0,
+        "answer": "Taking the Inventory line: 1,532.25.",
+        "position": 4,
+        "ok": false
+      },
+      {
+        "expected": 9615.0,
+        "answer": "Operating cash flow is 9,504.25.",
+        "position": 6,
+        "ok": false
+      },
+      {
+        "expected": 9194.0,
+        "answer": "Operating expenses is 9,143.00.",
+        "position": 5,
+        "ok": false
+      },
+      {
+        "expected": 3051.0,
+        "answer": "3,051.00 - the Shares outstanding entry.",
+        "position": 2,
+        "ok": true
+      },
+      {
+        "expected": 6591.0,
+        "answer": "EBIT is 2,681.75.",
+        "position": 1,
+        "ok": false
+      }
+    ]
+  },
+  "gate_c_generalisation": {
+    "score": 3,
+    "of": 15,
+    "accuracy_pct": 20.0,
+    "note": "label spellings and question wordings absent from every training set",
+    "detail": [
+      {
+        "expected": 9136.0,
+        "answer": "The figures give Shares outstanding as 9,136.25.",
+        "ok": false
+      },
+      {
+        "expected": 6725.0,
+        "answer": "Total assets: 8,330.00, as stated.",
+        "ok": false
+      },
+      {
+        "expected": 1678.0,
+        "answer": "The figures give Net cash flow as 9,019.00.",
+        "ok": false
+      },
+      {
+        "expected": 479.75,
+        "answer": "Current liabilities is 8,033.00.",
+        "ok": false
+      },
+      {
+        "expected": 4579.0,
+        "answer": "Current assets: 3,412.00, as stated.",
+        "ok": false
+      },
+      {
+        "expected": 5956.5,
+        "answer": "Taking the Share price line: 6,818.75.",
+        "ok": false
+      }
+    ]
+  },
+  "gate_d_regression": {
+    "calculation": {
+      "score": 1,
+      "of": 20,
+      "accuracy_pct": 5.0
+    },
+    "abstention": {
+      "score": 1,
+      "of": 5
+    },
+    "over_abstention": {
+      "score": 0,
+      "of": 2
+    },
+    "interpretation": {
+      "score": 2,
+      "of": 3
+    },
+    "plain_text_continuation": {
+      "mean_tokens": 20.3,
+      "samples": [
+        "the share price.",
+        "collateral, or at least the same as a one-off items - which of those it is canno",
+        "an acquisition occurs. The figures provided are insufficient: the net income is "
+      ]
+    }
+  },
+  "gate_e_hallucination": {
+    "wrong_assertions_in_sample": 6,
+    "sample_size": 8,
+    "rate_pct": 75.0,
+    "note": "on probes whose answer WAS in the context, so a wrong number is an invention rather than a knowledge gap"
+  },
+  "eos": {
+    "emitted": 5,
+    "of": 6,
+    "rate_pct": 83.3,
+    "mean_generated_tokens": 9.7
+  },
+  "checkpoint": "checkpoints/sft_002/sft_002_best.pt",
+  "label": "sft_002",
+  "verdict": {
+    "checks": [
+      {
+        "name": "A copy retained",
+        "passed": true,
+        "detail": "4/6 vs baseline 5 (floor 4.0)"
+      },
+      {
+        "name": "B extraction improved",
+        "passed": true,
+        "detail": "10.0% vs 0.0%"
+      },
+      {
+        "name": "C generalises to unseen wording",
+        "passed": true,
+        "detail": "20.0% vs 0.0%"
+      },
+      {
+        "name": "D calculation not regressed",
+        "passed": true,
+        "detail": "5.0% vs 0.0%"
+      },
+      {
+        "name": "E hallucination not worse",
+        "passed": true,
+        "detail": "75.0% vs 100.0%"
+      }
+    ],
+    "all_passed": true
+  }
+}
