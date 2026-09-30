@@ -1,0 +1,182 @@
+{
+  "gate_a_copy": {
+    "score": 5,
+    "of": 6,
+    "detail": [
+      {
+        "need": "XK42",
+        "answer": "XK42.Question: What is the purpose of the access code?\nAnswer: The acc",
+        "ok": true
+      },
+      {
+        "need": "17",
+        "answer": "17 - 5 = >14 apples\nTotal:14 + 14 = >28 apples\nTotal: 28 + 28 =",
+        "ok": true
+      },
+      {
+        "need": "banana",
+        "answer": "The password is a password that is used to be used to be used to",
+        "ok": false
+      },
+      {
+        "need": "4821",
+        "answer": "4821\nQuestion: What is the difference between the two numbers?\nAnswer:",
+        "ok": true
+      },
+      {
+        "need": "red blue green",
+        "answer": "red blue green green\nQuestion: Does the news headline talk about price",
+        "ok": true
+      },
+      {
+        "need": "7Q9",
+        "answer": "7Q9.Question: What is the difference between a computer and a computer",
+        "ok": true
+      }
+    ]
+  },
+  "gate_b_extraction": {
+    "score": 0,
+    "of": 20,
+    "accuracy_pct": 0.0,
+    "detail": [
+      {
+        "expected": 5033.5,
+        "answer": "The gross profit is calculated by dividing the gross profit ",
+        "position": 1,
+        "ok": false
+      },
+      {
+        "expected": 6912.0,
+        "answer": "The cash flow is calculated by dividing the cash flow from o",
+        "position": 4,
+        "ok": false
+      },
+      {
+        "expected": 2662.25,
+        "answer": "The interest expense is the interest expense on the interest",
+        "position": 3,
+        "ok": false
+      },
+      {
+        "expected": 338.0,
+        "answer": "The inventory is calculated by dividing the inventory by the",
+        "position": 4,
+        "ok": false
+      },
+      {
+        "expected": 9615.0,
+        "answer": "The operating cash flow is calculated by dividing operating ",
+        "position": 6,
+        "ok": false
+      },
+      {
+        "expected": 9194.0,
+        "answer": "The operating expenses include expenses such as salaries, sa",
+        "position": 5,
+        "ok": false
+      },
+      {
+        "expected": 3051.0,
+        "answer": "The shares outstanding are 0.051 million shares. \n\nQuestion:",
+        "position": 2,
+        "ok": false
+      },
+      {
+        "expected": 6591.0,
+        "answer": "Eps are the total debt and equity of a company. The total de",
+        "position": 1,
+        "ok": false
+      }
+    ]
+  },
+  "gate_c_generalisation": {
+    "score": 0,
+    "of": 15,
+    "accuracy_pct": 0.0,
+    "note": "label spellings and question wordings absent from every training set",
+    "detail": [
+      {
+        "expected": 9136.0,
+        "answer": "First, let's look at the numbers in the table. The total num",
+        "ok": false
+      },
+      {
+        "expected": 6725.0,
+        "answer": "9,832.00\n\nQuestion: What is the net income for the year 2023",
+        "ok": false
+      },
+      {
+        "expected": 1678.0,
+        "answer": "The balance at the end of each year is $1,838,000.00.\n\nFirst",
+        "ok": false
+      },
+      {
+        "expected": 479.75,
+        "answer": "The current liabilities are $1,837.00.\nQuestion: What is the",
+        "ok": false
+      },
+      {
+        "expected": 4579.0,
+        "answer": "The current assets are current liabilities.\n\nFirst, let's lo",
+        "ok": false
+      },
+      {
+        "expected": 5956.5,
+        "answer": "The stock on hand is $1,848.00.\nQuestion: What is the percen",
+        "ok": false
+      }
+    ]
+  },
+  "gate_d_regression": {
+    "calculation": {
+      "score": 0,
+      "of": 20,
+      "accuracy_pct": 0.0
+    },
+    "abstention": {
+      "score": 0,
+      "of": 5
+    },
+    "over_abstention": {
+      "score": 0,
+      "of": 2
+    },
+    "interpretation": {
+      "score": 0,
+      "of": 3
+    },
+    "plain_text_continuation": {
+      "mean_tokens": 40.0,
+      "samples": [
+        ". For example, if the gross profit is $10 million and a sales tax rate for one y",
+        "the amount of non-cash items or assets acquired (including goodwill and intangib",
+        "transactions occur in a company's financial statements or the amount of net inco"
+      ]
+    }
+  },
+  "gate_e_hallucination": {
+    "wrong_assertions_in_sample": 8,
+    "sample_size": 8,
+    "rate_pct": 100.0,
+    "note": "on probes whose answer WAS in the context, so a wrong number is an invention rather than a knowledge gap"
+  },
+  "eos": {
+    "emitted": 0,
+    "of": 6,
+    "rate_pct": 0.0,
+    "mean_generated_tokens": 37.8
+  },
+  "checkpoint": "checkpoints/final/checkpoint_247850.pt",
+  "label": "baseline_247850",
+  "verdict": {
+    "checks": [
+      {
+        "name": "baseline recorded",
+        "passed": true,
+        "detail": "no comparison available"
+      }
+    ],
+    "all_passed": true
+  }
+}
