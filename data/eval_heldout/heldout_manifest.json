@@ -1,0 +1,52 @@
+{
+  "frozen": {
+    "path": "data\\eval_heldout\\heldout_frozen.jsonl",
+    "items": 313,
+    "sha256": "e02c3dc3b8d67e851a170029015bb912e5184ac26f9ac6f55da756e0ce283f4f",
+    "by_gate": {
+      "copy": 69,
+      "extraction": 69,
+      "wording": 75,
+      "calculation": 48,
+      "abstention": 52
+    },
+    "handwritten_by_gate": {
+      "copy": 24,
+      "extraction": 24,
+      "wording": 22,
+      "calculation": 27,
+      "abstention": 28
+    }
+  },
+  "selection": {
+    "path": "data\\eval_heldout\\selection.jsonl",
+    "items": 61,
+    "sha256": "2fc076fb010ea747109d64f57153731173e410b52b87a255b61aa641daeae077",
+    "purpose": "checkpoint choice only; never used for reporting"
+  },
+  "seed": 424242,
+  "overlap_removed": {
+    "exact": 0,
+    "ngram": 19,
+    "by_gate": {
+      "copy": 0,
+      "extraction": 0,
+      "wording": 0,
+      "calculation": 16,
+      "abstention": 3
+    }
+  },
+  "overlap_method": "exact text match plus 8-gram intersection against 5 training files",
+  "training_files_checked": [
+    "data/sft/financial_sft_v1.jsonl",
+    "data/sft/financial_sft_v2.jsonl",
+    "data/sft/financial_sft_chat.jsonl",
+    "data/tiny_overfit/tiny_financial.jsonl",
+    "data/instruction/financial_instructions.jsonl"
+  ],
+  "rules": [
+    "never train on the frozen set",
+    "never select checkpoints with the frozen set - use selection.jsonl",
+    "frozen items are reported with k/n and a confidence interval"
+  ]
+}

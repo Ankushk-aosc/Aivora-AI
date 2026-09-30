@@ -1,0 +1,248 @@
+{
+  "note": "Phase 0 inventory. Nothing deleted or overwritten. Figures are measured from the files named unless marked otherwise.",
+  "datasets": {
+    "financial_sft_v1": {
+      "path": "data/sft/financial_sft_v1.jsonl",
+      "exists": true,
+      "rows": 7849,
+      "sha256": "329372998e3a39c7cb6cae8d4d46677853f682ed1f29465f66396936f40aac94",
+      "status": "measured",
+      "by_task_type": {
+        "calculation": 3083,
+        "extraction": 2373,
+        "definition": 610,
+        "interpretation": 483,
+        "abstention": 473,
+        "reasoning": 407,
+        "grounded": 400,
+        "explanation": 20
+      }
+    },
+    "financial_sft_v2": {
+      "path": "data/sft/financial_sft_v2.jsonl",
+      "exists": true,
+      "rows": 12159,
+      "sha256": "c50bf41e82ce5dec6fd138a7599fcc248feee34854ccc1136bff7bfd0be10f55",
+      "status": "measured",
+      "by_task_type": {
+        "extraction": 5826,
+        "calculation": 3000,
+        "copy": 1200,
+        "abstention": 714,
+        "interpretation": 443,
+        "grounded": 438,
+        "reasoning": 352,
+        "definition": 124,
+        "replay": 42,
+        "explanation": 20
+      }
+    },
+    "tiny_overfit": {
+      "path": "data/tiny_overfit/tiny_financial.jsonl",
+      "exists": true,
+      "rows": 54,
+      "sha256": "1e538695a23e3898f6fa4edd26473da86f46e5b8e7a8a0a098e409ca7132cdfa",
+      "status": "measured",
+      "by_task_type": {
+        "definition": 12,
+        "extraction": 12,
+        "calculation": 12,
+        "explanation": 6,
+        "interpretation": 6,
+        "abstention": 6
+      }
+    },
+    "benchmark_dev": {
+      "path": "data/benchmark/dev.jsonl",
+      "exists": true,
+      "rows": 795,
+      "sha256": "c00bbbe6c0449f73ce3389386ec583cc369cc3f567e2008af07071c12e011c6a",
+      "status": "measured",
+      "by_task_type": {
+        "ratios": 140,
+        "statements": 117,
+        "reasoning": 109,
+        "extraction": 100,
+        "valuation": 100,
+        "corporate_finance": 97,
+        "accounting": 40,
+        "hallucination": 36,
+        "concepts": 23,
+        "reporting": 13,
+        "interpretation": 12,
+        "general": 8
+      }
+    },
+    "benchmark_test_hidden": {
+      "path": "data/benchmark/test.jsonl",
+      "exists": true,
+      "rows": 204,
+      "sha256": "3aac98b056c3c3a1db5fb7f1e9c683101041fc2855be0004956e740965e30678",
+      "status": "measured",
+      "by_task_type": {
+        "ratios": 35,
+        "statements": 29,
+        "valuation": 25,
+        "extraction": 25,
+        "reasoning": 25,
+        "corporate_finance": 19,
+        "accounting": 13,
+        "hallucination": 10,
+        "concepts": 8,
+        "interpretation": 6,
+        "reporting": 5,
+        "general": 4
+      }
+    },
+    "benchmark_blind": {
+      "path": "data/benchmark/blind.jsonl",
+      "exists": true,
+      "rows": 144,
+      "sha256": "507d0956df44a3325561a75d78f11d72e454345cd543cdd348d93051df8d8b4d",
+      "status": "measured",
+      "by_task_type": {
+        "accounting": 25,
+        "concepts": 25,
+        "reporting": 25,
+        "corporate_finance": 15,
+        "interpretation": 15,
+        "risk": 15,
+        "valuation": 15,
+        "general": 9
+      }
+    },
+    "instruction_legacy": {
+      "path": "data/instruction/financial_instructions.jsonl",
+      "exists": true,
+      "rows": 800,
+      "sha256": "4c1e83d60f93e2f3b503d3ccfac0c7743de1c4f2b3e99ceb4082d6bf82c1cb44",
+      "status": "measured",
+      "by_task_type": {
+        "unlabelled": 800
+      }
+    }
+  },
+  "checkpoints": {
+    "baseline_247850": {
+      "path": "checkpoints/final/checkpoint_247850.pt",
+      "exists": true,
+      "bytes": 1259200718,
+      "sha256": "6e9e50ca59e5d5beb70b555a9ff07e0d30bcbd1097232e64bc04c4142eb4b004",
+      "status": "measured",
+      "preserved": true
+    },
+    "sft_001": {
+      "path": "checkpoints/sft_001/sft_001_best.pt",
+      "exists": true,
+      "bytes": 444866516,
+      "sha256": "4e76a3f8892f27a0e831f2c67707067f4cbb6859350f1e4c14e5861fbe187b6c",
+      "status": "measured",
+      "preserved": true
+    },
+    "sft_002": {
+      "path": "checkpoints/sft_002/sft_002_best.pt",
+      "exists": true,
+      "bytes": 444866516,
+      "sha256": "d3d0419951b37652c0279657af218a7c9ac81446747386e94db855a04178a05e",
+      "status": "measured",
+      "preserved": true
+    }
+  },
+  "reports": {
+    "reports/FREEZE_MANIFEST.json": {
+      "exists": true,
+      "sha256": "387e21e413961e28c6d0e9bc094bb6d3f5e9e31583cdd7ef1ee33b6bbb055640"
+    },
+    "reports/gates_baseline.json": {
+      "exists": true,
+      "sha256": "0cc2b19d8cf22d9e503fe8ff448fd37988c9c2a870a0b54b83bff38ce00d68a7"
+    },
+    "reports/gates_sft_002.json": {
+      "exists": true,
+      "sha256": "38b035688cf2d3d62046587f9e5a40633ab57f7f6ddb711e5d150d13fb28784f"
+    },
+    "reports/SFT_EXPERIMENT_001.json": {
+      "exists": true,
+      "sha256": "aee0657ab64f0fd006bcfb2a9272c096ff16dfb80c97089435abb6c1e94df403"
+    },
+    "reports/SFT_EXPERIMENT_002.json": {
+      "exists": true,
+      "sha256": "f704cf023d241c80ab783f0aff5abc6de3280537041e0fcfe255244a4926e4d0"
+    },
+    "reports/E1_RESULTS.md": {
+      "exists": true,
+      "sha256": "4015133f376eb76902951f7a6c88acb4c75b9d1d21b9a192981414d5d972e4f4"
+    },
+    "reports/e1/e1_arm1_result.json": {
+      "exists": true,
+      "sha256": "65137bf8daa577a318d24b9758244a90171822fc2636b933ff8c5389ebd798a9"
+    },
+    "reports/e1/e1_arm2_result.json": {
+      "exists": true,
+      "sha256": "2fbf0ddad4f87084440e7e9045ef667853100c1b4cb4a01256a68e11aa961d48"
+    },
+    "reports/MODEL_COMPARISON.md": {
+      "exists": true,
+      "sha256": "483d98eb7b13eb852f6cbd0f87e3675f7ecf4f62338464773a2ac1e96dc7e880"
+    },
+    "reports/TRAINING_DATA_AUDIT.json": {
+      "exists": true,
+      "sha256": "fd25618d767d5031370cc0d767c92b0ac75d0397a0368b53696e660363fffee6"
+    }
+  },
+  "reconciliations": [
+    {
+      "question": "SFT_001 hallucination: 79.86% or 89.6%?",
+      "status": "measured",
+      "answer": "Both, on different evaluation splits. Neither figure is wrong; the split label was dropped when quoting them.",
+      "detail": {
+        "blind": {
+          "n": 144,
+          "accuracy_pct": 5.56,
+          "hallucination_pct": 79.86
+        },
+        "dev": {
+          "n": 200,
+          "accuracy_pct": 5.0,
+          "hallucination_pct": 89.58
+        }
+      },
+      "source": "reports/SFT_EXPERIMENT_001.json",
+      "correction": "hallucination rate must always be quoted with its split and n"
+    },
+    {
+      "question": "SFT_002 dataset size: 7,849 or 11,563?",
+      "status": "measured",
+      "answer": "Neither is the size of the dataset SFT_002 used. 7,849 is financial_sft_v1 (used by SFT_001). financial_sft_v2 holds 12159 rows, split 11563 train / 596 validation - 11,563 is the training split, not the dataset.",
+      "detail": {
+        "financial_sft_v1_rows": 7849,
+        "financial_sft_v2_rows": 12159,
+        "v2_train": 11563,
+        "v2_val": 596
+      },
+      "source": "data/sft/*_manifest.json and reports/SFT_EXPERIMENT_002.json",
+      "correction": "quote dataset size and split separately"
+    }
+  ],
+  "chat_format": {
+    "path": "data\\sft\\financial_sft_chat.jsonl",
+    "rows": 12159,
+    "sha256": "6cc7e05c225ca2f16fa6078a2ec630bf37b6f2ae6f37988e4e83681d2dabb3cc",
+    "by_task_type": {
+      "extraction": 5826,
+      "calculation": 3000,
+      "copy": 1200,
+      "abstention": 714,
+      "interpretation": 443,
+      "grounded": 438,
+      "reasoning": 352,
+      "definition": 124,
+      "replay": 42,
+      "explanation": 20
+    },
+    "format": "role-based messages (system/user/assistant); rendered with each base model's own chat template at training time",
+    "replay_rows_without_messages": 42,
+    "system_prompt": "You are a financial analysis assistant. Answer only from the information given. If the information needed is not present, say that it is insufficient rather than guessing. Never invent a number.",
+    "status": "measured"
+  }
+}
