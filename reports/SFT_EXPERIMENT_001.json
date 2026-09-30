@@ -1,0 +1,299 @@
+{
+  "experiment": "SFT_EXPERIMENT_001",
+  "dataset": {
+    "path": "data\\sft\\financial_sft_v1.jsonl",
+    "version": "financial_sft_v1",
+    "sha256": "329372998e3a39c7cb6cae8d4d46677853f682ed1f29465f66396936f40aac94",
+    "examples_total": 7849,
+    "examples_train": 7470,
+    "examples_val": 379,
+    "examples_skipped_too_long": 0,
+    "training_tokens": 528726
+  },
+  "base_checkpoint": {
+    "path": "checkpoints\\final\\checkpoint_247850.pt",
+    "sha256": "6e9e50ca59e5d5beb70b555a9ff07e0d30bcbd1097232e64bc04c4142eb4b004"
+  },
+  "format": {
+    "template": "Question: {prompt}\\nAnswer:",
+    "prompt_masked": true,
+    "eos_trained": true
+  },
+  "optimizer": {
+    "name": "AdamW",
+    "betas": [
+      0.9,
+      0.95
+    ],
+    "weight_decay": 0.01,
+    "eps": 1e-09
+  },
+  "schedule": {
+    "peak_lr": 5e-05,
+    "warmup_steps": 45,
+    "decay": "cosine to 10% of peak"
+  },
+  "batch_size": 4,
+  "block_size": 192,
+  "steps_requested": 900,
+  "steps_run": 900,
+  "seed": 1234,
+  "device": "cpu",
+  "history": [
+    {
+      "step": 150,
+      "train_loss": 1.9207,
+      "val_loss": 1.9345,
+      "lr": 4.837708652969688e-05,
+      "minutes": 28.5
+    },
+    {
+      "step": 300,
+      "train_loss": 1.5896,
+      "val_loss": 1.7784,
+      "lr": 4.0891818496565865e-05,
+      "minutes": 56.9
+    },
+    {
+      "step": 450,
+      "train_loss": 1.7408,
+      "val_loss": 1.5226,
+      "lr": 2.9440413664032257e-05,
+      "minutes": 84.8
+    },
+    {
+      "step": 600,
+      "train_loss": 1.8776,
+      "val_loss": 1.3822,
+      "lr": 1.7414333626562466e-05,
+      "minutes": 113.0
+    },
+    {
+      "step": 750,
+      "train_loss": 0.9785,
+      "val_loss": 1.2135,
+      "lr": 8.375236466768764e-06,
+      "minutes": 140.6
+    },
+    {
+      "step": 900,
+      "train_loss": 0.8027,
+      "val_loss": 1.1182,
+      "lr": 5.000151886631225e-06,
+      "minutes": 169.1
+    }
+  ],
+  "best_val_loss": 1.1182,
+  "best_step": 900,
+  "minutes": 169.5,
+  "checkpoint": "checkpoints\\sft_001\\sft_001_best.pt",
+  "checkpoint_sha256": "4e76a3f8892f27a0e831f2c67707067f4cbb6859350f1e4c14e5861fbe187b6c",
+  "model_only": {
+    "blind": {
+      "overall": {
+        "total": 144,
+        "correct": 8,
+        "accuracy": 5.56
+      },
+      "answerable": {
+        "total": 144,
+        "correct": 8,
+        "accuracy": 5.56
+      },
+      "by_category": {
+        "accounting": {
+          "total": 25,
+          "correct": 1,
+          "accuracy": 4.0
+        },
+        "concepts": {
+          "total": 25,
+          "correct": 3,
+          "accuracy": 12.0
+        },
+        "corporate_finance": {
+          "total": 15,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "general": {
+          "total": 9,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "interpretation": {
+          "total": 15,
+          "correct": 3,
+          "accuracy": 20.0
+        },
+        "reporting": {
+          "total": 25,
+          "correct": 1,
+          "accuracy": 4.0
+        },
+        "risk": {
+          "total": 15,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "valuation": {
+          "total": 15,
+          "correct": 0,
+          "accuracy": 0.0
+        }
+      },
+      "by_level": {
+        "1": {
+          "total": 13,
+          "correct": 3,
+          "accuracy": 23.08
+        },
+        "2": {
+          "total": 73,
+          "correct": 2,
+          "accuracy": 2.74
+        },
+        "3": {
+          "total": 43,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "4": {
+          "total": 10,
+          "correct": 2,
+          "accuracy": 20.0
+        },
+        "5": {
+          "total": 5,
+          "correct": 1,
+          "accuracy": 20.0
+        }
+      },
+      "by_kind": {
+        "authored": {
+          "total": 144,
+          "correct": 8,
+          "accuracy": 5.56
+        }
+      },
+      "hallucination_rate": 79.86,
+      "over_abstention_rate": 14.58,
+      "abstention_accuracy": null,
+      "abstention_items": 0,
+      "extraction_accuracy": null
+    },
+    "dev": {
+      "overall": {
+        "total": 200,
+        "correct": 10,
+        "accuracy": 5.0
+      },
+      "answerable": {
+        "total": 192,
+        "correct": 5,
+        "accuracy": 2.6
+      },
+      "by_category": {
+        "accounting": {
+          "total": 13,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "concepts": {
+          "total": 10,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "corporate_finance": {
+          "total": 29,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "extraction": {
+          "total": 34,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "hallucination": {
+          "total": 8,
+          "correct": 5,
+          "accuracy": 62.5
+        },
+        "interpretation": {
+          "total": 2,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "ratios": {
+          "total": 26,
+          "correct": 2,
+          "accuracy": 7.69
+        },
+        "reasoning": {
+          "total": 20,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "reporting": {
+          "total": 5,
+          "correct": 2,
+          "accuracy": 40.0
+        },
+        "statements": {
+          "total": 27,
+          "correct": 1,
+          "accuracy": 3.7
+        },
+        "valuation": {
+          "total": 26,
+          "correct": 0,
+          "accuracy": 0.0
+        }
+      },
+      "by_level": {
+        "1": {
+          "total": 41,
+          "correct": 1,
+          "accuracy": 2.44
+        },
+        "2": {
+          "total": 49,
+          "correct": 4,
+          "accuracy": 8.16
+        },
+        "3": {
+          "total": 77,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        "4": {
+          "total": 13,
+          "correct": 5,
+          "accuracy": 38.46
+        },
+        "5": {
+          "total": 20,
+          "correct": 0,
+          "accuracy": 0.0
+        }
+      },
+      "by_kind": {
+        "authored": {
+          "total": 23,
+          "correct": 2,
+          "accuracy": 8.7
+        },
+        "generated": {
+          "total": 177,
+          "correct": 8,
+          "accuracy": 4.52
+        }
+      },
+      "hallucination_rate": 89.58,
+      "over_abstention_rate": 7.81,
+      "abstention_accuracy": 62.5,
+      "abstention_items": 8,
+      "extraction_accuracy": 0.0
+    }
+  }
+}
