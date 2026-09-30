@@ -1,0 +1,117 @@
+{
+  "path": "data\\sft\\financial_sft_v2.jsonl",
+  "version": "financial_sft_v2",
+  "sha256": "c50bf41e82ce5dec6fd138a7599fcc248feee34854ccc1136bff7bfd0be10f55",
+  "seed": 20260930,
+  "examples": 12159,
+  "total_answer_tokens": 227892,
+  "duplicates_dropped": 231,
+  "benchmark_collisions_dropped": 468,
+  "calculator_mismatches_rejected": 0,
+  "per_task": {
+    "extraction": {
+      "rows": 5826,
+      "answer_tokens": 85799,
+      "target_tokens": 98800,
+      "distinct_answers": 5826,
+      "distinct_ratio": 1.0,
+      "token_share": 37.65
+    },
+    "copy": {
+      "rows": 1200,
+      "answer_tokens": 11306,
+      "target_tokens": 13000,
+      "distinct_answers": 1200,
+      "distinct_ratio": 1.0,
+      "token_share": 4.96
+    },
+    "replay": {
+      "rows": 42,
+      "answer_tokens": 5237,
+      "target_tokens": 5200,
+      "distinct_answers": 42,
+      "distinct_ratio": 1.0,
+      "token_share": 2.3
+    },
+    "abstention": {
+      "rows": 714,
+      "answer_tokens": 20806,
+      "target_tokens": 20800,
+      "distinct_answers": 616,
+      "distinct_ratio": 0.863,
+      "token_share": 9.13
+    },
+    "interpretation": {
+      "rows": 443,
+      "answer_tokens": 20835,
+      "target_tokens": 20800,
+      "distinct_answers": 443,
+      "distinct_ratio": 1.0,
+      "token_share": 9.14
+    },
+    "reasoning": {
+      "rows": 352,
+      "answer_tokens": 26004,
+      "target_tokens": 26000,
+      "distinct_answers": 352,
+      "distinct_ratio": 1.0,
+      "token_share": 11.41
+    },
+    "grounded": {
+      "rows": 438,
+      "answer_tokens": 10411,
+      "target_tokens": 10400,
+      "distinct_answers": 438,
+      "distinct_ratio": 1.0,
+      "token_share": 4.57
+    },
+    "calculation": {
+      "rows": 3000,
+      "answer_tokens": 41200,
+      "target_tokens": 62400,
+      "distinct_answers": 1976,
+      "distinct_ratio": 0.659,
+      "token_share": 18.08
+    },
+    "definition": {
+      "rows": 124,
+      "answer_tokens": 5070,
+      "target_tokens": 5200,
+      "distinct_answers": 124,
+      "distinct_ratio": 1.0,
+      "token_share": 2.22
+    },
+    "explanation": {
+      "rows": 20,
+      "answer_tokens": 1224,
+      "target_tokens": 2600,
+      "distinct_answers": 20,
+      "distinct_ratio": 1.0,
+      "token_share": 0.54
+    }
+  },
+  "token_targets": {
+    "extraction": 0.38,
+    "calculation": 0.24,
+    "reasoning": 0.1,
+    "interpretation": 0.08,
+    "abstention": 0.08,
+    "copy": 0.05,
+    "grounded": 0.04,
+    "definition": 0.02,
+    "replay": 0.02,
+    "explanation": 0.01
+  },
+  "min_distinct_answer_ratio": 0.55,
+  "fixes_applied": [
+    "balanced by answer tokens rather than row count",
+    "extraction token share raised from 10% to ~34%",
+    "extraction answers carry a citation so they are not 7 tokens",
+    "5-11 fields per context with distinct values: distractors always present",
+    "asked field position, label spelling, separator, indent, currency and scale all randomised",
+    "abstention and interpretation answers assembled from sampled parts, so no sentence is worth memorising",
+    "copy rows with no finance in them, to support the behaviour SFT_001 destroyed",
+    "replay slice of plain financial prose, trained without a template",
+    "builder refuses to write a dataset that repeats the SFT_001 defect"
+  ]
+}
