@@ -35,6 +35,8 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 LICENCES = {
+    # name: (licence, approximate RAM in GB for float32 CPU inference)
+    "HuggingFaceTB/SmolLM2-135M-Instruct": ("Apache-2.0", 1.1),
     "Qwen/Qwen2.5-0.5B-Instruct": ("Apache-2.0", 2.5),
     "Qwen/Qwen2.5-1.5B-Instruct": ("Apache-2.0", 7.0),
     "HuggingFaceTB/SmolLM2-360M-Instruct": ("Apache-2.0", 2.0),
