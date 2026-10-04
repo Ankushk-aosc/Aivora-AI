@@ -40,8 +40,35 @@ def wilson(k, n, z=1.96):
             round(100 * min(1.0, centre + margin), 2))
 
 
+def substantive_answer(text):
+    if not text:
+        return ""
+    # Strip prompt continuation / echoed Q&A loops
+    parts = re.split(r"(?:\n+|^|\b)Question:\s*", text)
+    first_part = parts[0].strip()
+    return first_part if first_part else text.strip()
+
+
 def numbers_in(text):
-    return [float(m.replace(",", "")) for m in NUMBER.findall(text or "")]
+    if not text:
+        return []
+    # Match candidate numeric tokens bounded by non-alphanumeric boundaries
+    raw_tokens = re.findall(r"(?<![A-Za-z0-9])-?[\d,]+(?:\.\d+)?(?![A-Za-z0-9])", text)
+    nums = []
+    for t in raw_tokens:
+        t = t.strip()
+        if not t:
+            continue
+        if "," in t:
+            # Valid thousands format requires groups of 3 digits after comma
+            if re.match(r"^-?\d{1,3}(?:,\d{3})+(?:\.\d+)?$", t):
+                nums.append(float(t.replace(",", "")))
+            else:
+                # Malformed comma placement (e.g. 2,60.65) - do not extract valid numbers from it
+                pass
+        elif re.match(r"^-?\d+(?:\.\d+)?$", t):
+            nums.append(float(t))
+    return nums
 
 
 def score_item(item, answer):
@@ -49,11 +76,12 @@ def score_item(item, answer):
     from evaluation.financial_metrics import abstained
 
     answer = (answer or "").strip()
+    clean_ans = substantive_answer(answer)
     expected = item["expected"]
     gate = item["gate"]
 
     if gate == "abstention":
-        declined = abstained(answer)
+        declined = abstained(clean_ans) or abstained(answer)
         if expected is None:
             return declined, ("correct_abstention" if declined
                               else "hallucinated_instead_of_abstaining")
@@ -62,30 +90,39 @@ def score_item(item, answer):
                                 else "over_refusal")
 
     if gate == "calculation":
-        if not answer:
+        if not clean_ans:
             return False, "empty"
         target = float(expected)
         tolerance = max(0.05, abs(target) * 0.005)
-        found = numbers_in(answer)
+        found = numbers_in(clean_ans)
         if any(abs(v - target) <= tolerance for v in found):
             return True, "correct"
-        if abstained(answer):
+        if abstained(clean_ans):
             return False, "incorrect_abstention"
         return False, ("wrong_value" if found else "no_number")
 
     # copy / extraction / wording: the expected string, or its numeric value
     expected_text = str(expected)
-    if not answer:
+    if not clean_ans:
         return False, "empty"
-    if abstained(answer):
+    if abstained(clean_ans):
         return False, "incorrect_abstention"
 
-    if expected_text.lower() in answer.lower():
+    # Alphanumeric identifiers (e.g. "4H58-E2", "TRV-8841", "MX-5520", "RZZR")
+    # must match exactly with token boundaries and must NOT fall back to numbers.
+    is_alphanumeric_id = any(c.isalpha() for c in expected_text)
+    if is_alphanumeric_id:
+        pattern = r"(?<![A-Za-z0-9])" + re.escape(expected_text) + r"(?![A-Za-z0-9])"
+        if re.search(pattern, clean_ans, re.IGNORECASE):
+            return True, "correct"
+        return False, "wrong_text"
+
+    if expected_text.lower() in clean_ans.lower():
         # Guard against an answer that also contains a contradicting value.
         context_numbers = numbers_in(item["context"])
         expected_numbers = numbers_in(expected_text)
         if expected_numbers:
-            others = [v for v in numbers_in(answer)
+            others = [v for v in numbers_in(clean_ans)
                       if all(abs(v - e) > 0.001 for e in expected_numbers)
                       and any(abs(v - c) < 0.001 for c in context_numbers)]
             if others:
@@ -94,9 +131,9 @@ def score_item(item, answer):
 
     expected_numbers = numbers_in(expected_text)
     if expected_numbers:
-        if any(abs(v - expected_numbers[0]) < 0.01 for v in numbers_in(answer)):
+        if any(abs(v - expected_numbers[0]) < 0.01 for v in numbers_in(clean_ans)):
             return True, "correct"
-        answer_numbers = numbers_in(answer)
+        answer_numbers = numbers_in(clean_ans)
         context_numbers = numbers_in(item["context"])
         if answer_numbers and any(any(abs(v - c) < 0.001 for c in context_numbers)
                                   for v in answer_numbers):
@@ -139,6 +176,26 @@ def evaluate(answer_fn, items=None, label="system", split="frozen", verbose=Fals
                          "categories": dict(Counter(r["category"] for r in subset
                                                     if not r["correct"]).most_common())}
 
+    # The abstention gate mixes two OPPOSITE tasks: items that must be refused
+    # and answerable controls that must not be. A combined accuracy gives a model
+    # that never refuses a free 16/16 on the controls, which read as 30.77%
+    # "abstention" for the Aivora baseline whose true refusal rate is 0/36. The
+    # gate is therefore reported split, and the combined figure is dropped.
+    must_abstain = [r for r in records if r["gate"] == "abstention"
+                    and r["expected"] is None]
+    if must_abstain:
+        k = sum(1 for r in must_abstain if r["correct"])
+        low, high = wilson(k, len(must_abstain))
+        by_gate["abstention"] = {
+            "k": k, "n": len(must_abstain),
+            "accuracy_pct": round(100.0 * k / len(must_abstain), 2),
+            "ci95": [low, high],
+            "note": ("refusals on items that MUST be refused; the answerable "
+                     "controls are reported as over_refusal, never mixed in"),
+            "categories": dict(Counter(r["category"] for r in must_abstain
+                                       if not r["correct"]).most_common()),
+        }
+
     # Over-refusal and hallucination, called out separately per the rules.
     controls = [r for r in records if r["gate"] == "abstention"
                 and r["expected"] is False]
@@ -146,12 +203,18 @@ def evaluate(answer_fn, items=None, label="system", split="frozen", verbose=Fals
     answerable = [r for r in records if r["gate"] != "abstention"]
     invented = sum(1 for r in answerable if r["category"] == "invented_value")
 
-    total_k = sum(1 for r in records if r["correct"])
+    # The overall figure counts each item once, using the split abstention
+    # definition: controls contribute through over_refusal, not through the gate.
+    scored_records = [r for r in records
+                      if not (r["gate"] == "abstention" and r["expected"] is False)]
+    total_k = sum(1 for r in scored_records if r["correct"])
     summary = {
         "label": label, "split": split, "items": len(records),
-        "overall": {"k": total_k, "n": len(records),
-                    "accuracy_pct": round(100.0 * total_k / len(records), 2),
-                    "ci95": list(wilson(total_k, len(records)))},
+        "overall": {"k": total_k, "n": len(scored_records),
+                    "accuracy_pct": round(100.0 * total_k / len(scored_records), 2),
+                    "ci95": list(wilson(total_k, len(scored_records))),
+                    "note": ("answerable abstention controls excluded; they are "
+                             "reported as over_refusal")},
         "by_gate": by_gate,
         "over_refusal": {"k": over_refusal, "n": len(controls),
                          "pct": round(100.0 * over_refusal / max(len(controls), 1), 2)},
@@ -228,6 +291,7 @@ SYSTEMS = {
     "aivora_baseline": os.path.join("checkpoints", "final", "checkpoint_247850.pt"),
     "aivora_sft_002": os.path.join("checkpoints", "sft_002", "sft_002_best.pt"),
     "aivora_sft_001": os.path.join("checkpoints", "sft_001", "sft_001_best.pt"),
+    "aivora_sft_003": os.path.join("checkpoints", "sft_003", "sft_003_best.pt"),
 }
 
 

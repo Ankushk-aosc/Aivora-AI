@@ -1,0 +1,18 @@
+{
+  "items": 30,
+  "raw_agreement_pct": 100.0,
+  "cohens_kappa": 1.0,
+  "confusion": {
+    "both_correct": 6,
+    "both_incorrect": 24,
+    "scorer_says_correct_human_says_not": 0,
+    "human_says_correct_scorer_says_not": 0
+  },
+  "disagreements_by_gate": {},
+  "acceptance": {
+    "threshold_kappa": 0.8,
+    "passed": true,
+    "systematic_concern": false
+  },
+  "disagreements": []
+}
