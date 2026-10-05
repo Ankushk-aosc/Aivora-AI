@@ -23,6 +23,9 @@ checkpoints.zip
 data/financial_data.db
 data/vector_store.db
 data/auth.db
+# Monitoring conditions and saved analyses: a user's own records, created at
+# runtime, not source.
+data/monitoring.db
 data/.session_secret
 data/approvals.db
 

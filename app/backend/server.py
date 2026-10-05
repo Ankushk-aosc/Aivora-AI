@@ -1058,6 +1058,78 @@ def h_report_generate(payload, _query):
     return report(_company_profile(), analysis)
 
 
+def h_alert_metrics(_payload, _query):
+    """The metrics a rule may name - exactly those the engine can compute."""
+    from app.backend.services import alerts
+
+    return {"metrics": alerts.metrics(),
+            "operators": [{"key": "below", "label": "falls below"},
+                          {"key": "above", "label": "rises above"}]}
+
+
+def h_alerts(_payload, _query):
+    """Every rule evaluated against the current filing."""
+    from app.backend.services import alerts
+
+    return alerts.evaluate_all(_company_profile())
+
+
+def h_alert_create(payload, _query):
+    from app.backend.services import alerts
+
+    payload = payload or {}
+    rule = alerts.create(payload.get("metric"), payload.get("operator"),
+                         payload.get("threshold"))
+    return {"created": rule, **alerts.evaluate_all(_company_profile())}
+
+
+def h_alert_delete(payload, _query):
+    from app.backend.services import alerts
+
+    payload = payload or {}
+    if payload.get("id") is None:
+        raise ValueError('Provide {"id": <rule id>}')
+    alerts.delete(payload["id"])
+    return alerts.evaluate_all(_company_profile())
+
+
+def h_analyses(_payload, _query):
+    from app.backend.services import saved_analyses
+
+    return {"analyses": saved_analyses.listing()}
+
+
+def h_analysis_save(payload, _query):
+    from app.backend.services import saved_analyses
+
+    payload = payload or {}
+    company = _company_profile()
+    return saved_analyses.save(
+        payload.get("name"), payload.get("view"), payload.get("payload"),
+        company=company.get("company"), period=company.get("period"),
+        source_document=payload.get("source_document"))
+
+
+def h_analysis_open(payload, query):
+    from app.backend.services import saved_analyses
+
+    payload = payload or {}
+    analysis_id = payload.get("id") or query.get("id", [None])[0]
+    if analysis_id is None:
+        raise ValueError('Provide {"id": <analysis id>}')
+    return saved_analyses.open_analysis(analysis_id)
+
+
+def h_analysis_delete(payload, _query):
+    from app.backend.services import saved_analyses
+
+    payload = payload or {}
+    if payload.get("id") is None:
+        raise ValueError('Provide {"id": <analysis id>}')
+    saved_analyses.delete(payload["id"])
+    return {"analyses": saved_analyses.listing()}
+
+
 def h_risk_analyze(payload, _query):
     """Analyze top financial risks and actionable recommendations."""
     payload = payload or {}
@@ -1956,6 +2028,15 @@ ROUTES = {
     ("POST", "/api/copilot/chat"): h_copilot_chat,
     ("POST", "/api/risk/analyze"): h_risk_analyze,
     ("POST", "/api/structured-output"): h_structured_output,
+    ("GET", "/api/alerts"): h_alerts,
+    ("GET", "/api/alerts/metrics"): h_alert_metrics,
+    ("POST", "/api/alerts/create"): h_alert_create,
+    ("POST", "/api/alerts/delete"): h_alert_delete,
+    ("GET", "/api/analyses"): h_analyses,
+    ("POST", "/api/analyses/save"): h_analysis_save,
+    ("GET", "/api/analyses/open"): h_analysis_open,
+    ("POST", "/api/analyses/open"): h_analysis_open,
+    ("POST", "/api/analyses/delete"): h_analysis_delete,
     ("GET", "/api/comparison"): h_comparison,
     ("GET", "/api/insights"): h_insights,
     ("GET", "/api/report/generate"): h_report_generate,

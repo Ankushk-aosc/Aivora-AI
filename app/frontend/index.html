@@ -559,6 +559,61 @@
     line-height: 1.7;
   }
 
+  /* --- Monitoring conditions and saved analyses ----------------------- */
+
+  .alert-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .alert-form .form-group {
+    margin: 0;
+    flex: 1 1 180px;
+    min-width: 0;
+  }
+
+  .form-error {
+    color: #d9707a;
+    font-size: 13px;
+    margin: 0 0 12px;
+  }
+
+  .alerts-summary {
+    margin-bottom: 12px;
+  }
+
+  /* A met condition is stated, not alarmed: this is a financial reading, not
+     an incident. */
+  .state-triggered { color: #c9962f; font-weight: 600; }
+  .state-ok { color: var(--text-dim, #8b93a7); }
+
+  .state-changed {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #3b8fd4;
+    margin-left: 6px;
+  }
+
+  .saved-detail {
+    margin-top: 18px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border, #273043);
+  }
+
+  .saved-detail .code-viewer {
+    max-height: 320px;
+    overflow: auto;
+  }
+
+  @media (max-width: 760px) {
+    .alert-form { flex-direction: column; align-items: stretch; }
+    .alert-form .form-group { flex: 1 1 auto; }
+  }
+
   @media (max-width: 760px) {
     .insight-grid { grid-template-columns: 1fr; }
     .statement { max-width: none; }
@@ -1020,6 +1075,10 @@
       <a class="nav-item" data-tab="reports" onclick="navTo('reports')">
         <span class="nav-icon">▤</span>
         <span>Reports</span>
+      </a>
+      <a class="nav-item" data-tab="saved" onclick="navTo('saved')">
+        <span class="nav-icon">★</span>
+        <span>Saved analyses</span>
       </a>
       <a class="nav-item" data-tab="settings" onclick="navTo('settings')">
         <span class="nav-icon">⚙️</span>
@@ -1621,6 +1680,56 @@
     <!-- ========================================================= -->
     <!-- 5. SETTINGS & SYSTEM INFORMATION (Phase 26, 27, 45)       -->
     <!-- ========================================================= -->
+    <!-- ========================= SAVED ANALYSES ========================= -->
+    <section class="view-panel" id="view-saved">
+      <div class="page-header">
+        <h1 class="page-title">Saved analyses</h1>
+        <p class="page-subtitle">
+          Named views of the figures, stored on the server. Each one shows the
+          figures as they stood when it was saved.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Save the current view</h2>
+            <p class="card-subtitle">
+              Saves the figures now on screen, with the document and period they
+              came from.
+            </p>
+          </div>
+        </div>
+        <form class="alert-form" id="save-form" onsubmit="return saveAnalysis(event)">
+          <div class="form-group">
+            <label class="form-label" for="save-name">Name</label>
+            <input class="form-input" id="save-name" required
+                   placeholder="FY2025 Profitability Review">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="save-view">View</label>
+            <select class="form-input" id="save-view">
+              <option value="analysis">Analysis</option>
+              <option value="comparisons">Comparisons</option>
+              <option value="insights">Insights</option>
+              <option value="reports">Reports</option>
+              <option value="overview">Overview</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" type="submit">Save analysis</button>
+        </form>
+        <p class="form-error" id="save-error" hidden></p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Saved</h2>
+            <p class="card-subtitle" id="saved-count"></p>
+          </div>
+        </div>
+        <div id="saved-list"></div>
+      </div>
+    </section>
+
     <!-- ============================ COMPARISONS ========================= -->
     <section class="view-panel" id="view-comparisons">
       <div class="page-header">
@@ -1687,6 +1796,42 @@
         </p>
       </div>
       <div id="insights-list"></div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Monitoring</h2>
+            <p class="card-subtitle" id="alerts-basis">
+              Conditions tested against the current filing each time this view is
+              opened. There is no background process, so nothing is checked
+              between visits.
+            </p>
+          </div>
+        </div>
+
+        <form class="alert-form" id="alert-form" onsubmit="return createAlert(event)">
+          <div class="form-group">
+            <label class="form-label" for="alert-metric">Metric</label>
+            <select class="form-input" id="alert-metric" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="alert-operator">Condition</label>
+            <select class="form-input" id="alert-operator">
+              <option value="below">falls below</option>
+              <option value="above">rises above</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="alert-threshold">Threshold</label>
+            <input class="form-input" id="alert-threshold" type="number"
+                   step="any" required placeholder="8">
+          </div>
+          <button class="btn btn-primary" type="submit">Add condition</button>
+        </form>
+        <p class="form-error" id="alert-error" hidden></p>
+
+        <div id="alerts-list"></div>
+      </div>
     </section>
 
     <!-- ============================== REPORTS =========================== -->
@@ -2123,9 +2268,182 @@ function exportReport() {
   URL.revokeObjectURL(url);
 }
 
+// ---------------------------------------------------------------- alerts
+//
+// The metric list comes from the backend, which offers exactly the metrics it
+// can compute. The interface never invents an option, so a condition that
+// cannot be evaluated cannot be created in the first place.
+
+async function loadAlertMetrics() {
+  const select = $('#alert-metric');
+  if (!select || select.options.length) return;
+  const data = await apiCall('GET', '/api/alerts/metrics');
+  if (!data || !data.metrics) return;
+  select.innerHTML = data.metrics.map(m =>
+    `<option value="${esc(m.key)}" title="${esc(m.formula)}">${esc(m.label)}</option>`
+  ).join('');
+}
+
+function renderAlerts(data) {
+  const host = $('#alerts-list');
+  if (!host) return;
+  if (!data || !data.rules || !data.rules.length) {
+    host.innerHTML = '<p class="card-subtitle">No conditions yet. '
+      + 'Add one above to have it tested against the filing.</p>';
+    return;
+  }
+  if (data.evaluation) $('#alerts-basis').textContent = data.evaluation;
+  host.innerHTML = `
+    <p class="card-subtitle alerts-summary">${data.triggered} of ${data.count}
+      ${data.count === 1 ? 'condition is' : 'conditions are'} currently met.</p>
+    <div class="table-scroll"><table class="data-table">
+      <thead><tr>
+        <th scope="col">Condition</th><th scope="col">Current</th>
+        <th scope="col">State</th><th scope="col">Basis</th><th scope="col"></th>
+      </tr></thead>
+      <tbody>
+        ${data.rules.map(rule => {
+          const state = rule.state === 'triggered'
+            ? '<span class="state-triggered">Condition met</span>'
+            : rule.state === 'not_evaluable'
+              ? '<span class="cell-absent">Not evaluable</span>'
+              : '<span class="state-ok">Not met</span>';
+          const changed = rule.changed_since_last_check
+            ? ' <span class="state-changed">changed since last check</span>' : '';
+          return `<tr>
+            <td><strong>${esc(rule.condition)}</strong>${changed}</td>
+            <td>${rule.actual_display ? esc(rule.actual_display)
+                  : '<span class="cell-absent">&mdash;</span>'}</td>
+            <td>${state}</td>
+            <td class="cell-note">${esc(rule.reason || rule.formula)}</td>
+            <td><button class="btn btn-sm" onclick="deleteAlert(${rule.id})">Remove</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody></table></div>`;
+}
+
+async function loadAlerts() {
+  await loadAlertMetrics();
+  renderAlerts(await apiCall('GET', '/api/alerts'));
+}
+
+async function createAlert(event) {
+  event.preventDefault();
+  const error = $('#alert-error');
+  error.hidden = true;
+  const body = {
+    metric: $('#alert-metric').value,
+    operator: $('#alert-operator').value,
+    threshold: $('#alert-threshold').value,
+  };
+  const data = await apiCall('POST', '/api/alerts/create', body);
+  if (!data || data.error) {
+    error.textContent = (data && data.error) || 'The condition could not be added.';
+    error.hidden = false;
+    return false;
+  }
+  $('#alert-threshold').value = '';
+  renderAlerts(data);
+  return false;
+}
+
+async function deleteAlert(id) {
+  renderAlerts(await apiCall('POST', '/api/alerts/delete', { id }));
+}
+
+// -------------------------------------------------------- saved analyses
+
+async function loadSavedAnalyses() {
+  const host = $('#saved-list');
+  if (!host) return;
+  const data = await apiCall('GET', '/api/analyses');
+  const analyses = (data && data.analyses) || [];
+  $('#saved-count').textContent = analyses.length
+    ? `${analyses.length} saved, newest first.`
+    : 'Nothing saved yet.';
+  if (!analyses.length) {
+    host.innerHTML = '<p class="card-subtitle">Saved analyses appear here.</p>';
+    return;
+  }
+  host.innerHTML = `<div class="table-scroll"><table class="data-table">
+      <thead><tr><th scope="col">Name</th><th scope="col">View</th>
+        <th scope="col">Period</th><th scope="col">Saved</th>
+        <th scope="col"></th></tr></thead>
+      <tbody>${analyses.map(a => `<tr>
+        <td><strong>${esc(a.name)}</strong></td>
+        <td>${esc(a.view)}</td>
+        <td>${esc(a.period || '')}</td>
+        <td class="cell-note">${esc(a.created_display)}</td>
+        <td>
+          <button class="btn btn-sm" onclick="openAnalysis(${a.id})">Open</button>
+          <button class="btn btn-sm" onclick="deleteAnalysis(${a.id})">Delete</button>
+        </td></tr>`).join('')}</tbody></table></div>
+    <div id="saved-detail"></div>`;
+}
+
+/** The figures currently on screen for `view`, as the thing worth saving. */
+async function currentViewPayload(view) {
+  if (view === 'comparisons') return await apiCall('GET', '/api/comparison');
+  if (view === 'insights') return await apiCall('GET', '/api/insights');
+  if (view === 'reports') {
+    return REPORT_DATA || await apiCall('POST', '/api/report/generate',
+                                        { include_analysis: true });
+  }
+  return await apiCall('POST', '/api/financial/full-analysis', {});
+}
+
+async function saveAnalysis(event) {
+  event.preventDefault();
+  const error = $('#save-error');
+  error.hidden = true;
+  const view = $('#save-view').value;
+  const payload = await currentViewPayload(view);
+  if (!payload) {
+    error.textContent = 'That view has no figures to save right now.';
+    error.hidden = false;
+    return false;
+  }
+  const data = await apiCall('POST', '/api/analyses/save', {
+    name: $('#save-name').value, view, payload,
+    source_document: APP_STATE.activeDoc,
+  });
+  if (!data || data.error) {
+    error.textContent = (data && data.error) || 'The analysis could not be saved.';
+    error.hidden = false;
+    return false;
+  }
+  $('#save-name').value = '';
+  await loadSavedAnalyses();
+  return false;
+}
+
+async function openAnalysis(id) {
+  const data = await apiCall('GET', `/api/analyses/open?id=${encodeURIComponent(id)}`);
+  const host = $('#saved-detail');
+  if (!host) return;
+  if (!data || data.error) {
+    host.innerHTML = '<p class="card-subtitle">That analysis could not be opened.</p>';
+    return;
+  }
+  host.innerHTML = `<div class="saved-detail">
+      <h3 class="section-h">${esc(data.name)}</h3>
+      <p class="card-subtitle">${esc(data.view)} &middot; ${esc(data.period || '')}
+        &middot; saved ${esc(data.created_display)}
+        ${data.source_document ? `&middot; from ${esc(data.source_document)}` : ''}</p>
+      <p class="cell-note">${esc(data.note)}</p>
+      <pre class="code-viewer">${esc(JSON.stringify(data.payload, null, 2))}</pre>
+    </div>`;
+}
+
+async function deleteAnalysis(id) {
+  await apiCall('POST', '/api/analyses/delete', { id });
+  await loadSavedAnalyses();
+}
+
 const VIEW_LOADERS = {
   comparisons: loadComparisons,
-  insights: loadInsights,
+  insights: async () => { await loadInsights(); await loadAlerts(); },
+  saved: loadSavedAnalyses,
 };
 
 function navTo(tabName) {
