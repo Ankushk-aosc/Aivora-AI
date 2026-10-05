@@ -815,6 +815,37 @@ def h_copilot_chat(payload, _query):
     t0 = time.time()
     q_low = query.lower()
     resp = None
+
+    # The Phase 4 tool pipeline answers first when it is serving: a value only
+    # reaches the user with a validated source span, and arithmetic is done in
+    # Python. It returns None when it is not serving, in which case the
+    # existing engine below is used unchanged. An abstention from the pipeline
+    # is a real answer and is returned as one - falling through to a path that
+    # might guess would discard the guarantee that justifies the switch.
+    from app.backend.services import analyst_pipeline, workspace
+
+    pipeline_context = context
+    if not pipeline_context:
+        pipeline_context = _workspace_document_text()
+    pipeline_answer = analyst_pipeline.answer(query, pipeline_context)
+    if pipeline_answer is not None:
+        return {
+            "query": query,
+            "answer": pipeline_answer["answer"],
+            "abstained": pipeline_answer["abstained"],
+            "engine": pipeline_answer["engine"],
+            "component": pipeline_answer["component"],
+            "source_spans": pipeline_answer["source_spans"],
+            "computed_value": pipeline_answer["value"],
+            "arithmetic": pipeline_answer["arithmetic"],
+            "guarantee": pipeline_answer["guarantee"],
+            "reason": pipeline_answer["reason"],
+            "badges": (["ABSTAINED - NOT IN SOURCE"] if pipeline_answer["abstained"]
+                       else ["SOURCE SPAN VALIDATED"]),
+            "sources": [workspace.manifest().get("company", "")],
+            "latency_ms": int((time.time() - t0) * 1000),
+        }
+
     engine_source = "LIVE MODEL" if STATE.get("model") is not None else "CALCULATION ENGINE"
     reasoning_items = []
     sources = ["Financial statements", "Management report", "Supporting calculations"]
@@ -1128,6 +1159,38 @@ def h_analysis_delete(payload, _query):
         raise ValueError('Provide {"id": <analysis id>}')
     saved_analyses.delete(payload["id"])
     return {"analyses": saved_analyses.listing()}
+
+
+def _workspace_document_text():
+    """The text of this workspace's documents, for the pipeline to read."""
+    import os as _os
+
+    from app.backend.services import workspace
+
+    parts = []
+    for name in workspace.documents():
+        path = _os.path.join(workspace.DOCUMENT_ROOT, name)
+        try:
+            with open(path, encoding="utf-8", errors="replace") as handle:
+                parts.append(handle.read())
+        except OSError:
+            continue
+    return "\n\n".join(parts)
+
+
+def h_analyst_engine(_payload, _query):
+    """Which engine is serving the Analyst, and why."""
+    from app.backend.services import analyst_pipeline
+
+    state = analyst_pipeline.readiness()
+    state["measured_comparison"] = {
+        "from_scratch_model": {"extraction_pct": 13.0, "invented_values_pct": 36.8,
+                               "source": "reports/phase4 frozen held-out set"},
+        "tool_pipeline_qwen_1_5b": {"extraction_pct": 87.0, "calculation_pct": 100.0,
+                                    "invented_values_pct": 0.0,
+                                    "source": "reports/phase4/PHASE4_V2_REPORT.md"},
+    }
+    return state
 
 
 def h_risk_analyze(payload, _query):
@@ -2028,6 +2091,7 @@ ROUTES = {
     ("POST", "/api/copilot/chat"): h_copilot_chat,
     ("POST", "/api/risk/analyze"): h_risk_analyze,
     ("POST", "/api/structured-output"): h_structured_output,
+    ("GET", "/api/analyst/engine"): h_analyst_engine,
     ("GET", "/api/alerts"): h_alerts,
     ("GET", "/api/alerts/metrics"): h_alert_metrics,
     ("POST", "/api/alerts/create"): h_alert_create,
