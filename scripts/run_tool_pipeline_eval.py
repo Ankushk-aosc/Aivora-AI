@@ -121,6 +121,9 @@ def main():
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--max-new-tokens", type=int, default=160)
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--tag", default=None,
+                        help="suffix for the output file, so a new "
+                             "configuration never overwrites an earlier run")
     parser.add_argument("--stub", action="store_true",
                         help="wire-check with a scripted model, no download")
     args = parser.parse_args()
@@ -164,6 +167,8 @@ def main():
                 f"  * or --force to try anyway")
         llm, calls = build_llm(args.model, args.max_new_tokens)
         label = f"tool pipeline + {args.model} (0-shot)"
+        if args.tag:
+            label += f" [{args.tag}]"
 
     pipeline = ToolPipeline(llm)
 
@@ -178,6 +183,8 @@ def main():
 
     slug = (args.model.replace("/", "_") + f"_pipeline_{args.split}"
             if not args.stub else f"stub_pipeline_{args.split}")
+    if args.tag:
+        slug += f"_{args.tag}"
     out = os.path.join("reports", "heldout", f"{slug}.json")
 
     started = time.time()
@@ -201,6 +208,13 @@ def main():
     summary["abstained_pct"] = round(
         100.0 * sum(1 for a in produced if a.abstained) / max(len(produced), 1), 2)
     summary["arithmetic_done_by"] = "python (pipeline/tool_pipeline.py OPERATIONS)"
+    summary["configuration_tag"] = args.tag
+    resolved = [a for a in produced
+                if any(o.get("resolved_by_synonym") for o in a.operands.values())]
+    summary["operands_resolved_by_synonym"] = {
+        "answers": len(resolved),
+        "note": "calculations where at least one operand was found under a "
+                "caption other than the formula's own name"}
 
     # The per-item detail is what makes a failure diagnosable later.
     with open(out, encoding="utf-8") as handle:

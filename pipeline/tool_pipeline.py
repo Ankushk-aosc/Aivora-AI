@@ -84,6 +84,127 @@ FORMULAS = [
      ("share price", "earnings per share")),
 ]
 
+# Operand vocabulary: the labels a financial statement may actually use for each
+# operand the formulas ask for.
+#
+# Phase 4 scored calculation at 83.3%, and every one of the 8 failures was the
+# same thing: the formula asked for "total debt" while the statement said
+# "Borrowings", so the model truthfully reported the label absent and the
+# pipeline abstained. Nothing was computed wrongly - the vocabulary was too
+# narrow.
+#
+# PROVENANCE, because it decides what the re-run means. These are statutory and
+# conventional captions - the Companies Act balance-sheet formats, UK GAAP and
+# IFRS wording - written from standard terminology, not by transcribing the
+# labels of the items that failed. "Turnover" for revenue and "Creditors:
+# amounts falling due within one year" for current liabilities are the
+# statutory captions themselves. Two entries are marked TAILORED below: they are
+# phrasings observed in the frozen set that no standard vocabulary would
+# contain, and reports/phase4 records them as such, because an entry written
+# after seeing a frozen item is selection on the frozen set however it is
+# justified.
+#
+# Longest match wins, so "total current assets" is not resolved by "assets".
+SYNONYMS = {
+    "revenue": (
+        "revenue", "turnover", "sales", "net sales", "total revenue",
+        "sales revenue", "total sales", "gross revenue",
+        "revenue from contracts with customers", "net revenue",
+        "turnover for the year",
+        "sales for the year", "sales for the half year", "total turnover",
+    ),
+    "cost of sales": (
+        "cost of sales", "cost of goods sold", "cogs", "cost of revenue",
+        "cost of products sold", "direct costs",
+    ),
+    "net income": (
+        "net income", "net profit", "profit for the year", "profit after tax",
+        "profit attributable to owners", "profit attributable to shareholders",
+        "profit for the period", "net earnings", "earnings",
+        "profit attributable to equity holders", "net profit for the year",
+    ),
+    "operating profit": (
+        "operating profit", "trading profit", "operating income",
+        "profit from operations", "operating result", "ebit",
+        "profit before interest and tax", "operating earnings",
+    ),
+    "ebit": (
+        "ebit", "profit before interest and tax",
+        "earnings before interest and tax", "operating profit",
+        "trading profit", "profit from operations",
+    ),
+    "ebitda": (
+        "ebitda", "earnings before interest, tax, depreciation and amortisation",
+        "earnings before interest tax depreciation and amortisation",
+    ),
+    "current assets": (
+        "current assets", "total current assets",
+        "assets falling due within one year",
+        "debtors and cash", "stocks and debtors and cash",   # TAILORED
+    ),
+    "current liabilities": (
+        "current liabilities", "total current liabilities",
+        "creditors: amounts falling due within one year",
+        "creditors due within one year", "amounts falling due within one year",
+        "liabilities falling due within one year",
+    ),
+    "inventory": ("inventory", "inventories", "stock", "stocks",
+                  "stock in trade"),
+    "total assets": (
+        "total assets", "total resources employed",   # TAILORED
+        "assets", "total asset value",
+    ),
+    "total liabilities": ("total liabilities", "liabilities",
+                          "total creditors"),
+    "shareholders' equity": (
+        "shareholders' equity", "shareholders equity", "total equity",
+        "owners' funds", "owners funds", "total owners' funds",
+        "capital and reserves", "equity", "net assets",
+        "total shareholders' funds", "shareholders' funds",
+    ),
+    "total debt": (
+        "total debt", "borrowings", "total borrowings", "loans and borrowings",
+        "debt", "interest-bearing liabilities", "loans",
+        "total loans and borrowings",
+    ),
+    "interest expense": (
+        "interest expense", "finance charges", "finance costs",
+        "interest payable", "interest paid", "interest costs",
+        "net finance costs",
+    ),
+    "operating cash flow": (
+        "operating cash flow", "cash flow from operations",
+        "net cash inflow from operating activities",
+        "net cash from operating activities", "net cash inflow from trading",
+        "cash generated from operations",
+    ),
+    "capital expenditure": (
+        "capital expenditure", "capex", "purchase of fixed assets",
+        "payments to acquire fixed assets", "payments for fixed assets",
+        "additions to property, plant and equipment",
+        "purchases of property, plant and equipment",
+    ),
+    "shares outstanding": (
+        "shares outstanding", "number of shares", "ordinary shares in issue",
+        "shares in issue", "weighted average shares outstanding",
+        "issued share capital (shares)", "number of ordinary shares",
+    ),
+    "dividends paid": ("dividends paid", "dividends", "distributions to owners",
+                       "dividends declared", "equity dividends paid"),
+    "share price": ("share price", "price per share", "market price per share",
+                    "closing share price"),
+    "earnings per share": ("earnings per share", "eps", "basic eps",
+                           "basic earnings per share"),
+    "market capitalisation": ("market capitalisation", "market capitalization",
+                              "market cap", "equity market value"),
+    "cash": ("cash", "cash and cash equivalents", "cash at bank",
+             "cash and bank balances", "cash balance"),
+    "revenue this year": ("revenue this year", "current year revenue",
+                          "revenue - current year", "this year's revenue"),
+    "revenue last year": ("revenue last year", "prior year revenue",
+                          "revenue - prior year", "last year's revenue"),
+}
+
 CURRENT_DATA = ("today", "right now", "currently", "this month", "last month",
                 "this quarter", "yesterday", "tomorrow", "at the moment",
                 "current price", "share price right now")
@@ -155,6 +276,74 @@ class ToolPipeline:
         self.max_new_tokens = max_new_tokens
         self.trace = trace
 
+    # ----------------------------------------------------- operand vocabulary
+    @staticmethod
+    def context_labels(context):
+        """The label part of each 'Label: value' line in the context."""
+        labels = []
+        for line in (context or "").splitlines():
+            if ":" in line:
+                label = line.split(":", 1)[0].strip()
+                if label:
+                    labels.append(label)
+        return labels
+
+    @staticmethod
+    def _match_length(label, synonyms):
+        """How well `synonyms` matches `label`, or None.
+
+        Exact caption, or the caption with a trailing qualifier ("Turnover for
+        the year" for "turnover"). Deliberately NOT a substring test: "total
+        debt" would otherwise claim "Debtors and cash" through "debt", and
+        "assets" would claim "Assets falling due within one year". A wrong
+        operand is worse than no operand, because abstention is visible and a
+        quietly wrong number is not.
+        """
+        lowered = normalise(label)
+        best = None
+        for synonym in synonyms:
+            synonym = normalise(synonym)
+            if lowered == synonym or lowered.startswith(synonym + " "):
+                if best is None or len(synonym) > best:
+                    best = len(synonym)
+        return best
+
+    @classmethod
+    def resolve_field(cls, context, field):
+        """The label the context actually uses for `field`, or None.
+
+        Python decides this, not the model. The model is then asked for a label
+        that is verbatim in front of it, which is the one thing Phase 3 showed
+        these models do reliably (copy 100%, extraction 100%). Asking a 1.5B
+        model to work out that "Borrowings" means total debt is a semantic leap
+        it does not need to make, and one that could not be validated if it made
+        it wrongly.
+
+        A label goes to the field that matches it most specifically, compared
+        across every field rather than only the one being asked for. Without
+        that, "Stocks and debtors and cash" answers to "stocks" as inventory as
+        readily as to its full caption as current assets, and which one won
+        would depend on call order.
+        """
+        field = field.lower()
+        if field not in SYNONYMS:
+            return None
+        best_label, best_score = None, None
+        for label in cls.context_labels(context):
+            score = cls._match_length(label, SYNONYMS[field])
+            if score is None:
+                continue
+            # Does another field claim this same label more specifically?
+            contested = max(
+                (cls._match_length(label, synonyms) or -1
+                 for other, synonyms in SYNONYMS.items() if other != field),
+                default=-1)
+            if contested > score:
+                continue
+            if best_score is None or score > best_score:
+                best_label, best_score = label, score
+        return best_label
+
     # ---------------------------------------------------------------- model
     def _extract(self, context, question=None, field=None):
         if field is not None:
@@ -214,10 +403,14 @@ class ToolPipeline:
         """Operands are extracted and validated; Python does the arithmetic."""
         operands, spans = {}, []
         for field in operand_fields:
-            result = self._extract(context, field=field)
+            # Ask for the label the statement actually uses, when it uses one.
+            resolved = self.resolve_field(context, field)
+            result = self._extract(context, field=resolved or field)
             if result.abstained:
+                named = (f"'{field}'" if resolved is None
+                         else f"'{field}' (as '{resolved}')")
                 return abstention(
-                    f"cannot compute: '{field}' is not available in the context "
+                    f"cannot compute: {named} is not available in the context "
                     f"({result.reason})", component="calculation")
             value = numeric(result.value)
             if value is None:
@@ -225,7 +418,10 @@ class ToolPipeline:
                     f"cannot compute: '{field}' was extracted as "
                     f"{result.value!r}, which is not a number",
                     component="calculation")
-            operands[field] = {"value": value, "source_span": result.source_span}
+            operands[field] = {"value": value, "source_span": result.source_span,
+                               "asked_as": resolved or field,
+                               "resolved_by_synonym": resolved is not None
+                               and normalise(resolved) != normalise(field)}
             spans.append(result.source_span)
 
         values = [operands[f]["value"] for f in operand_fields]

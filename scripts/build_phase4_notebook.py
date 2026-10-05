@@ -13,6 +13,7 @@ import os
 
 OUT_DIR = os.path.join("training", "kaggle", "phase4")
 NOTEBOOK = "Aivora_Phase4_ToolPipeline.ipynb"
+TAG = "synonyms"
 KERNEL_ID = "aoscjkjhh/aivora-phase4-tool-pipeline"
 
 CELLS = []
@@ -28,7 +29,7 @@ def code(text):
                   "outputs": [], "source": text.splitlines(True)})
 
 
-md("""# Aivora Phase 4 - the tool pipeline
+md("""# Aivora Phase 4 (v2) - the tool pipeline with an operand vocabulary
 
 **Configuration: Qwen2.5-1.5B-Instruct, zero-shot** (set by the owner,
 2026-10-05). Phase 3 put 0-shot and 3-shot within one wording item of each other
@@ -43,6 +44,20 @@ Division of labour - the model does only what Phase 3 showed it is good at:
 | the model | names the field and copies the value **with its source span** |
 | Python | validates the span, picks the formula, performs **all** arithmetic |
 | rules | abstain whenever validation fails or an operand is missing |
+
+**What changed since the first run.** Calculation scored 83.3% and every one of
+the 8 failures was the same thing: the formula asked for "total debt" while the
+statement said "Borrowings", so the model truthfully reported the label absent
+and the pipeline abstained. `SYNONYMS` in `pipeline/tool_pipeline.py` now maps
+each operand to the captions a statement may actually use, and Python - not the
+model - decides which caption is present before asking for it.
+
+**Read the frozen number with this caveat.** The diagnosis came from frozen-set
+failures, so this configuration was informed by the frozen set even though the
+vocabulary was written from statutory captions rather than transcribed from the
+failing items. Two entries are tailored to phrasings seen there and are labelled
+TAILORED in the source. A fully clean measurement of this configuration needs a
+held-out set it has never informed.
 
 Two splits are run, in this order and for different reasons:
 
@@ -152,19 +167,21 @@ md("""## 1. Selection split - behaviour check
 The only split allowed to influence a choice.""")
 
 code('''MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
+TAG = "synonyms"          # names the configuration, so nothing is overwritten
 runs = {}
 
 def run(split):
     print(f"\\n{'=' * 70}\\n{MODEL} pipeline, {split} split\\n{'=' * 70}", flush=True)
     started = time.time()
     proc = subprocess.run(["python", "scripts/run_tool_pipeline_eval.py",
-                           "--model", MODEL, "--split", split, "--force"],
+                           "--model", MODEL, "--split", split,
+                           "--tag", TAG, "--force"],
                           capture_output=True, text=True)
     print(proc.stdout[-4000:])
     if proc.returncode != 0:
         print("FAILED:", proc.stderr[-2000:])
         return None
-    path = f"reports/heldout/{MODEL.replace('/', '_')}_pipeline_{split}.json"
+    path = f"reports/heldout/{MODEL.replace('/', '_')}_pipeline_{split}_{TAG}.json"
     with open(path) as handle:
         payload = json.load(handle)
     print(f"  {time.time() - started:.0f}s")
@@ -184,7 +201,7 @@ md("""## Summary""")
 
 code('''summary_payload = {
     "phase": 4,
-    "configuration": f"{MODEL} (0-shot) + tool pipeline",
+    "configuration": f"{MODEL} (0-shot) + tool pipeline [{TAG}]",
     "chosen_by": "owner, 2026-10-05, on the Phase 3 selection-split evidence",
     "repo_commit": head,
     "status": "PROVISIONAL SCORES, FIXED OUTPUTS - the scorer is not yet "
@@ -237,7 +254,7 @@ for split, block in summary_payload["splits"].items():
     print(f"{split}: components {block['components']}, "
           f"abstained {block['abstained_pct']}%")
 
-with open("/kaggle/working/phase4_tool_pipeline.json", "w") as handle:
+with open(f"/kaggle/working/phase4_tool_pipeline_{TAG}.json", "w") as handle:
     json.dump(summary_payload, handle, indent=2)
 print("\\nwrote /kaggle/working/phase4_tool_pipeline.json")
 ''')
@@ -253,14 +270,14 @@ code('''import shutil
 
 copied = []
 for split in ("selection", "frozen"):
-    src = f"reports/heldout/{MODEL.replace('/', '_')}_pipeline_{split}.json"
+    src = f"reports/heldout/{MODEL.replace('/', '_')}_pipeline_{split}_{TAG}.json"
     if os.path.exists(src):
         dst = f"/kaggle/working/{os.path.basename(src)}"
         shutil.copy(src, dst)
         copied.append((dst, os.path.getsize(dst)))
 for path, size in copied:
     print(f"{size / 1024:>8.0f} KB  {path}")
-print("\\nDownload these and phase4_tool_pipeline.json before the session ends.")
+print("\\nDownload these and phase4_tool_pipeline_{TAG}.json before the session ends.")
 ''')
 
 md("""## What this establishes, and what it does not

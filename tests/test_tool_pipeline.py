@@ -20,7 +20,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pipeline.schema import parse_json_object, validate_extraction  # noqa: E402
-from pipeline.tool_pipeline import ToolPipeline, numeric  # noqa: E402
+from pipeline.tool_pipeline import SYNONYMS, ToolPipeline, numeric  # noqa: E402
 
 PASSED, FAILED = [], []
 
@@ -191,6 +191,94 @@ def test_numeric_parsing():
         check(f"numeric({text!r}) -> {expected}", ok, f"got {got}")
 
 
+
+def test_operand_vocabulary():
+    """A formula's operand is found under the caption the statement uses.
+
+    Phase 4 lost 8 calculation items to this: the formula asked for "total
+    debt" and the statement said "Borrowings". The danger in fixing it is the
+    opposite error - a synonym claiming a label that is not its own - because a
+    quietly wrong operand is worse than an abstention.
+    """
+    resolve = ToolPipeline.resolve_field
+
+    # Statutory and conventional captions resolve.
+    for context, field, expected in [
+        ("Turnover for the year: 1,000.00", "revenue", "Turnover for the year"),
+        ("Borrowings: 3,528.00", "total debt", "Borrowings"),
+        ("Owners' funds: 8,820.00", "shareholders' equity", "Owners' funds"),
+        ("Finance charges: 297.00", "interest expense", "Finance charges"),
+        ("Profit before interest and tax: 2,376.00", "ebit",
+         "Profit before interest and tax"),
+        ("Trading profit: 400.00", "operating profit", "Trading profit"),
+        ("Creditors due within one year: 50.00", "current liabilities",
+         "Creditors due within one year"),
+        ("Cash and cash equivalents: 42.00", "cash", "Cash and cash equivalents"),
+        ("Stocks: 120.00", "inventory", "Stocks"),
+    ]:
+        check(f"caption resolves: {field} <- {expected!r}",
+              resolve(context, field) == expected, repr(resolve(context, field)))
+
+    # A synonym must NOT claim a label belonging to something else.
+    for context, field, why in [
+        ("Debtors and cash: 500.00", "total debt", "'debt' vs 'Debtors'"),
+        ("Assets falling due within one year: 100.00", "total assets",
+         "'assets' vs a current-asset caption"),
+        ("Liabilities falling due within one year: 50.00", "total liabilities",
+         "'liabilities' vs a current-liability caption"),
+        ("Stocks and debtors and cash: 900.00", "inventory",
+         "composite caption belongs to current assets"),
+        ("Stocks and debtors and cash: 900.00", "cash",
+         "caption does not start with cash"),
+        ("Total current assets: 10.00", "total assets", "total vs current"),
+        ("Headcount: 88", "revenue", "unrelated label"),
+    ]:
+        check(f"no false claim: {field} ({why})",
+              resolve(context, field) is None, repr(resolve(context, field)))
+
+    check("an unknown field resolves to nothing",
+          resolve("Revenue: 10.00", "flux capacitance") is None)
+    check("no context resolves to nothing", resolve("", "revenue") is None)
+    check("the vocabulary covers every operand the formulas ask for",
+          all(f in SYNONYMS for _, _, fields in
+              __import__("pipeline.tool_pipeline", fromlist=["FORMULAS"]).FORMULAS
+              for f in fields),
+          "a formula asks for an operand with no vocabulary entry")
+
+
+def test_synonym_cannot_invent_an_answer():
+    """Resolution only renames what to look for; the span rule still decides.
+
+    A model that answers with a value absent from the context must still be
+    blocked, even when the operand label resolved perfectly.
+    """
+    context = "Borrowings: 3,528.00\nOwners' funds: 8,820.00"
+    responses = [
+        json.dumps({"field": "Borrowings", "value": "9,999.00",
+                    "source_span": "Borrowings: 9,999.00", "found": True}),
+    ]
+    pipe = ToolPipeline(stub(responses))
+    answer = pipe.answer("What is the gearing ratio?", context)
+    check("a fabricated operand span still abstains", answer.abstained,
+          answer.answer[:70])
+
+    # And the honest path computes in Python from the resolved captions.
+    good = [
+        json.dumps({"field": "Borrowings", "value": "3,528.00",
+                    "source_span": "Borrowings: 3,528.00", "found": True}),
+        json.dumps({"field": "Owners' funds", "value": "8,820.00",
+                    "source_span": "Owners' funds: 8,820.00", "found": True}),
+    ]
+    pipe = ToolPipeline(stub(good))
+    answer = pipe.answer("What is the gearing ratio?", context)
+    check("gearing computed from resolved captions",
+          answer.value is not None and abs(answer.value - 0.4) < 0.01,
+          str(answer.value))
+    check("the resolution is recorded for diagnosis",
+          any(o.get("resolved_by_synonym") for o in answer.operands.values()),
+          str(answer.operands))
+
+
 def main():
     test_parsing()
     test_span_rule()
@@ -200,6 +288,8 @@ def main():
     test_current_data_rule()
     test_answerable_not_refused()
     test_numeric_parsing()
+    test_operand_vocabulary()
+    test_synonym_cannot_invent_an_answer()
     print(f"\n{len(PASSED)}/{len(PASSED) + len(FAILED)} passed")
     sys.exit(1 if FAILED else 0)
 
