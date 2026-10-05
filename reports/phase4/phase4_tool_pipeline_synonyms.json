@@ -1,0 +1,214 @@
+{
+  "phase": 4,
+  "configuration": "Qwen/Qwen2.5-1.5B-Instruct (0-shot) + tool pipeline [synonyms]",
+  "chosen_by": "owner, 2026-10-05, on the Phase 3 selection-split evidence",
+  "repo_commit": "ac16f13",
+  "status": "PROVISIONAL SCORES, FIXED OUTPUTS - the scorer is not yet validated against hand labels (EXPERIMENT_RULES_v2 section 4) and the section 1 thresholds are unset. The model ran once per split; raw outputs are saved and can be re-scored without a GPU.",
+  "splits": {
+    "selection": {
+      "overall": {
+        "k": 56,
+        "n": 60,
+        "accuracy_pct": 93.33,
+        "ci95": [
+          84.07,
+          97.38
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 7,
+          "n": 7,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            64.57,
+            100.0
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {}
+        },
+        "calculation": {
+          "k": 6,
+          "n": 6,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            60.97,
+            100.0
+          ],
+          "categories": {}
+        },
+        "copy": {
+          "k": 15,
+          "n": 15,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            79.61,
+            100.0
+          ],
+          "categories": {}
+        },
+        "extraction": {
+          "k": 14,
+          "n": 15,
+          "accuracy_pct": 93.33,
+          "ci95": [
+            70.18,
+            98.81
+          ],
+          "categories": {
+            "incorrect_abstention": 1
+          }
+        },
+        "wording": {
+          "k": 14,
+          "n": 17,
+          "accuracy_pct": 82.35,
+          "ci95": [
+            58.97,
+            93.81
+          ],
+          "categories": {
+            "incorrect_abstention": 3
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 0,
+        "n": 1,
+        "pct": 0.0
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 53,
+        "pct": 0.0
+      },
+      "span_audit": {
+        "answers_checked": 50,
+        "violations": [],
+        "violation_count": 0,
+        "span_validated_pct": 100.0,
+        "rule": "100% required; any violation blocks ship"
+      },
+      "components": {
+        "extraction": 45,
+        "calculation": 16
+      },
+      "abstained_pct": 18.03,
+      "llm_calls_per_item": 1.18,
+      "seconds_per_item": 2.15,
+      "eval_set_integrity": {
+        "split": "selection",
+        "content_sha256": "09a363bfb8619ec3855a35d2a484b324dfef280974056100236a05462094f5b0",
+        "status": "VERIFIED",
+        "verified_by": "/kaggle/working/Aivora-AI/scripts/run_tool_pipeline_eval.py"
+      }
+    },
+    "frozen": {
+      "overall": {
+        "k": 275,
+        "n": 297,
+        "accuracy_pct": 92.59,
+        "ci95": [
+          89.04,
+          95.06
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 35,
+          "n": 36,
+          "accuracy_pct": 97.22,
+          "ci95": [
+            85.83,
+            99.51
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {
+            "hallucinated_instead_of_abstaining": 1
+          }
+        },
+        "calculation": {
+          "k": 48,
+          "n": 48,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            92.59,
+            100.0
+          ],
+          "categories": {}
+        },
+        "copy": {
+          "k": 68,
+          "n": 69,
+          "accuracy_pct": 98.55,
+          "ci95": [
+            92.24,
+            99.74
+          ],
+          "categories": {
+            "wrong_text": 1
+          }
+        },
+        "extraction": {
+          "k": 60,
+          "n": 69,
+          "accuracy_pct": 86.96,
+          "ci95": [
+            77.03,
+            92.98
+          ],
+          "categories": {
+            "incorrect_abstention": 6,
+            "ambiguous_multiple_values": 3
+          }
+        },
+        "wording": {
+          "k": 64,
+          "n": 75,
+          "accuracy_pct": 85.33,
+          "ci95": [
+            75.62,
+            91.61
+          ],
+          "categories": {
+            "incorrect_abstention": 9,
+            "wrong_field": 2
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 2,
+        "n": 16,
+        "pct": 12.5
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 261,
+        "pct": 0.0
+      },
+      "span_audit": {
+        "answers_checked": 261,
+        "violations": [],
+        "violation_count": 0,
+        "span_validated_pct": 100.0,
+        "rule": "100% required; any violation blocks ship"
+      },
+      "components": {
+        "extraction": 210,
+        "calculation": 101,
+        "current_data_rule": 2
+      },
+      "abstained_pct": 16.61,
+      "llm_calls_per_item": 1.26,
+      "seconds_per_item": 2.35,
+      "eval_set_integrity": {
+        "split": "frozen",
+        "content_sha256": "0e50dbfd51c43c40f33f5137c15a95378caac64288344788bff991375baac7a6",
+        "status": "VERIFIED",
+        "verified_by": "/kaggle/working/Aivora-AI/scripts/run_tool_pipeline_eval.py"
+      }
+    }
+  }
+}
