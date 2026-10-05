@@ -206,7 +206,20 @@ structure is in place (`data/workspace.json`, `services/workspace.py`) and
 uploads join it, but only Aivora Enterprise FY2025 has data. Multi-company is
 designed for, not demonstrated.
 
-**L7 — the model behind the Analyst is the weak component.** The application
+**L7 — the Analyst is switched to the Phase 4 pipeline, but cannot run it on
+this hardware.** *(updated 2026-10-05, commit `41458d0`)* The Analyst now routes
+through the tool pipeline when a model that can drive it is available, reporting
+the serving engine at `/api/analyst/engine`. It is gated, for a measured reason:
+behind the from-scratch checkpoint the pipeline abstained on 3 of 3 questions,
+and the model had invented `$5,200,000` for a context stating `$10,000,000`. The
+span rule stopped the invention - the system working - but coverage was zero, so
+switching wholesale would have replaced an engine that answers with one that
+refuses everything. Qwen2.5-1.5B-Instruct needs about 7 GB and this machine has
+0.5 GB free, so the existing Analyst is untouched here. Enable with
+`AIVORA_ANALYST_PIPELINE=1` on hardware that can host the model. Original note
+follows.
+
+**L7 (original) — the model behind the Analyst is the weak component.** The application
 loads the from-scratch SFT_003 checkpoint. On this project's own frozen
 evaluation, that family of checkpoints scores extraction at 13.0% while a
 pre-trained 1.5B model behind the tool pipeline scores 87.0% with zero invented
