@@ -1,0 +1,710 @@
+{
+  "summary": {
+    "label": "aivora_sft_002",
+    "split": "selection",
+    "items": 61,
+    "overall": {
+      "k": 12,
+      "n": 60,
+      "accuracy_pct": 20.0,
+      "ci95": [
+        11.83,
+        31.78
+      ],
+      "note": "answerable abstention controls excluded; they are reported as over_refusal"
+    },
+    "by_gate": {
+      "abstention": {
+        "k": 1,
+        "n": 7,
+        "accuracy_pct": 14.29,
+        "ci95": [
+          2.57,
+          51.31
+        ],
+        "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+        "categories": {
+          "hallucinated_instead_of_abstaining": 6
+        }
+      },
+      "calculation": {
+        "k": 0,
+        "n": 6,
+        "accuracy_pct": 0.0,
+        "ci95": [
+          0.0,
+          39.03
+        ],
+        "categories": {
+          "wrong_value": 6
+        }
+      },
+      "copy": {
+        "k": 8,
+        "n": 15,
+        "accuracy_pct": 53.33,
+        "ci95": [
+          30.12,
+          75.19
+        ],
+        "categories": {
+          "wrong_text": 7
+        }
+      },
+      "extraction": {
+        "k": 1,
+        "n": 15,
+        "accuracy_pct": 6.67,
+        "ci95": [
+          1.19,
+          29.82
+        ],
+        "categories": {
+          "invented_value": 12,
+          "wrong_field": 2
+        }
+      },
+      "wording": {
+        "k": 2,
+        "n": 17,
+        "accuracy_pct": 11.76,
+        "ci95": [
+          3.29,
+          34.34
+        ],
+        "categories": {
+          "invented_value": 10,
+          "wrong_field": 5
+        }
+      }
+    },
+    "over_refusal": {
+      "k": 0,
+      "n": 1,
+      "pct": 0.0
+    },
+    "hallucination_invented_values": {
+      "k": 22,
+      "n": 53,
+      "pct": 41.51
+    },
+    "handwritten_only": {},
+    "eval_set_integrity": {
+      "split": "selection",
+      "content_sha256": "09a363bfb8619ec3855a35d2a484b324dfef280974056100236a05462094f5b0",
+      "status": "VERIFIED"
+    }
+  },
+  "records": [
+    {
+      "id": "copy_sel_000",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_text",
+      "answer": "The dispatch code is 95-7M-TCUA.",
+      "expected": "9L-UW",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "copy_sel_001",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_text",
+      "answer": "The audit reference is X867-6ZA.",
+      "expected": "X867-6DK",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "copy_sel_002",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The dispatch code is 4V-Y7VY.",
+      "expected": "4V-Y7VY",
+      "note": "3 distractor codes"
+    },
+    {
+      "id": "copy_sel_003",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The consignment code is 42.00.",
+      "expected": "42",
+      "note": "3 distractor codes"
+    },
+    {
+      "id": "copy_sel_004",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The route number is VXUR.",
+      "expected": "VXUR",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "copy_sel_005",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_text",
+      "answer": "The permit number is ZG.",
+      "expected": "EN5R-H9A",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "copy_sel_006",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_text",
+      "answer": "The badge code is B9-MTPN5.",
+      "expected": "MMT",
+      "note": "3 distractor codes"
+    },
+    {
+      "id": "copy_sel_007",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The permit number is MR-YPT.",
+      "expected": "MR-YPT",
+      "note": "1 distractor codes"
+    },
+    {
+      "id": "copy_sel_008",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The route number is 38V.",
+      "expected": "38V",
+      "note": "3 distractor codes"
+    },
+    {
+      "id": "copy_sel_009",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The badge id is GABM-CB.",
+      "expected": "GABM-CB",
+      "note": "1 distractor codes"
+    },
+    {
+      "id": "copy_sel_010",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_text",
+      "answer": "The eyed number is ZT-usb4.",
+      "expected": "ZT-YA4",
+      "note": "1 distractor codes"
+    },
+    {
+      "id": "copy_sel_011",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The deck id is TCXN-2Y.",
+      "expected": "TCXN-2Y",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "copy_sel_012",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The sample code is 5VPJ.",
+      "expected": "5VPJ",
+      "note": "1 distractor codes"
+    },
+    {
+      "id": "copy_sel_013",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_text",
+      "answer": "The eyed code is 9H8.",
+      "expected": "RM-R7",
+      "note": "3 distractor codes"
+    },
+    {
+      "id": "copy_sel_014",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_text",
+      "answer": "The badge id is JQ6Z-ESXH.",
+      "expected": "JQ6Z-CZ-ESXH",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "extraction_sel_000",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "9,093.40. That is the Total earnings line.",
+      "expected": "8,656.34",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "extraction_sel_001",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "The figures give Total Current assets as 3,822.57.",
+      "expected": "7,087.57",
+      "note": "6 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "extraction_sel_002",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The figures give Gross debt as 8,859.46.",
+      "expected": "8,859.46",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "extraction_sel_003",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "The figures give Net income as 9,094.58.",
+      "expected": "6,328.08",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "extraction_sel_004",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "5,726.85 - the Dividends paid entry.",
+      "expected": "4,826.85",
+      "note": "7 fields, similar labels, asked field at position 6"
+    },
+    {
+      "id": "extraction_sel_005",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "The figures give Cash and cash equivalents as 3,267.55.",
+      "expected": "3,267.77",
+      "note": "6 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "extraction_sel_006",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "Current assets: 4,079.52, as stated.",
+      "expected": "7,129.56",
+      "note": "5 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "extraction_sel_007",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "4,888.44 - the Total current assets entry.",
+      "expected": "385.23",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "extraction_sel_008",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "The figures give Revenue as 8,279.61.",
+      "expected": "8,676.04",
+      "note": "8 fields, similar labels, asked field at position 6"
+    },
+    {
+      "id": "extraction_sel_009",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "6,126.48 (Operating profit in the figures provided).",
+      "expected": "2,758.27",
+      "note": "6 fields, similar labels, asked field at position 3"
+    },
+    {
+      "id": "extraction_sel_010",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "Taking the Cash and cash flow line: 3,600.75.",
+      "expected": "7,053.29",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "extraction_sel_011",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "9,249.34 is 5,533.26.",
+      "expected": "5,594.97",
+      "note": "5 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "extraction_sel_012",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "6,033.47 is 5,033.60.",
+      "expected": "5,652.71",
+      "note": "7 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "extraction_sel_013",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "Gross debt is 5,700.49.",
+      "expected": "5,390.49",
+      "note": "5 fields, similar labels, asked field at position 2"
+    },
+    {
+      "id": "extraction_sel_014",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "The figures give Net income as 8,317.18.",
+      "expected": "4,796.40",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "wording_sel_000",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "The figures give Gross debt as 2,234.95.",
+      "expected": "1,234.47",
+      "note": "7 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "wording_sel_001",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "5,749.93 (Total assets in the figures provided).",
+      "expected": "5,749.93",
+      "note": "8 fields, similar labels, asked field at position 3"
+    },
+    {
+      "id": "wording_sel_002",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "3,701.88 - the Operating profit entry.",
+      "expected": "5,080.88",
+      "note": "5 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "wording_sel_003",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "6,817.75 (Net in the figures provided).",
+      "expected": "846.74",
+      "note": "7 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "wording_sel_004",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "3,110.69. That is the Operating costs line.",
+      "expected": "1,508.86",
+      "note": "6 fields, similar labels, asked field at position 2"
+    },
+    {
+      "id": "wording_sel_005",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "8,728.75 - the basic earnings per share entry.",
+      "expected": "948.33",
+      "note": "5 fields, similar labels, asked field at position 2"
+    },
+    {
+      "id": "wording_sel_006",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "Operating profit = 3,179.40 - 3,179.40 = 1,878.50\nEBITDA = 1,878.50 - 3,179.40 = 1,878.50\n\nThe figures give Operating profit as 3,179.40.",
+      "expected": "1,506.16",
+      "note": "5 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "wording_sel_007",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "The figures give Current assets as 2,175.88.",
+      "expected": "2,837.00",
+      "note": "5 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "wording_sel_008",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "3,850.62 - the Cash used to fund an acquisition.",
+      "expected": "7,870.31",
+      "note": "7 fields, similar labels, asked field at position 6"
+    },
+    {
+      "id": "wording_sel_009",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "The figures give Current assets as 9,395.65.",
+      "expected": "8,758.20",
+      "note": "5 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "wording_sel_010",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "1,755.75 (Cash used in financing activities in the figures provided).",
+      "expected": "8,532.40",
+      "note": "8 fields, similar labels, asked field at position 6"
+    },
+    {
+      "id": "wording_sel_011",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The figures give Gross debt as 9,813.43.",
+      "expected": "9,813.43",
+      "note": "5 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "wording_sel_012",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "Current assets: 9,715.73, as stated.",
+      "expected": "126.08",
+      "note": "5 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "wording_sel_013",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "The figures give Net income as 9,475.67.",
+      "expected": "574.39",
+      "note": "6 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "wording_sel_014",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "6,955.83 - the Cost of sales entry.",
+      "expected": "8,133.34",
+      "note": "6 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "wording_sel_015",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "671.92 is 971.92.",
+      "expected": "7,345.27",
+      "note": "5 fields, similar labels, asked field at position 3"
+    },
+    {
+      "id": "wording_sel_016",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "The figures give Operating profit as 816.84.",
+      "expected": "3,477.07",
+      "note": "7 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "calculation_sel_000",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "Taking the Return on Equity line: 637.79.",
+      "expected": 400.0,
+      "note": "return on equity as a percentage from two stated figures"
+    },
+    {
+      "id": "calculation_sel_001",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "Gross profit = 1,848.43\nEBITDA = 1,848.43\nEBIT = 1,848.43\nEBIT = 1,848.43\nprofit before tax = 1,848.43\nnet profit margin = 1,848.43 / 3,504.87 x 100 = 30.00%\n\nThe net profit margin is 30.00%.",
+      "expected": 50.0,
+      "note": "gross margin as a percentage from two stated figures"
+    },
+    {
+      "id": "calculation_sel_002",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "The figures give Return on equity as 434.00%.",
+      "expected": 150.0,
+      "note": "return on equity as a percentage from two stated figures"
+    },
+    {
+      "id": "calculation_sel_003",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "Current assets: 2,382.21, as stated.",
+      "expected": 1.5,
+      "note": "the current ratio from two stated figures"
+    },
+    {
+      "id": "calculation_sel_004",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "Current assets: 9.97, as stated.",
+      "expected": 5.0,
+      "note": "the current ratio from two stated figures"
+    },
+    {
+      "id": "calculation_sel_005",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "The figures give Return on equity as 3,683.60.",
+      "expected": 150.0,
+      "note": "return on equity as a percentage from two stated figures"
+    },
+    {
+      "id": "abstention_sel_000",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "Revenue is the net profit margin.",
+      "expected": null,
+      "note": "net income withheld"
+    },
+    {
+      "id": "abstention_sel_001",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "The figures provided are insufficient: the return on assets is missing, and the return is given.",
+      "expected": null,
+      "note": "total assets withheld"
+    },
+    {
+      "id": "abstention_sel_002",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "Revenue is 3,959.38.",
+      "expected": false,
+      "note": "control: answerable, must not abstain"
+    },
+    {
+      "id": "abstention_sel_003",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "Revenue is 5,429.31%.",
+      "expected": null,
+      "note": "net income withheld"
+    },
+    {
+      "id": "abstention_sel_004",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "Revenue is 3,834.93.",
+      "expected": null,
+      "note": "total assets withheld"
+    },
+    {
+      "id": "abstention_sel_005",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "The figures give Return on assets as 3,701.62.",
+      "expected": null,
+      "note": "total assets withheld"
+    },
+    {
+      "id": "abstention_sel_006",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "The figures give payout as 6,014.33.",
+      "expected": null,
+      "note": "net income withheld"
+    },
+    {
+      "id": "abstention_sel_007",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "Revenue is the net profit margin.",
+      "expected": null,
+      "note": "net income withheld"
+    }
+  ]
+}

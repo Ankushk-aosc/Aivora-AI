@@ -1,0 +1,110 @@
+{
+  "system_a": "tool pipeline + Qwen2.5-1.5B 0-shot (re-scored)",
+  "system_b": "aivora_sft_002",
+  "shared_items": 61,
+  "test": "exact McNemar, two-sided",
+  "by_gate": {
+    "abstention": {
+      "n": 8,
+      "a_correct": 8,
+      "b_correct": 2,
+      "both_correct": 2,
+      "neither_correct": 0,
+      "a_only": 6,
+      "b_only": 0,
+      "discordant": 6,
+      "p_value": 0.0312,
+      "significant_at_0.05": true,
+      "verdict": "A better",
+      "power_note": {
+        "discordant": 6,
+        "significant_from_split": "6:0"
+      }
+    },
+    "calculation": {
+      "n": 6,
+      "a_correct": 6,
+      "b_correct": 0,
+      "both_correct": 0,
+      "neither_correct": 0,
+      "a_only": 6,
+      "b_only": 0,
+      "discordant": 6,
+      "p_value": 0.0312,
+      "significant_at_0.05": true,
+      "verdict": "A better",
+      "power_note": {
+        "discordant": 6,
+        "significant_from_split": "6:0"
+      }
+    },
+    "copy": {
+      "n": 15,
+      "a_correct": 15,
+      "b_correct": 8,
+      "both_correct": 8,
+      "neither_correct": 0,
+      "a_only": 7,
+      "b_only": 0,
+      "discordant": 7,
+      "p_value": 0.0156,
+      "significant_at_0.05": true,
+      "verdict": "A better",
+      "power_note": {
+        "discordant": 7,
+        "significant_from_split": "7:0"
+      }
+    },
+    "extraction": {
+      "n": 15,
+      "a_correct": 14,
+      "b_correct": 1,
+      "both_correct": 1,
+      "neither_correct": 1,
+      "a_only": 13,
+      "b_only": 0,
+      "discordant": 13,
+      "p_value": 0.0002,
+      "significant_at_0.05": true,
+      "verdict": "A better",
+      "power_note": {
+        "discordant": 13,
+        "significant_from_split": "13:0"
+      }
+    },
+    "wording": {
+      "n": 17,
+      "a_correct": 14,
+      "b_correct": 2,
+      "both_correct": 2,
+      "neither_correct": 3,
+      "a_only": 12,
+      "b_only": 0,
+      "discordant": 12,
+      "p_value": 0.0005,
+      "significant_at_0.05": true,
+      "verdict": "A better",
+      "power_note": {
+        "discordant": 12,
+        "significant_from_split": "12:0"
+      }
+    },
+    "ALL": {
+      "n": 61,
+      "a_correct": 57,
+      "b_correct": 13,
+      "both_correct": 13,
+      "neither_correct": 4,
+      "a_only": 44,
+      "b_only": 0,
+      "discordant": 44,
+      "p_value": 0.0,
+      "significant_at_0.05": true,
+      "verdict": "A better",
+      "power_note": {
+        "discordant": 44,
+        "significant_from_split": "44:0"
+      }
+    }
+  }
+}

@@ -1,0 +1,241 @@
+{
+  "scorer_change": "numbers_in rejects letter-adjacent tokens instead of truncating them, and accepts a ratio's x unit",
+  "systems": [
+    {
+      "file": "HuggingFaceTB_SmolLM2-135M-Instruct_0shot_selection.json",
+      "label": "HuggingFaceTB/SmolLM2-135M-Instruct (0-shot)",
+      "split": "selection",
+      "scored_items": 60,
+      "items_not_found_in_split": 0,
+      "before_pct": 36.67,
+      "after_pct": 36.67,
+      "delta_pp": 0.0,
+      "changed_count": 0,
+      "newly_correct": 0,
+      "newly_wrong": 0,
+      "changed": []
+    },
+    {
+      "file": "Qwen_Qwen2.5-1.5B-Instruct_pipeline_frozen.json",
+      "label": "tool pipeline + Qwen/Qwen2.5-1.5B-Instruct (0-shot)",
+      "split": "frozen",
+      "scored_items": 297,
+      "items_not_found_in_split": 0,
+      "before_pct": 87.54,
+      "after_pct": 89.9,
+      "delta_pp": 2.36,
+      "changed_count": 7,
+      "newly_correct": 7,
+      "newly_wrong": 0,
+      "changed": [
+        {
+          "id": "calculation_000",
+          "gate": "calculation",
+          "was": false,
+          "now": true,
+          "was_category": "wrong_value",
+          "now_category": "correct",
+          "expected": 2.5,
+          "answer": "2.50x (revenue = 6,000.00, total assets = 2,400.00)"
+        },
+        {
+          "id": "calculation_009",
+          "gate": "calculation",
+          "was": false,
+          "now": true,
+          "was_category": "wrong_value",
+          "now_category": "correct",
+          "expected": 3.6,
+          "answer": "3.60x (net income = 2,556.00, shares outstanding = 710.00)"
+        },
+        {
+          "id": "calculation_028",
+          "gate": "calculation",
+          "was": false,
+          "now": true,
+          "was_category": "wrong_value",
+          "now_category": "correct",
+          "expected": 1.5,
+          "answer": "1.50x (current assets = 5,794.23, current liabilities = 3,862.82)"
+        },
+        {
+          "id": "calculation_032",
+          "gate": "calculation",
+          "was": false,
+          "now": true,
+          "was_category": "wrong_value",
+          "now_category": "correct",
+          "expected": 2.5,
+          "answer": "2.50x (net income = 4,828.76, shares outstanding = 1,931.50)"
+        },
+        {
+          "id": "calculation_035",
+          "gate": "calculation",
+          "was": false,
+          "now": true,
+          "was_category": "wrong_value",
+          "now_category": "correct",
+          "expected": 1.5,
+          "answer": "1.50x (net income = 3,765.08, shares outstanding = 2,510.05)"
+        },
+        {
+          "id": "calculation_046",
+          "gate": "calculation",
+          "was": false,
+          "now": true,
+          "was_category": "wrong_value",
+          "now_category": "correct",
+          "expected": 1.5,
+          "answer": "1.50x (current assets = 3,574.21, current liabilities = 2,382.81)"
+        },
+        {
+          "id": "calculation_047",
+          "gate": "calculation",
+          "was": false,
+          "now": true,
+          "was_category": "wrong_value",
+          "now_category": "correct",
+          "expected": 1.5,
+          "answer": "1.50x (current assets = 2,535.31, current liabilities = 1,690.21)"
+        }
+      ]
+    },
+    {
+      "file": "Qwen_Qwen2.5-1.5B-Instruct_pipeline_selection.json",
+      "label": "tool pipeline + Qwen/Qwen2.5-1.5B-Instruct (0-shot)",
+      "split": "selection",
+      "scored_items": 60,
+      "items_not_found_in_split": 0,
+      "before_pct": 91.67,
+      "after_pct": 93.33,
+      "delta_pp": 1.67,
+      "changed_count": 1,
+      "newly_correct": 1,
+      "newly_wrong": 0,
+      "changed": [
+        {
+          "id": "calculation_sel_003",
+          "gate": "calculation",
+          "was": false,
+          "now": true,
+          "was_category": "wrong_value",
+          "now_category": "correct",
+          "expected": 1.5,
+          "answer": "1.50x (current assets = 3,573.31, current liabilities = 2,382.21)"
+        }
+      ]
+    },
+    {
+      "file": "aivora_baseline_frozen.json",
+      "label": "aivora_baseline",
+      "split": "frozen",
+      "scored_items": 297,
+      "items_not_found_in_split": 0,
+      "before_pct": 4.04,
+      "after_pct": 4.04,
+      "delta_pp": 0.0,
+      "changed_count": 0,
+      "newly_correct": 0,
+      "newly_wrong": 0,
+      "changed": []
+    },
+    {
+      "file": "aivora_baseline_rescored_v2.json",
+      "label": "aivora_baseline (rescored v2)",
+      "split": "frozen",
+      "scored_items": 297,
+      "items_not_found_in_split": 0,
+      "before_pct": 4.04,
+      "after_pct": 4.04,
+      "delta_pp": 0.0,
+      "changed_count": 0,
+      "newly_correct": 0,
+      "newly_wrong": 0,
+      "changed": []
+    },
+    {
+      "file": "aivora_baseline_selection.json",
+      "label": "aivora_baseline",
+      "split": "selection",
+      "scored_items": 60,
+      "items_not_found_in_split": 0,
+      "before_pct": 3.33,
+      "after_pct": 3.33,
+      "delta_pp": 0.0,
+      "changed_count": 0,
+      "newly_correct": 0,
+      "newly_wrong": 0,
+      "changed": []
+    },
+    {
+      "file": "aivora_sft_002_frozen.json",
+      "label": "aivora_sft_002",
+      "split": "frozen",
+      "scored_items": 297,
+      "items_not_found_in_split": 0,
+      "before_pct": 16.84,
+      "after_pct": 16.84,
+      "delta_pp": 0.0,
+      "changed_count": 0,
+      "newly_correct": 0,
+      "newly_wrong": 0,
+      "changed": []
+    },
+    {
+      "file": "aivora_sft_002_rescored_v2.json",
+      "label": "aivora_sft_002 (rescored v2)",
+      "split": "frozen",
+      "scored_items": 297,
+      "items_not_found_in_split": 0,
+      "before_pct": 16.84,
+      "after_pct": 16.84,
+      "delta_pp": 0.0,
+      "changed_count": 0,
+      "newly_correct": 0,
+      "newly_wrong": 0,
+      "changed": []
+    },
+    {
+      "file": "aivora_sft_002_selection.json",
+      "label": "aivora_sft_002",
+      "split": "selection",
+      "scored_items": 60,
+      "items_not_found_in_split": 0,
+      "before_pct": 20.0,
+      "after_pct": 20.0,
+      "delta_pp": 0.0,
+      "changed_count": 0,
+      "newly_correct": 0,
+      "newly_wrong": 0,
+      "changed": []
+    },
+    {
+      "file": "aivora_sft_003_frozen.json",
+      "label": "aivora_sft_003",
+      "split": "frozen",
+      "scored_items": 297,
+      "items_not_found_in_split": 0,
+      "before_pct": 5.39,
+      "after_pct": 5.39,
+      "delta_pp": 0.0,
+      "changed_count": 0,
+      "newly_correct": 0,
+      "newly_wrong": 0,
+      "changed": []
+    },
+    {
+      "file": "stub_pipeline_selection.json",
+      "label": "tool pipeline (stub model)",
+      "split": "selection",
+      "scored_items": 60,
+      "items_not_found_in_split": 0,
+      "before_pct": 11.67,
+      "after_pct": 11.67,
+      "delta_pp": 0.0,
+      "changed_count": 0,
+      "newly_correct": 0,
+      "newly_wrong": 0,
+      "changed": []
+    }
+  ]
+}

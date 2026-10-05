@@ -94,14 +94,33 @@ def substantive_answer(text):
     return first_part if first_part else text.strip()
 
 
+# A numeric token: not glued to a letter or digit on either side, optionally
+# carrying a ratio's "x" unit, and never a prefix of something longer.
+#
+# The trailing (?!\.\d) matters as much as the boundary. With the boundary
+# lookahead alone the engine backtracks instead of giving up: on "2.50x" it
+# cannot match "2.50" because "x" follows, so it matched "2" and returned 2.0 -
+# silently truncating. That is not a near miss, it is a wrong number that can
+# score a wrong answer CORRECT (expected 2.0, answer "2.50x"). A token that
+# cannot be read whole is now rejected outright, the same discipline
+# pipeline/tool_pipeline.py numeric() already applies to "2,60.65".
+#
+# "x" is accepted as a unit because a ratio is legitimately written "2.50x" and
+# the suffix carries no numeric meaning. Letters still cannot begin or sit
+# inside a token, so "Q3", "FY2024" and "BL-9" remain non-numeric.
+# The (?<!\d\.) guard is the mirror image: without it "1.2.3" matches "2.3" in
+# the middle and reports 2.3 as a number in the text.
+NUMBER_TOKEN = re.compile(
+    r"(?<![A-Za-z0-9])(?<!\d\.)-?\d[\d,]*(?:\.\d+)?[xX]?(?![A-Za-z0-9])(?!\.\d)")
+
+
 def numbers_in(text):
     if not text:
         return []
-    # Match candidate numeric tokens bounded by non-alphanumeric boundaries
-    raw_tokens = re.findall(r"(?<![A-Za-z0-9])-?[\d,]+(?:\.\d+)?(?![A-Za-z0-9])", text)
+    raw_tokens = NUMBER_TOKEN.findall(text)
     nums = []
     for t in raw_tokens:
-        t = t.strip()
+        t = t.strip().rstrip("xX")
         if not t:
             continue
         if "," in t:

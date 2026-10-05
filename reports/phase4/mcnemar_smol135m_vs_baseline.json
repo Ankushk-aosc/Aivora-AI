@@ -1,0 +1,104 @@
+{
+  "system_a": "HuggingFaceTB/SmolLM2-135M-Instruct (0-shot)",
+  "system_b": "aivora_baseline",
+  "shared_items": 61,
+  "test": "exact McNemar, two-sided",
+  "by_gate": {
+    "abstention": {
+      "n": 8,
+      "a_correct": 1,
+      "b_correct": 1,
+      "both_correct": 1,
+      "neither_correct": 7,
+      "a_only": 0,
+      "b_only": 0,
+      "discordant": 0,
+      "p_value": 1.0,
+      "significant_at_0.05": false,
+      "verdict": "not distinguishable at this sample size",
+      "power_note": null
+    },
+    "calculation": {
+      "n": 6,
+      "a_correct": 0,
+      "b_correct": 0,
+      "both_correct": 0,
+      "neither_correct": 6,
+      "a_only": 0,
+      "b_only": 0,
+      "discordant": 0,
+      "p_value": 1.0,
+      "significant_at_0.05": false,
+      "verdict": "not distinguishable at this sample size",
+      "power_note": null
+    },
+    "copy": {
+      "n": 15,
+      "a_correct": 14,
+      "b_correct": 2,
+      "both_correct": 2,
+      "neither_correct": 1,
+      "a_only": 12,
+      "b_only": 0,
+      "discordant": 12,
+      "p_value": 0.0005,
+      "significant_at_0.05": true,
+      "verdict": "A better",
+      "power_note": {
+        "discordant": 12,
+        "significant_from_split": "12:0"
+      }
+    },
+    "extraction": {
+      "n": 15,
+      "a_correct": 3,
+      "b_correct": 0,
+      "both_correct": 0,
+      "neither_correct": 12,
+      "a_only": 3,
+      "b_only": 0,
+      "discordant": 3,
+      "p_value": 0.25,
+      "significant_at_0.05": false,
+      "verdict": "not distinguishable at this sample size",
+      "power_note": {
+        "discordant": 3,
+        "significant_from_split": "no split at this n reaches p<0.05"
+      }
+    },
+    "wording": {
+      "n": 17,
+      "a_correct": 5,
+      "b_correct": 0,
+      "both_correct": 0,
+      "neither_correct": 12,
+      "a_only": 5,
+      "b_only": 0,
+      "discordant": 5,
+      "p_value": 0.0625,
+      "significant_at_0.05": false,
+      "verdict": "not distinguishable at this sample size",
+      "power_note": {
+        "discordant": 5,
+        "significant_from_split": "no split at this n reaches p<0.05"
+      }
+    },
+    "ALL": {
+      "n": 61,
+      "a_correct": 23,
+      "b_correct": 3,
+      "both_correct": 3,
+      "neither_correct": 38,
+      "a_only": 20,
+      "b_only": 0,
+      "discordant": 20,
+      "p_value": 0.0,
+      "significant_at_0.05": true,
+      "verdict": "A better",
+      "power_note": {
+        "discordant": 20,
+        "significant_from_split": "20:0"
+      }
+    }
+  }
+}

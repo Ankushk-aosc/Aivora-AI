@@ -1,0 +1,5707 @@
+{
+  "summary": {
+    "label": "tool pipeline + Qwen/Qwen2.5-1.5B-Instruct (0-shot)",
+    "split": "frozen",
+    "items": 313,
+    "overall": {
+      "k": 260,
+      "n": 297,
+      "accuracy_pct": 87.54,
+      "ci95": [
+        83.3,
+        90.83
+      ],
+      "note": "answerable abstention controls excluded; they are reported as over_refusal"
+    },
+    "by_gate": {
+      "abstention": {
+        "k": 35,
+        "n": 36,
+        "accuracy_pct": 97.22,
+        "ci95": [
+          85.83,
+          99.51
+        ],
+        "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+        "categories": {
+          "hallucinated_instead_of_abstaining": 1
+        }
+      },
+      "calculation": {
+        "k": 33,
+        "n": 48,
+        "accuracy_pct": 68.75,
+        "ci95": [
+          54.67,
+          80.05
+        ],
+        "categories": {
+          "incorrect_abstention": 8,
+          "wrong_value": 7
+        }
+      },
+      "copy": {
+        "k": 68,
+        "n": 69,
+        "accuracy_pct": 98.55,
+        "ci95": [
+          92.24,
+          99.74
+        ],
+        "categories": {
+          "wrong_text": 1
+        }
+      },
+      "extraction": {
+        "k": 60,
+        "n": 69,
+        "accuracy_pct": 86.96,
+        "ci95": [
+          77.03,
+          92.98
+        ],
+        "categories": {
+          "incorrect_abstention": 6,
+          "ambiguous_multiple_values": 3
+        }
+      },
+      "wording": {
+        "k": 64,
+        "n": 75,
+        "accuracy_pct": 85.33,
+        "ci95": [
+          75.62,
+          91.61
+        ],
+        "categories": {
+          "incorrect_abstention": 9,
+          "wrong_field": 2
+        }
+      }
+    },
+    "over_refusal": {
+      "k": 4,
+      "n": 16,
+      "pct": 25.0
+    },
+    "hallucination_invented_values": {
+      "k": 0,
+      "n": 261,
+      "pct": 0.0
+    },
+    "handwritten_only": {
+      "abstention": {
+        "k": 25,
+        "n": 28,
+        "accuracy_pct": 89.29
+      },
+      "calculation": {
+        "k": 17,
+        "n": 27,
+        "accuracy_pct": 62.96
+      },
+      "copy": {
+        "k": 23,
+        "n": 24,
+        "accuracy_pct": 95.83
+      },
+      "extraction": {
+        "k": 19,
+        "n": 24,
+        "accuracy_pct": 79.17
+      },
+      "wording": {
+        "k": 21,
+        "n": 22,
+        "accuracy_pct": 95.45
+      }
+    },
+    "eval_set_integrity": null,
+    "seconds": 710.6,
+    "seconds_per_item": 2.27,
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "shots": 0,
+    "llm_calls": 386,
+    "llm_calls_per_item": 1.23,
+    "span_audit": {
+      "answers_checked": 251,
+      "violations": [],
+      "violation_count": 0,
+      "span_validated_pct": 100.0,
+      "rule": "100% required; any violation blocks ship"
+    },
+    "components": {
+      "extraction": 210,
+      "calculation": 101,
+      "current_data_rule": 2
+    },
+    "abstained_pct": 19.81,
+    "arithmetic_done_by": "python (pipeline/tool_pipeline.py OPERATIONS)"
+  },
+  "records": [
+    {
+      "id": "copy_000",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "LS6 2BQ",
+      "expected": "LS6 2BQ",
+      "note": "postcode with a space",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "postcode LS6 2BQ"
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_001",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "Moradi",
+      "expected": "Moradi",
+      "note": "two names, one role",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "signed by Moradi on 3 March."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_002",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "9003",
+      "expected": "9003",
+      "note": "same context, the other field",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The alarm code is 9003."
+      ],
+      "computed_value": 9003.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_003",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "18.25 cm",
+      "expected": "18.25",
+      "note": "decimal ordinal selection",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "then 18.25 cm."
+      ],
+      "computed_value": 18.25,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_004",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "QX-0099",
+      "expected": "QX-0099",
+      "note": "label uses a colon",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Meter serial: QX-0099."
+      ],
+      "computed_value": 99.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_005",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "412",
+      "expected": "412",
+      "note": "number embedded in prose",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Guest checked into room 412 after the lift in block C was repaired."
+      ],
+      "computed_value": 412.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_006",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "MX-5520",
+      "expected": "MX-5520",
+      "note": "answer inside brackets",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "See the earlier memo (ref: MX-5520) for the original decision."
+      ],
+      "computed_value": 5520.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_007",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "passes",
+      "expected": "passes",
+      "note": "positional, no label at all",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Note reads: proceed only after the second inspection passes."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_008",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "3310",
+      "expected": "3310",
+      "note": "ordinal selection among three",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Sequences seen: 4471, then 9982, and finally 3310."
+      ],
+      "computed_value": 3310.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_009",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "4417",
+      "expected": "4417",
+      "note": "two codes, must pick the door",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The door code is 4417 and the alarm code is 9003."
+      ],
+      "computed_value": 4417.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_010",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "teal",
+      "expected": "teal",
+      "note": "two labelled attributes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Colour recorded: teal."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_011",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "RJP",
+      "expected": "RJP",
+      "note": "two initial sets, one role",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Attended by engineer initials RJP;"
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_012",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "CNT-7781",
+      "expected": "CNT-7781",
+      "note": "transposed-digit distractor",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Container id CNT-7781 was sealed;"
+      ],
+      "computed_value": 7781.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_013",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "2019/KM/77",
+      "expected": "2019/KM/77",
+      "note": "compound identifier",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Filed under case number 2019/KM/77 by the duty clerk."
+      ],
+      "computed_value": 2019.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_014",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "6.4 degrees",
+      "expected": "6.4",
+      "note": "decimal, with a second number present",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Temperature logged at 6.4 degrees;"
+      ],
+      "computed_value": 6.4,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_015",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "walrus",
+      "expected": "walrus",
+      "note": "two similar facts, must pick the second",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The second password is walrus."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_016",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "7HG-22K-901",
+      "expected": "7HG-22K-901",
+      "note": "hyphenated key",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Licence key: 7HG-22K-901."
+      ],
+      "computed_value": 901.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_017",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "Aurora Brisk",
+      "expected": "Aurora Brisk",
+      "note": "two-word proper noun",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cargo transferred from the Aurora Brisk to the harbour crane at 11:40."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_018",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "Blue Harbour",
+      "expected": "Blue Harbour",
+      "note": "one field present, one withheld",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Account nickname: Blue Harbour."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_019",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "AZ12B",
+      "expected": "AZ12B",
+      "note": "answer in the middle sentence",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Batch code AZ12B."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_020",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "wrong_text",
+      "answer": "wrench",
+      "expected": "chisel",
+      "note": "positional selection in a list",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "wrench, chisel, file."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_021",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "D-17",
+      "expected": "D-17",
+      "note": "current versus previous, similar strings",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Item stored at shelf location D-17."
+      ],
+      "computed_value": 17.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_022",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "B14",
+      "expected": "B14",
+      "note": "near-identical distractor B4",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Gate B14 was announced at 09:05, replacing the earlier gate B4."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_023",
+      "gate": "copy",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "TRV-8841",
+      "expected": "TRV-8841",
+      "note": "single fact, one distractor",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The booking reference is TRV-8841."
+      ],
+      "computed_value": 8841.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_024",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "J2-45J-3VR",
+      "expected": "J2-45J-3VR",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The permit number is J2-45J-3VR."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_025",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "BVM",
+      "expected": "BVM",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The dispatch code is BVM."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_026",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "C2S-9E-KGWC",
+      "expected": "C2S-9E-KGWC",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The route number is C2S-9E-KGWC."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_027",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "5BWK",
+      "expected": "5BWK",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The consignment code is 5BWK."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_028",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4PE-BNKV-8BES",
+      "expected": "4PE-BNKV-8BES",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The dispatch code is 4PE-BNKV-8BES."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_029",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "JAVH",
+      "expected": "JAVH",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The consignment code is JAVH."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_030",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "727-2858",
+      "expected": "727-2858",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The route number is 727-2858."
+      ],
+      "computed_value": 727.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_031",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "VRXR-PDY",
+      "expected": "VRXR-PDY",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The permit number is VRXR-PDY."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_032",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "CT4-JL5-K5RS",
+      "expected": "CT4-JL5-K5RS",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The badge id is CT4-JL5-K5RS."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_033",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "BQ-HW-UC9Y",
+      "expected": "BQ-HW-UC9Y",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The dispatch code is BQ-HW-UC9Y."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_034",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "JMBE",
+      "expected": "JMBE",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The badge id is JMBE."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_035",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "49UE-PH66",
+      "expected": "49UE-PH66",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The badge id is 49UE-PH66."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_036",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "HJJ-P38-PTTW",
+      "expected": "HJJ-P38-PTTW",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The badge id is HJJ-P38-PTTW."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_037",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "F9-AJN",
+      "expected": "F9-AJN",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The permit number is F9-AJN."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_038",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "XN-99MV",
+      "expected": "XN-99MV",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The berth number is XN-99MV."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_039",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "V5-P6H-RA9",
+      "expected": "V5-P6H-RA9",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The berth number is V5-P6H-RA9."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_040",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "SXAW-ZCL-PN",
+      "expected": "SXAW-ZCL-PN",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The consignment code is SXAW-ZCL-PN."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_041",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "77M-F7-BA",
+      "expected": "77M-F7-BA",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The route number is 77M-F7-BA."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_042",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "YR-NR",
+      "expected": "YR-NR",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The permit number is YR-NR."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_043",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "HSSU-YDHE",
+      "expected": "HSSU-YDHE",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The audit reference is HSSU-YDHE."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_044",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "QC-L35",
+      "expected": "QC-L35",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The berth number is QC-L35."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_045",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "T2FZ-MX7B",
+      "expected": "T2FZ-MX7B",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The route number is T2FZ-MX7B."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_046",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "WCQ6-92X",
+      "expected": "WCQ6-92X",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The permit number is WCQ6-92X."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_047",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "QGT-AXA-WL2Y",
+      "expected": "QGT-AXA-WL2Y",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The dispatch code is QGT-AXA-WL2Y."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_048",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "Y8GU-DM-4MJ8",
+      "expected": "Y8GU-DM-4MJ8",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The route number is Y8GU-DM-4MJ8."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_049",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "9K-5AV",
+      "expected": "9K-5AV",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The route number is 9K-5AV."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_050",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "8N-A9FE",
+      "expected": "8N-A9FE",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The berth number is 8N-A9FE."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_051",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "FD7-X68W",
+      "expected": "FD7-X68W",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The audit reference is FD7-X68W."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_052",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "DT",
+      "expected": "DT",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The badge id is DT."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_053",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "WB-SL3N",
+      "expected": "WB-SL3N",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The route number is WB-SL3N."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_054",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "8DQ6-53AG",
+      "expected": "8DQ6-53AG",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The audit reference is 8DQ6-53AG."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_055",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "WHBV-P6A-TMWX",
+      "expected": "WHBV-P6A-TMWX",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The audit reference is WHBV-P6A-TMWX."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_056",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "456A-PHB2",
+      "expected": "456A-PHB2",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The consignment code is 456A-PHB2."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_057",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "EHY",
+      "expected": "EHY",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The dispatch code is EHY."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_058",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "HF43",
+      "expected": "HF43",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The sample code is HF43."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_059",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "RZZR",
+      "expected": "RZZR",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The route number is RZZR."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_060",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4H58-E2",
+      "expected": "4H58-E2",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The dispatch code is 4H58-E2."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_061",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "85JK-8YY-LXL",
+      "expected": "85JK-8YY-LXL",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The dispatch code is 85JK-8YY-LXL."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_062",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "T6M-HTS-C2B",
+      "expected": "T6M-HTS-C2B",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The berth number is T6M-HTS-C2B."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_063",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4ZYW-P6",
+      "expected": "4ZYW-P6",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The sample code is 4ZYW-P6."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_064",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7RFV-W7NA",
+      "expected": "7RFV-W7NA",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The audit reference is 7RFV-W7NA."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_065",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "VM",
+      "expected": "VM",
+      "note": "3 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The berth number is VM."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_066",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "97DF-8UV-H5HF",
+      "expected": "97DF-8UV-H5HF",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The sample code is 97DF-8UV-H5HF."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_067",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "TTCT",
+      "expected": "TTCT",
+      "note": "2 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The permit number is TTCT."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "copy_068",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "KBC-24Z",
+      "expected": "KBC-24Z",
+      "note": "1 distractor codes",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "The audit reference is KBC-24Z."
+      ],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_000",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "9,900.00",
+      "expected": "9,900.00",
+      "note": "same context, the confusable field",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net revenue: 9,900.00"
+      ],
+      "computed_value": 9900.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_001",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "3,980.00",
+      "expected": "3,980.00",
+      "note": "same context, adjacent field",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash flow from operations: 3,980.00"
+      ],
+      "computed_value": 3980.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_002",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "ambiguous_multiple_values",
+      "answer": "9,560.00 (total assets = 15,800.00, total liabilities = 6,240.00)",
+      "expected": "9,560.00",
+      "note": "same context, third field",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Total assets: 15,800.00",
+        "Total liabilities: 6,240.00"
+      ],
+      "computed_value": 9560.0,
+      "operation": "difference",
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_003",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "ambiguous_multiple_values",
+      "answer": "38.33% (revenue = 12,000.00, cost of sales = 7,400.00)",
+      "expected": "38.33%",
+      "note": "the percentage, not the amount",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 12,000.00",
+        "Cost of sales: 7,400.00"
+      ],
+      "computed_value": 38.333333,
+      "operation": "difference_margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_004",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "480.00",
+      "expected": "480.00",
+      "note": "three debt lines that sum",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Short-term debt: 480.00"
+      ],
+      "computed_value": 480.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_005",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,240.00",
+      "expected": "6,240.00",
+      "note": "three totals",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total liabilities: 6,240.00"
+      ],
+      "computed_value": 6240.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_006",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,430.00",
+      "expected": "1,430.00",
+      "note": "three lease lines",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Lease liability: 1,430.00"
+      ],
+      "computed_value": 1430.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_007",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "355.00",
+      "expected": "355.00",
+      "note": "the middle line",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net change in cash: 355.00"
+      ],
+      "computed_value": 355.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_008",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "5,300.00",
+      "expected": "5,300.00",
+      "note": "same context, the larger component",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Long-term debt: 5,300.00"
+      ],
+      "computed_value": 5300.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_009",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,255.00",
+      "expected": "1,255.00",
+      "note": "start, change and end all present",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash at end of period: 1,255.00"
+      ],
+      "computed_value": 1255.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_010",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "0.30",
+      "expected": "0.30",
+      "note": "per-share versus total, both present",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Dividend per share: 0.30"
+      ],
+      "computed_value": 0.3,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_011",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,204.50",
+      "expected": "1,204.50",
+      "note": "three labels all beginning with cash",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash balance: 1,204.50"
+      ],
+      "computed_value": 1204.5,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_012",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "795.00",
+      "expected": "795.00",
+      "note": "the combined line",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Depreciation and amortisation: 795.00"
+      ],
+      "computed_value": 795.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_013",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "312.00",
+      "expected": "312.00",
+      "note": "income versus expense",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Interest expense: 312.00"
+      ],
+      "computed_value": 312.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_014",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,200.00",
+      "expected": "1,200.00",
+      "note": "same context, the total",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Dividends paid: 1,200.00"
+      ],
+      "computed_value": 1200.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_015",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,975.00",
+      "expected": "1,975.00",
+      "note": "opening versus closing",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Closing inventory: 1,975.00"
+      ],
+      "computed_value": 1975.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_016",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "640.00",
+      "expected": "640.00",
+      "note": "component versus combined line",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Depreciation: 640.00"
+      ],
+      "computed_value": 640.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_017",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "44.00",
+      "expected": "44.00",
+      "note": "the smaller, easily skipped figure",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Interest income: 44.00"
+      ],
+      "computed_value": 44.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_018",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "24.0%",
+      "expected": "24.0%",
+      "note": "rate stated, not to be computed",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Effective tax rate: 24.0%"
+      ],
+      "computed_value": 24.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_019",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "517.40",
+      "expected": "517.40",
+      "note": "net income versus net revenue",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 517.40"
+      ],
+      "computed_value": 517.4,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_020",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,300.00",
+      "expected": "2,300.00",
+      "note": "same context, the other end",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Opening inventory: 2,300.00"
+      ],
+      "computed_value": 2300.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_021",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "1.42",
+      "note": "basic versus diluted",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "extraction_022",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "1.37",
+      "note": "same context, the other EPS",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "extraction_023",
+      "gate": "extraction",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "ambiguous_multiple_values",
+      "answer": "4,600.00 (revenue = 12,000.00, cost of sales = 7,400.00)",
+      "expected": "4,600.00",
+      "note": "profit versus margin, both present",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 12,000.00",
+        "Cost of sales: 7,400.00"
+      ],
+      "computed_value": 4600.0,
+      "operation": "difference",
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_024",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "9,785.30",
+      "expected": "9,785.30",
+      "note": "5 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt excluding leases: 9,785.30"
+      ],
+      "computed_value": 9785.3,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_025",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "5,214.32",
+      "note": "8 fields, similar labels, asked field at position 8",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "extraction_026",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "423.62",
+      "expected": "423.62",
+      "note": "5 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating profit: 423.62"
+      ],
+      "computed_value": 423.62,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_027",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "3,617.24",
+      "expected": "3,617.24",
+      "note": "7 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax liability: 3,617.24"
+      ],
+      "computed_value": 3617.24,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_028",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,593.57",
+      "expected": "1,593.57",
+      "note": "7 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Employee benefit expense: 1,593.57"
+      ],
+      "computed_value": 1593.57,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_029",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,375.84",
+      "expected": "1,375.84",
+      "note": "6 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 1,375.84"
+      ],
+      "computed_value": 1375.84,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_030",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,927.48",
+      "expected": "2,927.48",
+      "note": "6 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total non-current assets: 2,927.48"
+      ],
+      "computed_value": 2927.48,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_031",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,325.48",
+      "expected": "1,325.48",
+      "note": "8 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating profit: 1,325.48"
+      ],
+      "computed_value": 1325.48,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_032",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "8,468.37",
+      "expected": "8,468.37",
+      "note": "8 fields, similar labels, asked field at position 7",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating profit: 8,468.37"
+      ],
+      "computed_value": 8468.37,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_033",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,338.87",
+      "expected": "4,338.87",
+      "note": "7 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Employee benefit expense: 4,338.87"
+      ],
+      "computed_value": 4338.87,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_034",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "9,826.24",
+      "expected": "9,826.24",
+      "note": "8 fields, similar labels, asked field at position 8",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Other revenue: 9,826.24"
+      ],
+      "computed_value": 9826.24,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_035",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,720.53",
+      "expected": "7,720.53",
+      "note": "5 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash generated from operations: 7,720.53"
+      ],
+      "computed_value": 7720.53,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_036",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "3,268.16",
+      "expected": "3,268.16",
+      "note": "8 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash and cash equivalents: 3,268.16"
+      ],
+      "computed_value": 3268.16,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_037",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "72.84",
+      "expected": "72.84",
+      "note": "5 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total non-current assets: 72.84"
+      ],
+      "computed_value": 72.84,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_038",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "9,507.04",
+      "expected": "9,507.04",
+      "note": "8 fields, similar labels, asked field at position 7",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax asset: 9,507.04"
+      ],
+      "computed_value": 9507.04,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_039",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,959.35",
+      "expected": "1,959.35",
+      "note": "8 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt excluding leases: 1,959.35"
+      ],
+      "computed_value": 1959.35,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_040",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,070.85",
+      "expected": "7,070.85",
+      "note": "8 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Other operating costs: 7,070.85"
+      ],
+      "computed_value": 7070.85,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_041",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "8,294.26",
+      "expected": "8,294.26",
+      "note": "6 fields, similar labels, asked field at position 6",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Employee benefit expense: 8,294.26"
+      ],
+      "computed_value": 8294.26,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_042",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,651.22",
+      "expected": "7,651.22",
+      "note": "8 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Dividend per share: 7,651.22"
+      ],
+      "computed_value": 7651.22,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_043",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "1,638.24",
+      "note": "8 fields, similar labels, asked field at position 7",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "value does not appear within its own source span"
+    },
+    {
+      "id": "extraction_044",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,559.25",
+      "expected": "1,559.25",
+      "note": "7 fields, similar labels, asked field at position 6",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total current assets: 1,559.25"
+      ],
+      "computed_value": 1559.25,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_045",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "1,665.45",
+      "note": "6 fields, similar labels, asked field at position 6",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "value does not appear within its own source span"
+    },
+    {
+      "id": "extraction_046",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,213.70",
+      "expected": "6,213.70",
+      "note": "8 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total current assets: 6,213.70"
+      ],
+      "computed_value": 6213.7,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_047",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,128.27",
+      "expected": "7,128.27",
+      "note": "7 fields, similar labels, asked field at position 4",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Dividend per share: 7,128.27"
+      ],
+      "computed_value": 7128.27,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_048",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "944.78",
+      "expected": "944.78",
+      "note": "8 fields, similar labels, asked field at position 7",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax asset: 944.78"
+      ],
+      "computed_value": 944.78,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_049",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "104.34",
+      "expected": "104.34",
+      "note": "8 fields, similar labels, asked field at position 8",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating profit: 104.34"
+      ],
+      "computed_value": 104.34,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_050",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "8,761.13",
+      "expected": "8,761.13",
+      "note": "5 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating profit before exceptionals: 8,761.13"
+      ],
+      "computed_value": 8761.13,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_051",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,027.06",
+      "expected": "6,027.06",
+      "note": "6 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Revenues from contracts: 6,027.06"
+      ],
+      "computed_value": 6027.06,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_052",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "39.96",
+      "expected": "39.96",
+      "note": "6 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax asset: 39.96"
+      ],
+      "computed_value": 39.96,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_053",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,670.61",
+      "expected": "6,670.61",
+      "note": "5 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt: 6,670.61"
+      ],
+      "computed_value": 6670.61,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_054",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,258.52",
+      "expected": "4,258.52",
+      "note": "8 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total assets: 4,258.52"
+      ],
+      "computed_value": 4258.52,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_055",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,545.92",
+      "expected": "6,545.92",
+      "note": "8 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Revenues from contracts: 6,545.92"
+      ],
+      "computed_value": 6545.92,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_056",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,552.24",
+      "expected": "2,552.24",
+      "note": "7 fields, similar labels, asked field at position 7",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Other operating costs: 2,552.24"
+      ],
+      "computed_value": 2552.24,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_057",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "9,578.12",
+      "expected": "9,578.12",
+      "note": "6 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total non-current assets: 9,578.12"
+      ],
+      "computed_value": 9578.12,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_058",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,263.83",
+      "expected": "6,263.83",
+      "note": "5 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total non-current assets: 6,263.83"
+      ],
+      "computed_value": 6263.83,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_059",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,601.52",
+      "expected": "2,601.52",
+      "note": "8 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax liability: 2,601.52"
+      ],
+      "computed_value": 2601.52,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_060",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "8,962.45",
+      "expected": "8,962.45",
+      "note": "5 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Dividend per share: 8,962.45"
+      ],
+      "computed_value": 8962.45,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_061",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "228.20",
+      "expected": "228.20",
+      "note": "8 fields, similar labels, asked field at position 7",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt: 228.20"
+      ],
+      "computed_value": 228.2,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_062",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "924.61",
+      "expected": "924.61",
+      "note": "8 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt excluding leases: 924.61"
+      ],
+      "computed_value": 924.61,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_063",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "714.47",
+      "expected": "714.47",
+      "note": "5 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating profit: 714.47"
+      ],
+      "computed_value": 714.47,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_064",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "2,169.07",
+      "note": "6 fields, similar labels, asked field at position 3",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "extraction_065",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "757.49",
+      "expected": "757.49",
+      "note": "8 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating cash flow: 757.49"
+      ],
+      "computed_value": 757.49,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_066",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,080.96",
+      "expected": "6,080.96",
+      "note": "7 fields, similar labels, asked field at position 7",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Other revenue: 6,080.96"
+      ],
+      "computed_value": 6080.96,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_067",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "778.72",
+      "expected": "778.72",
+      "note": "6 fields, similar labels, asked field at position 6",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Revenues from contracts: 778.72"
+      ],
+      "computed_value": 778.72,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "extraction_068",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "3,922.90",
+      "expected": "3,922.90",
+      "note": "7 fields, similar labels, asked field at position 4",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt: 3,922.90"
+      ],
+      "computed_value": 3922.9,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_000",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,120.00",
+      "expected": "4,120.00",
+      "note": "indirect phrasing",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Trade receivables: 4,120.00"
+      ],
+      "computed_value": 4120.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_001",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "8,020.00",
+      "expected": "8,020.00",
+      "note": "elliptical follow-up phrasing",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt at open: 8,020.00"
+      ],
+      "computed_value": 8020.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_002",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,780.00",
+      "expected": "2,780.00",
+      "note": "conversational phrasing",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash and cash equivalents: 2,780.00"
+      ],
+      "computed_value": 2780.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_003",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "62.00",
+      "expected": "62.00",
+      "note": "fragmentary follow-up",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Finance income: 62.00"
+      ],
+      "computed_value": 62.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_004",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,400.00",
+      "expected": "2,400.00",
+      "note": "idiomatic 'went out'",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Capital expenditure: 2,400.00"
+      ],
+      "computed_value": 2400.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_005",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,150.00",
+      "expected": "7,150.00",
+      "note": "position rather than figure",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt at close: 7,150.00"
+      ],
+      "computed_value": 7150.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_006",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,950.00",
+      "expected": "4,950.00",
+      "note": "contrastive phrasing",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Reported EBITDA: 4,950.00"
+      ],
+      "computed_value": 4950.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_007",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "18,900.00",
+      "expected": "18,900.00",
+      "note": "employed versus expenditure",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Capital employed: 18,900.00"
+      ],
+      "computed_value": 18900.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_008",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,910.00",
+      "expected": "2,910.00",
+      "note": "the paired line",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Owners of the parent: 2,910.00"
+      ],
+      "computed_value": 2910.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_009",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "810.00",
+      "expected": "810.00",
+      "note": "idiomatic 'set aside'",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Accruals: 810.00"
+      ],
+      "computed_value": 810.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_010",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "505.00",
+      "expected": "505.00",
+      "note": "polite imperative",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Finance costs: 505.00"
+      ],
+      "computed_value": 505.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_011",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,640.00",
+      "expected": "2,640.00",
+      "note": "semantic mapping: payables = owed to suppliers",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Trade payables: 2,640.00\nAccruals: 810.00"
+      ],
+      "computed_value": 2640.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_012",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "5,600.00",
+      "expected": "5,600.00",
+      "note": "adjusted versus reported",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Adjusted EBITDA: 5,600.00"
+      ],
+      "computed_value": 5600.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_013",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,640.00",
+      "expected": "2,640.00",
+      "note": "verb-led, spelled out",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Selling and distribution: 2,640.00"
+      ],
+      "computed_value": 2640.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_014",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "44,500.00",
+      "expected": "44,500.00",
+      "note": "British term for revenue",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Turnover: 44,500.00"
+      ],
+      "computed_value": 44500.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_015",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "3,310.00",
+      "expected": "3,310.00",
+      "note": "statement rather than question",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Profit for the period: 3,310.00"
+      ],
+      "computed_value": 3310.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_016",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "39,100.00",
+      "expected": "39,100.00",
+      "note": "verb-led phrasing",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating costs: 39,100.00"
+      ],
+      "computed_value": 39100.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_017",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,180.00",
+      "expected": "1,180.00",
+      "note": "full spelled-out expense line",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Research and development: 1,180.00"
+      ],
+      "computed_value": 1180.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_018",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,200.00",
+      "expected": "4,200.00",
+      "note": "confusable neighbour",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Profit before tax: 4,200.00"
+      ],
+      "computed_value": 4200.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_019",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "340.00",
+      "expected": "340.00",
+      "note": "technical term, formal phrasing",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Non-controlling interests: 340.00"
+      ],
+      "computed_value": 340.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_020",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "3,150.00",
+      "expected": "3,150.00",
+      "note": "the paired intangible line",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Other intangibles: 3,150.00"
+      ],
+      "computed_value": 3150.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_021",
+      "gate": "wording",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "3,150.00",
+      "expected": "12,400.00",
+      "note": "'put against' phrasing",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Other intangibles: 3,150.00"
+      ],
+      "computed_value": 3150.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_022",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,303.00",
+      "expected": "7,303.00",
+      "note": "7 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Current tax liability: 7,303.00"
+      ],
+      "computed_value": 7303.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_023",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,124.14",
+      "expected": "2,124.14",
+      "note": "5 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Employee benefit expense: 2,124.14"
+      ],
+      "computed_value": 2124.14,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_024",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "3,577.22",
+      "expected": "3,577.22",
+      "note": "8 fields, similar labels, asked field at position 8",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax asset: 3,577.22"
+      ],
+      "computed_value": 3577.22,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_025",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "9,892.75",
+      "note": "6 fields, similar labels, asked field at position 6",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "wording_026",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "90.54",
+      "note": "6 fields, similar labels, asked field at position 1",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "wording_027",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,090.15",
+      "expected": "7,090.15",
+      "note": "6 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating profit: 7,090.15"
+      ],
+      "computed_value": 7090.15,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_028",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,705.11",
+      "expected": "7,705.11",
+      "note": "8 fields, similar labels, asked field at position 6",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Employee costs: 7,705.11"
+      ],
+      "computed_value": 7705.11,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_029",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,537.59",
+      "expected": "2,537.59",
+      "note": "6 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Other revenue: 2,537.59"
+      ],
+      "computed_value": 2537.59,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_030",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,968.54",
+      "expected": "6,968.54",
+      "note": "8 fields, similar labels, asked field at position 6",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total assets: 6,968.54"
+      ],
+      "computed_value": 6968.54,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_031",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,421.31",
+      "expected": "4,421.31",
+      "note": "7 fields, similar labels, asked field at position 6",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Employee costs: 4,421.31"
+      ],
+      "computed_value": 4421.31,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_032",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,071.73",
+      "expected": "2,071.73",
+      "note": "8 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash generated from operations: 2,071.73"
+      ],
+      "computed_value": 2071.73,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_033",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,274.24",
+      "expected": "4,274.24",
+      "note": "5 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Other revenue: 4,274.24"
+      ],
+      "computed_value": 4274.24,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_034",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "9,410.25",
+      "expected": "9,410.25",
+      "note": "8 fields, similar labels, asked field at position 8",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash generated from operations: 9,410.25"
+      ],
+      "computed_value": 9410.25,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_035",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "69.72",
+      "expected": "69.72",
+      "note": "5 fields, similar labels, asked field at position 4",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total assets: 69.72"
+      ],
+      "computed_value": 69.72,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_036",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "9,805.83",
+      "expected": "9,805.83",
+      "note": "7 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax asset: 9,805.83"
+      ],
+      "computed_value": 9805.83,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_037",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "8,927.94",
+      "expected": "8,927.94",
+      "note": "5 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt excluding leases: 8,927.94"
+      ],
+      "computed_value": 8927.94,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_038",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "5,735.26",
+      "expected": "5,735.26",
+      "note": "8 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax asset: 5,735.26"
+      ],
+      "computed_value": 5735.26,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_039",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,220.53",
+      "expected": "4,220.53",
+      "note": "5 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Other revenue: 4,220.53"
+      ],
+      "computed_value": 4220.53,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_040",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "9,458.23",
+      "expected": "9,458.23",
+      "note": "5 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt excluding leases: 9,458.23"
+      ],
+      "computed_value": 9458.23,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_041",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,918.70",
+      "expected": "1,918.70",
+      "note": "5 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash and cash equivalents: 1,918.70"
+      ],
+      "computed_value": 1918.7,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_042",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "4,399.38",
+      "note": "8 fields, similar labels, asked field at position 4",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "wording_043",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,805.93",
+      "expected": "2,805.93",
+      "note": "6 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating profit: 2,805.93"
+      ],
+      "computed_value": 2805.93,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_044",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "2,086.33",
+      "note": "5 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "source span does not appear in the context"
+    },
+    {
+      "id": "wording_045",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "8,302.83",
+      "expected": "8,302.83",
+      "note": "8 fields, similar labels, asked field at position 6",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax asset: 8,302.83"
+      ],
+      "computed_value": 8302.83,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_046",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,675.46",
+      "expected": "1,675.46",
+      "note": "7 fields, similar labels, asked field at position 4",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash generated from operations: 1,675.46"
+      ],
+      "computed_value": 1675.46,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_047",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,577.22",
+      "expected": "7,577.22",
+      "note": "5 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 7,577.22"
+      ],
+      "computed_value": 7577.22,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_048",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,744.62",
+      "expected": "6,744.62",
+      "note": "8 fields, similar labels, asked field at position 6",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total current assets: 6,744.62"
+      ],
+      "computed_value": 6744.62,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_049",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "144.83",
+      "note": "5 fields, similar labels, asked field at position 3",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "wording_050",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,940.59",
+      "expected": "7,940.59",
+      "note": "7 fields, similar labels, asked field at position 7",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Gross debt: 7,940.59"
+      ],
+      "computed_value": 7940.59,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_051",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "2,509.05",
+      "expected": "2,302.24",
+      "note": "5 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Other revenue: 2,509.05"
+      ],
+      "computed_value": 2509.05,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_052",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "3,623.45",
+      "expected": "3,623.45",
+      "note": "6 fields, similar labels, asked field at position 4",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax asset: 3,623.45"
+      ],
+      "computed_value": 3623.45,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_053",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,696.15",
+      "expected": "7,696.15",
+      "note": "5 fields, similar labels, asked field at position 5",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Gross debt: 7,696.15"
+      ],
+      "computed_value": 7696.15,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_054",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,565.92",
+      "expected": "7,565.92",
+      "note": "6 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating cash flow: 7,565.92"
+      ],
+      "computed_value": 7565.92,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_055",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "1,948.64",
+      "note": "7 fields, similar labels, asked field at position 6",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "wording_056",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,626.56",
+      "expected": "6,626.56",
+      "note": "7 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Gross debt: 6,626.56"
+      ],
+      "computed_value": 6626.56,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_057",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "1,469.65",
+      "note": "7 fields, similar labels, asked field at position 3",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "wording_058",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,625.25",
+      "expected": "2,625.25",
+      "note": "5 fields, similar labels, asked field at position 4",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Employee benefit expense: 2,625.25"
+      ],
+      "computed_value": 2625.25,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_059",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,277.31",
+      "expected": "1,277.31",
+      "note": "5 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Total assets: 1,277.31"
+      ],
+      "computed_value": 1277.31,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_060",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,554.04",
+      "expected": "4,554.04",
+      "note": "6 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax liability: 4,554.04"
+      ],
+      "computed_value": 4554.04,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_061",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "9,184.32",
+      "expected": "9,184.32",
+      "note": "8 fields, similar labels, asked field at position 4",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Employee benefit expense: 9,184.32"
+      ],
+      "computed_value": 9184.32,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_062",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,404.63",
+      "expected": "1,404.63",
+      "note": "8 fields, similar labels, asked field at position 7",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating profit before exceptionals: 1,404.63"
+      ],
+      "computed_value": 1404.63,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_063",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "6,275.76",
+      "expected": "6,275.76",
+      "note": "7 fields, similar labels, asked field at position 7",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Employee costs: 6,275.76"
+      ],
+      "computed_value": 6275.76,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_064",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,656.06",
+      "expected": "4,656.06",
+      "note": "7 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Net debt: 4,656.06"
+      ],
+      "computed_value": 4656.06,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_065",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4,139.37",
+      "expected": "4,139.37",
+      "note": "6 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating cash flow: 4,139.37"
+      ],
+      "computed_value": 4139.37,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_066",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "7,687.78",
+      "note": "6 fields, similar labels, asked field at position 4",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "wording_067",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "5,751.14",
+      "expected": "5,751.14",
+      "note": "8 fields, similar labels, asked field at position 6",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Gross debt: 5,751.14"
+      ],
+      "computed_value": 5751.14,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_068",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "5,000.37",
+      "expected": "5,000.37",
+      "note": "6 fields, similar labels, asked field at position 3",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Current tax liability: 5,000.37"
+      ],
+      "computed_value": 5000.37,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_069",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": "7,671.44",
+      "note": "8 fields, similar labels, asked field at position 8",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "wording_070",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "1,368.79",
+      "expected": "1,368.79",
+      "note": "5 fields, similar labels, asked field at position 4",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash and cash equivalents: 1,368.79"
+      ],
+      "computed_value": 1368.79,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_071",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "7,625.75",
+      "expected": "7,625.75",
+      "note": "6 fields, similar labels, asked field at position 1",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Gross debt: 7,625.75"
+      ],
+      "computed_value": 7625.75,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_072",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "8,695.55",
+      "expected": "8,695.55",
+      "note": "5 fields, similar labels, asked field at position 4",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Operating profit before exceptionals: 8,695.55"
+      ],
+      "computed_value": 8695.55,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_073",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "5,794.88",
+      "expected": "5,794.88",
+      "note": "5 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Deferred tax asset: 5,794.88"
+      ],
+      "computed_value": 5794.88,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "wording_074",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "8,445.53",
+      "expected": "8,445.53",
+      "note": "5 fields, similar labels, asked field at position 2",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Gross debt: 8,445.53"
+      ],
+      "computed_value": 8445.53,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_000",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "2.50x (revenue = 6,000.00, total assets = 2,400.00)",
+      "expected": 2.5,
+      "note": "6000/2400",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 6,000.00",
+        "Total assets: 2,400.00"
+      ],
+      "computed_value": 2.5,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_001",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": 12.0,
+      "note": "1104/9200 = 12%; 'owners funds' phrasing",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "calculation_002",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "30.00% (revenue = 8,400.00, cost of sales = 5,880.00)",
+      "expected": 30.0,
+      "note": "(8400-5880)/8400 = 30%; unusual label wording",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Sales for the half year: 8,400.00",
+        "Direct production costs: 5,880.00"
+      ],
+      "computed_value": 30.0,
+      "operation": "difference_margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_003",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "5.00% (net income = 180.00, total assets = 3,600.00)",
+      "expected": 5.0,
+      "note": "180/3600 = 5%",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 180.00",
+        "Total assets: 3,600.00"
+      ],
+      "computed_value": 5.0,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_004",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": 3.0,
+      "note": "3690/1230 = 3.0; UK statutory phrasing",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'current assets' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "calculation_005",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "25.00% (ebitda = 750.00, revenue = 3,000.00)",
+      "expected": 25.0,
+      "note": "750/3000 = 25%",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "EBITDA: 750.00",
+        "Revenue: 3,000.00"
+      ],
+      "computed_value": 25.0,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_006",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": 4158.0,
+      "note": "6237-2079; older UK terminology",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'current assets' is not available in the context (value does not appear within its own source span)"
+    },
+    {
+      "id": "calculation_007",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "8.00% (net income = 400.00, revenue = 5,000.00)",
+      "expected": 8.0,
+      "note": "400/5000 = 8%",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 400.00",
+        "Revenue: 5,000.00"
+      ],
+      "computed_value": 8.0,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_008",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "2.00x (current assets = 1,000.00, inventory = 400.00, current liabilities = 300.00)",
+      "expected": 2.0,
+      "note": "(1000-400)/300 = 2.0",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Current assets: 1,000.00",
+        "Inventory: 400.00",
+        "Current liabilities: 300.00"
+      ],
+      "computed_value": 2.0,
+      "operation": "quick",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_009",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "3.60x (net income = 2,556.00, shares outstanding = 710.00)",
+      "expected": 3.6,
+      "note": "2556/710 = 3.6; 'shares in issue'",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Profit after taxation: 2,556.00",
+        "Ordinary shares in issue: 710.00"
+      ],
+      "computed_value": 3.6,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_010",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "2,600.00 (revenue = 7,500.00, cost of sales = 4,900.00)",
+      "expected": 2600.0,
+      "note": "7500-4900",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 7,500.00",
+        "Cost of sales: 4,900.00"
+      ],
+      "computed_value": 2600.0,
+      "operation": "difference",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_011",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": 15.0,
+      "note": "1449/9660 = 15%; 'trading profit'",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'operating profit' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "calculation_012",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "10.00% (net income = 250.00, shareholders' equity = 2,500.00)",
+      "expected": 10.0,
+      "note": "250/2500 = 10%",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 250.00",
+        "Shareholders' equity: 2,500.00"
+      ],
+      "computed_value": 10.0,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_013",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "3,600.00 (total assets = 9,000.00, total liabilities = 5,400.00)",
+      "expected": 3600.0,
+      "note": "9000-5400, accounting equation",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Total assets: 9,000.00",
+        "Total liabilities: 5,400.00"
+      ],
+      "computed_value": 3600.0,
+      "operation": "difference",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_014",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "8.00x (ebit = 1,600.00, interest expense = 200.00)",
+      "expected": 8.0,
+      "note": "1600/200",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "EBIT: 1,600.00",
+        "Interest expense: 200.00"
+      ],
+      "computed_value": 8.0,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_015",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": 2.8,
+      "note": "11592/4140 = 2.8",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'revenue' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "calculation_016",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": 0.4,
+      "note": "3528/8820 = 0.4; 'gearing' rather than debt-to-equity",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'total debt' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "calculation_017",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "40.00% (revenue = 2,000.00, cost of sales = 1,200.00)",
+      "expected": 40.0,
+      "note": "(2000-1200)/2000 = 40%",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 2,000.00",
+        "Cost of sales: 1,200.00"
+      ],
+      "computed_value": 40.0,
+      "operation": "difference_margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_018",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "750.00 (current assets = 2,200.00, current liabilities = 1,450.00)",
+      "expected": 750.0,
+      "note": "2200-1450",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Current assets: 2,200.00",
+        "Current liabilities: 1,450.00"
+      ],
+      "computed_value": 750.0,
+      "operation": "difference",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_019",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "11,000.00 (market capitalisation = 10,000.00, total debt = 2,500.00, cash = 1,500.00)",
+      "expected": 11000.0,
+      "note": "10000+2500-1500",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Market capitalisation: 10,000.00",
+        "Total debt: 2,500.00",
+        "Cash: 1,500.00"
+      ],
+      "computed_value": 11000.0,
+      "operation": "enterprise_value",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_020",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "3.00x (net income = 900.00, shares outstanding = 300.00)",
+      "expected": 3.0,
+      "note": "900/300",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 900.00",
+        "Shares outstanding: 300.00"
+      ],
+      "computed_value": 3.0,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_021",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "10.00% (revenue this year = 1,320.00, revenue last year = 1,200.00)",
+      "expected": 10.0,
+      "note": "(1320-1200)/1200 = 10%",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue this year: 1,320.00",
+        "Revenue last year: 1,200.00"
+      ],
+      "computed_value": 10.0,
+      "operation": "percentage_change",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_022",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "2.00x (current assets = 900.00, current liabilities = 450.00)",
+      "expected": 2.0,
+      "note": "900/450 = 2.0",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Current assets: 900.00",
+        "Current liabilities: 450.00"
+      ],
+      "computed_value": 2.0,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_023",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": 3150.0,
+      "note": "4725-1575; non-standard label wording",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'operating cash flow' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "calculation_024",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "30.00% (dividends paid = 210.00, net income = 700.00)",
+      "expected": 30.0,
+      "note": "210/700 = 30%",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Dividends paid: 210.00",
+        "Net income: 700.00"
+      ],
+      "computed_value": 30.0,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_025",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct",
+      "answer": "12.00x (share price = 36.00, earnings per share = 3.00)",
+      "expected": 12.0,
+      "note": "36/3",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Share price: 36.00",
+        "Earnings per share: 3.00"
+      ],
+      "computed_value": 12.0,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_026",
+      "gate": "calculation",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "incorrect_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": 8.0,
+      "note": "2376/297 = 8.0; 'interest cover' and 'finance charges'",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'interest expense' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "calculation_027",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "4.00x (net income = 8,645.31, shares outstanding = 2,161.33)",
+      "expected": 4.0,
+      "note": "earnings per share from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 8,645.31",
+        "Shares outstanding: 2,161.33"
+      ],
+      "computed_value": 3.999995,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_028",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "1.50x (current assets = 5,794.23, current liabilities = 3,862.82)",
+      "expected": 1.5,
+      "note": "the current ratio from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Current assets: 5,794.23",
+        "Current liabilities: 3,862.82"
+      ],
+      "computed_value": 1.5,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_029",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "60.00% (revenue = 3,550.66, cost of sales = 1,420.26)",
+      "expected": 60.0,
+      "note": "gross margin as a percentage from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 3,550.66",
+        "Cost of sales: 1,420.26"
+      ],
+      "computed_value": 60.000113,
+      "operation": "difference_margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_030",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "5.00x (net income = 3,239.81, shares outstanding = 647.96)",
+      "expected": 5.0,
+      "note": "earnings per share from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 3,239.81",
+        "Shares outstanding: 647.96"
+      ],
+      "computed_value": 5.000015,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_031",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "75.00% (revenue = 420.62, cost of sales = 105.16)",
+      "expected": 75.0,
+      "note": "gross margin as a percentage from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 420.62",
+        "Cost of sales: 105.16"
+      ],
+      "computed_value": 74.998811,
+      "operation": "difference_margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_032",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "2.50x (net income = 4,828.76, shares outstanding = 1,931.50)",
+      "expected": 2.5,
+      "note": "earnings per share from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 4,828.76",
+        "Shares outstanding: 1,931.50"
+      ],
+      "computed_value": 2.500005,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_033",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "80.00% (revenue = 1,582.84, cost of sales = 316.57)",
+      "expected": 80.0,
+      "note": "gross margin as a percentage from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 1,582.84",
+        "Cost of sales: 316.57"
+      ],
+      "computed_value": 79.999874,
+      "operation": "difference_margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_034",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "5.00x (net income = 6,989.92, shares outstanding = 1,397.98)",
+      "expected": 5.0,
+      "note": "earnings per share from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 6,989.92",
+        "Shares outstanding: 1,397.98"
+      ],
+      "computed_value": 5.000014,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_035",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "1.50x (net income = 3,765.08, shares outstanding = 2,510.05)",
+      "expected": 1.5,
+      "note": "earnings per share from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 3,765.08",
+        "Shares outstanding: 2,510.05"
+      ],
+      "computed_value": 1.500002,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_036",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "33.33% (revenue = 2,913.45, cost of sales = 1,942.30)",
+      "expected": 33.33,
+      "note": "gross margin as a percentage from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 2,913.45",
+        "Cost of sales: 1,942.30"
+      ],
+      "computed_value": 33.333333,
+      "operation": "difference_margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_037",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "250.00% (net income = 8,350.13, shareholders' equity = 3,340.05)",
+      "expected": 250.0,
+      "note": "return on equity as a percentage from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 8,350.13",
+        "Shareholders' equity: 3,340.05"
+      ],
+      "computed_value": 250.00015,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_038",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "5.00x (current assets = 1,212.23, current liabilities = 242.45)",
+      "expected": 5.0,
+      "note": "the current ratio from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Current assets: 1,212.23",
+        "Current liabilities: 242.45"
+      ],
+      "computed_value": 4.999918,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_039",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "80.00% (revenue = 8,551.67, cost of sales = 1,710.33)",
+      "expected": 80.0,
+      "note": "gross margin as a percentage from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 8,551.67",
+        "Cost of sales: 1,710.33"
+      ],
+      "computed_value": 80.000047,
+      "operation": "difference_margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_040",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "50.00% (revenue = 1,007.54, cost of sales = 503.77)",
+      "expected": 50.0,
+      "note": "gross margin as a percentage from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 1,007.54",
+        "Cost of sales: 503.77"
+      ],
+      "computed_value": 50.0,
+      "operation": "difference_margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_041",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "400.00% (net income = 3,002.19, shareholders' equity = 750.55)",
+      "expected": 400.0,
+      "note": "return on equity as a percentage from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 3,002.19",
+        "Shareholders' equity: 750.55"
+      ],
+      "computed_value": 399.998668,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_042",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "2.00x (net income = 2,241.30, shares outstanding = 1,120.65)",
+      "expected": 2.0,
+      "note": "earnings per share from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 2,241.30",
+        "Shares outstanding: 1,120.65"
+      ],
+      "computed_value": 2.0,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_043",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "250.00% (net income = 6,442.46, shareholders' equity = 2,576.98)",
+      "expected": 250.0,
+      "note": "return on equity as a percentage from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 6,442.46",
+        "Shareholders' equity: 2,576.98"
+      ],
+      "computed_value": 250.000388,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_044",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "400.00% (net income = 7,508.48, shareholders' equity = 1,877.12)",
+      "expected": 400.0,
+      "note": "return on equity as a percentage from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 7,508.48",
+        "Shareholders' equity: 1,877.12"
+      ],
+      "computed_value": 400.0,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_045",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "2.00x (current assets = 7,267.56, current liabilities = 3,633.78)",
+      "expected": 2.0,
+      "note": "the current ratio from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Current assets: 7,267.56",
+        "Current liabilities: 3,633.78"
+      ],
+      "computed_value": 2.0,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_046",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "1.50x (current assets = 3,574.21, current liabilities = 2,382.81)",
+      "expected": 1.5,
+      "note": "the current ratio from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Current assets: 3,574.21",
+        "Current liabilities: 2,382.81"
+      ],
+      "computed_value": 1.499998,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "calculation_047",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "1.50x (current assets = 2,535.31, current liabilities = 1,690.21)",
+      "expected": 1.5,
+      "note": "the current ratio from two stated figures",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Current assets: 2,535.31",
+        "Current liabilities: 1,690.21"
+      ],
+      "computed_value": 1.499997,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_000",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "12,750.00",
+      "expected": false,
+      "note": "control: answerable, stated directly",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 12,750.00"
+      ],
+      "computed_value": 12750.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_001",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "owners' funds withheld; unusual label wording",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'shareholders' equity' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_002",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "over_refusal",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": false,
+      "note": "control: answerable, 0.4",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'total debt' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_003",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "net income withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_004",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "5,000.00 (total assets = 9,400.00, total liabilities = 4,400.00)",
+      "expected": false,
+      "note": "control: answerable by the accounting equation",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Total assets: 9,400.00",
+        "Total liabilities: 4,400.00"
+      ],
+      "computed_value": 5000.0,
+      "operation": "difference",
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_005",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "rate not disclosed in the extract",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "model reported the value is not present"
+    },
+    {
+      "id": "abstention_006",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "segment detail not given",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "model reported the value is not present"
+    },
+    {
+      "id": "abstention_007",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "sales withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'operating profit' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_008",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "I cannot verify the current value from the available data: no verified live source is connected.",
+      "expected": null,
+      "note": "live data",
+      "component": "current_data_rule",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "question asks for a value that changes over time"
+    },
+    {
+      "id": "abstention_009",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "4,180.00",
+      "expected": false,
+      "note": "control: answerable, stated directly",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Staff costs: 4,180.00"
+      ],
+      "computed_value": 4180.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_010",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "profit before interest withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'ebit' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_011",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "8.00% (net income = 320.00, revenue = 4,000.00)",
+      "expected": false,
+      "note": "control: answerable, 8%",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 320.00",
+        "Revenue: 4,000.00"
+      ],
+      "computed_value": 8.0,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_012",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "headcount absent although staff costs are present",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "model reported the value is not present"
+    },
+    {
+      "id": "abstention_013",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "2.00x (net income = 640.00, shares outstanding = 320.00)",
+      "expected": false,
+      "note": "control: answerable, 2.0",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 640.00",
+        "Shares outstanding: 320.00"
+      ],
+      "computed_value": 2.0,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_014",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "2,150.00",
+      "expected": false,
+      "note": "control: answerable, stated directly",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Cash balance: 2,150.00"
+      ],
+      "computed_value": 2150.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_015",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "neither input present",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_016",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "share count withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'shares outstanding' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_017",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "charge present, deficit absent",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "model reported the value is not present"
+    },
+    {
+      "id": "abstention_018",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "EBIT withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'ebit' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_019",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "related facts present, asked field absent",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "model reported the value is not present"
+    },
+    {
+      "id": "abstention_020",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "2.00x (current assets = 1,100.00, current liabilities = 550.00)",
+      "expected": false,
+      "note": "control: answerable, 2.0",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Current assets: 1,100.00",
+        "Current liabilities: 550.00"
+      ],
+      "computed_value": 2.0,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_021",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "field absent, plausible neighbour present",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "model reported the value is not present"
+    },
+    {
+      "id": "abstention_022",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "forecast not in context",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "model reported the value is not present"
+    },
+    {
+      "id": "abstention_023",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "550.00",
+      "expected": null,
+      "note": "cost of sales withheld",
+      "component": "extraction",
+      "abstained": false,
+      "source_spans": [
+        "Inventory: 550.00"
+      ],
+      "computed_value": 550.0,
+      "operation": null,
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_024",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "field absent entirely",
+      "component": "extraction",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "model reported the value is not present"
+    },
+    {
+      "id": "abstention_025",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "denominator withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'current liabilities' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_026",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "I cannot verify the current value from the available data: no verified live source is connected.",
+      "expected": null,
+      "note": "live data",
+      "component": "current_data_rule",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "question asks for a value that changes over time"
+    },
+    {
+      "id": "abstention_027",
+      "gate": "abstention",
+      "origin": "handwritten",
+      "correct": false,
+      "category": "over_refusal",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": false,
+      "note": "control: answerable, 8.0",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'interest expense' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_028",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "500.00% (dividends paid = 8,186.30, net income = 1,637.26)",
+      "expected": false,
+      "note": "control: answerable, must not abstain",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Dividends paid: 8,186.30",
+        "Net income: 1,637.26"
+      ],
+      "computed_value": 500.0,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_029",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "400.00% (net income = 3,232.14, total assets = 808.03)",
+      "expected": false,
+      "note": "control: answerable, must not abstain",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 3,232.14",
+        "Total assets: 808.03"
+      ],
+      "computed_value": 400.002475,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_030",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "200.00% (net income = 6,320.65, total assets = 3,160.32)",
+      "expected": false,
+      "note": "control: answerable, must not abstain",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Net income: 6,320.65",
+        "Total assets: 3,160.32"
+      ],
+      "computed_value": 200.000316,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_031",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "400.00% (dividends paid = 5,244.20, net income = 1,311.05)",
+      "expected": false,
+      "note": "control: answerable, must not abstain",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Dividends paid: 5,244.20",
+        "Net income: 1,311.05"
+      ],
+      "computed_value": 400.0,
+      "operation": "margin",
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_032",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "total assets withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'total assets' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_033",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "net income withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_034",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "net income withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_035",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "current liabilities withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'inventory' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_036",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "total assets withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'total assets' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_037",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "net income withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_038",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "net income withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_039",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "current liabilities withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'inventory' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_040",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "total assets withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'total assets' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_041",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "total assets withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'total assets' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_042",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "net income withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_043",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "over_refusal",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": false,
+      "note": "control: answerable, must not abstain",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'inventory' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_044",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "5.00x (revenue = 8,441.61, total assets = 1,688.32)",
+      "expected": false,
+      "note": "control: answerable, must not abstain",
+      "component": "calculation",
+      "abstained": false,
+      "source_spans": [
+        "Revenue: 8,441.61",
+        "Total assets: 1,688.32"
+      ],
+      "computed_value": 5.000006,
+      "operation": "ratio",
+      "pipeline_reason": null
+    },
+    {
+      "id": "abstention_045",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "current liabilities withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'inventory' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_046",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "total assets withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'total assets' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_047",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "net income withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'net income' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_048",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "over_refusal",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": false,
+      "note": "control: answerable, must not abstain",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'inventory' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_049",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "current liabilities withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'inventory' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_050",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "total assets withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'total assets' is not available in the context (model reported the value is not present)"
+    },
+    {
+      "id": "abstention_051",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct_abstention",
+      "answer": "Insufficient information: the requested value is not present in the context provided.",
+      "expected": null,
+      "note": "total assets withheld",
+      "component": "calculation",
+      "abstained": true,
+      "source_spans": [],
+      "computed_value": null,
+      "operation": null,
+      "pipeline_reason": "cannot compute: 'total assets' is not available in the context (model reported the value is not present)"
+    }
+  ]
+}

@@ -192,6 +192,10 @@ def main():
     summary["llm_calls"] = calls["n"]
     summary["llm_calls_per_item"] = round(calls["n"] / max(len(records), 1), 2)
     summary["span_audit"] = audit_spans(produced, items)
+    # evaluate() records this only when it loads the items itself; this script
+    # hands it a list, so the digest verified above is recorded here.
+    summary["eval_set_integrity"] = {"split": args.split, "content_sha256": digest,
+                                     "status": status, "verified_by": __file__}
     summary["components"] = dict(
         Counter(a.component for a in produced).most_common())
     summary["abstained_pct"] = round(

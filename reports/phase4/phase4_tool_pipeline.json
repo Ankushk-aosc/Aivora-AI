@@ -1,0 +1,209 @@
+{
+  "phase": 4,
+  "configuration": "Qwen/Qwen2.5-1.5B-Instruct (0-shot) + tool pipeline",
+  "chosen_by": "owner, 2026-10-05, on the Phase 3 selection-split evidence",
+  "repo_commit": "240ccbd",
+  "status": "PROVISIONAL SCORES, FIXED OUTPUTS - the scorer is not yet validated against hand labels (EXPERIMENT_RULES_v2 section 4) and the section 1 thresholds are unset. The model ran once per split; raw outputs are saved and can be re-scored without a GPU.",
+  "splits": {
+    "selection": {
+      "overall": {
+        "k": 55,
+        "n": 60,
+        "accuracy_pct": 91.67,
+        "ci95": [
+          81.93,
+          96.39
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 7,
+          "n": 7,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            64.57,
+            100.0
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {}
+        },
+        "calculation": {
+          "k": 5,
+          "n": 6,
+          "accuracy_pct": 83.33,
+          "ci95": [
+            43.65,
+            96.99
+          ],
+          "categories": {
+            "wrong_value": 1
+          }
+        },
+        "copy": {
+          "k": 15,
+          "n": 15,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            79.61,
+            100.0
+          ],
+          "categories": {}
+        },
+        "extraction": {
+          "k": 14,
+          "n": 15,
+          "accuracy_pct": 93.33,
+          "ci95": [
+            70.18,
+            98.81
+          ],
+          "categories": {
+            "incorrect_abstention": 1
+          }
+        },
+        "wording": {
+          "k": 14,
+          "n": 17,
+          "accuracy_pct": 82.35,
+          "ci95": [
+            58.97,
+            93.81
+          ],
+          "categories": {
+            "incorrect_abstention": 3
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 0,
+        "n": 1,
+        "pct": 0.0
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 53,
+        "pct": 0.0
+      },
+      "span_audit": {
+        "answers_checked": 50,
+        "violations": [],
+        "violation_count": 0,
+        "span_validated_pct": 100.0,
+        "rule": "100% required; any violation blocks ship"
+      },
+      "components": {
+        "extraction": 45,
+        "calculation": 16
+      },
+      "abstained_pct": 18.03,
+      "llm_calls_per_item": 1.18,
+      "seconds_per_item": 2.12,
+      "eval_set_integrity": null
+    },
+    "frozen": {
+      "overall": {
+        "k": 260,
+        "n": 297,
+        "accuracy_pct": 87.54,
+        "ci95": [
+          83.3,
+          90.83
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 35,
+          "n": 36,
+          "accuracy_pct": 97.22,
+          "ci95": [
+            85.83,
+            99.51
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {
+            "hallucinated_instead_of_abstaining": 1
+          }
+        },
+        "calculation": {
+          "k": 33,
+          "n": 48,
+          "accuracy_pct": 68.75,
+          "ci95": [
+            54.67,
+            80.05
+          ],
+          "categories": {
+            "incorrect_abstention": 8,
+            "wrong_value": 7
+          }
+        },
+        "copy": {
+          "k": 68,
+          "n": 69,
+          "accuracy_pct": 98.55,
+          "ci95": [
+            92.24,
+            99.74
+          ],
+          "categories": {
+            "wrong_text": 1
+          }
+        },
+        "extraction": {
+          "k": 60,
+          "n": 69,
+          "accuracy_pct": 86.96,
+          "ci95": [
+            77.03,
+            92.98
+          ],
+          "categories": {
+            "incorrect_abstention": 6,
+            "ambiguous_multiple_values": 3
+          }
+        },
+        "wording": {
+          "k": 64,
+          "n": 75,
+          "accuracy_pct": 85.33,
+          "ci95": [
+            75.62,
+            91.61
+          ],
+          "categories": {
+            "incorrect_abstention": 9,
+            "wrong_field": 2
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 4,
+        "n": 16,
+        "pct": 25.0
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 261,
+        "pct": 0.0
+      },
+      "span_audit": {
+        "answers_checked": 251,
+        "violations": [],
+        "violation_count": 0,
+        "span_validated_pct": 100.0,
+        "rule": "100% required; any violation blocks ship"
+      },
+      "components": {
+        "extraction": 210,
+        "calculation": 101,
+        "current_data_rule": 2
+      },
+      "abstained_pct": 19.81,
+      "llm_calls_per_item": 1.23,
+      "seconds_per_item": 2.27,
+      "eval_set_integrity": null
+    }
+  }
+}
