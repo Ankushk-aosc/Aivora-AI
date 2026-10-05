@@ -215,6 +215,9 @@ def generated_abstention(rng, count):
     return items
 
 
+from scripts.eval_heldout import content_sha256  # noqa: E402
+
+
 def main():
     from data.eval_heldout.handwritten_items import (
         ABSTENTION, CALCULATION, COPY, EXTRACTION, WORDING,
@@ -448,6 +451,10 @@ def main():
     manifest = {
         "frozen": {"path": FROZEN, "items": len(frozen),
                    "sha256": hashlib.sha256(open(FROZEN, "rb").read()).hexdigest(),
+                   "sha256_note": "byte hash - PLATFORM DEPENDENT, differs "
+                                  "between CRLF and LF checkouts; use "
+                                  "content_sha256 to verify the set",
+                   "content_sha256": content_sha256(FROZEN),
                    "by_gate": frozen_by_gate,
                    "handwritten_by_gate": {
                        gate: sum(1 for r in frozen if r["gate"] == gate
@@ -455,6 +462,7 @@ def main():
                        for gate in GATE_MINIMUMS}},
         "selection": {"path": SELECTION, "items": len(selection),
                       "sha256": hashlib.sha256(open(SELECTION, "rb").read()).hexdigest(),
+                      "content_sha256": content_sha256(SELECTION),
                       "purpose": "checkpoint choice only; never used for reporting"},
         "seed": SEED,
         "overlap_removed": removed,

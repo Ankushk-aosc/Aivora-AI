@@ -12,6 +12,8 @@ can be scored by its own standard.
 """
 
 import argparse
+import hashlib
+import io
 import json
 import math
 import os
@@ -25,6 +27,49 @@ if ROOT not in sys.path:
 
 FROZEN = os.path.join("data", "eval_heldout", "heldout_frozen.jsonl")
 SELECTION = os.path.join("data", "eval_heldout", "selection.jsonl")
+MANIFEST = os.path.join("data", "eval_heldout", "heldout_manifest.json")
+
+
+def content_sha256(path):
+    """A hash of the ITEMS, not the bytes.
+
+    A plain byte hash of a text file is platform-dependent: with
+    core.autocrlf=true a Windows checkout has CRLF line endings and a Linux one
+    has LF, so the same frozen set hashes differently on the two machines. That
+    made the integrity check raise a false alarm when Phase 3 ran on Kaggle, and
+    - worse - it could not have detected a real change in a cross-platform run,
+    because every run was expected to disagree. This hashes the parsed items in
+    a canonical order instead, so it is identical wherever the file is checked
+    out and still changes if any item changes.
+    """
+    with io.open(path, encoding="utf-8") as handle:
+        items = [json.loads(line) for line in handle if line.strip()]
+    canonical = json.dumps(sorted(items, key=lambda item: item["id"]),
+                           sort_keys=True, ensure_ascii=True)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def verify_split(path, split):
+    """Returns (content_sha, status). Never silently continues on a mismatch."""
+    digest = content_sha256(path)
+    if not os.path.exists(MANIFEST):
+        return digest, "UNVERIFIED: no manifest"
+    with io.open(MANIFEST, encoding="utf-8") as handle:
+        manifest = json.load(handle)
+    recorded = manifest.get(split, {}).get("content_sha256")
+    if recorded is None:
+        return digest, "UNVERIFIED: manifest predates content hashing"
+    if recorded != digest:
+        raise SystemExit(
+            f"\nREFUSING TO SCORE: {path} does not match the manifest.\n"
+            f"  manifest content_sha256 {recorded}\n"
+            f"  file     content_sha256 {digest}\n"
+            f"The {split} set changed after it was frozen. Any number produced "
+            f"from it would not be comparable with earlier results. Investigate "
+            f"before scoring - do not rebuild to make this pass.")
+    return digest, "VERIFIED"
+
+
 NUMBER = re.compile(r"-?\d{1,3}(?:,\d{3})+(?:\.\d+)?|-?\d+(?:\.\d+)?")
 
 
@@ -148,6 +193,11 @@ def evaluate(answer_fn, items=None, label="system", split="frozen", verbose=Fals
              save_raw=None):
     """answer_fn(question, context) -> answer string."""
     path = FROZEN if split == "frozen" else SELECTION
+    integrity = None
+    if items is None:
+        digest, status = verify_split(path, split)
+        integrity = {"split": split, "content_sha256": digest, "status": status}
+        print(f"  {split} set: {status}, content_sha256 {digest[:16]}...")
     if items is None:
         with open(path, encoding="utf-8") as handle:
             items = [json.loads(line) for line in handle if line.strip()]
@@ -222,6 +272,7 @@ def evaluate(answer_fn, items=None, label="system", split="frozen", verbose=Fals
             "k": invented, "n": len(answerable),
             "pct": round(100.0 * invented / max(len(answerable), 1), 2)},
         "handwritten_only": {},
+        "eval_set_integrity": integrity,
     }
     for gate in by_gate:
         hand = [r for r in records if r["gate"] == gate and r["origin"] == "handwritten"]

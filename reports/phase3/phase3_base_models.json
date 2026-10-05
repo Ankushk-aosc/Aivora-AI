@@ -1,0 +1,956 @@
+{
+  "phase": 3,
+  "status": "PROVISIONAL - scorer not yet validated against hand labels; selection split, used to choose a model and never reported as a result",
+  "split": "selection",
+  "repo_commit": "490708b",
+  "frozen_sha256": "f55cdda12a4fab59d10495c05101c07a0107b75ac7e65b628668806ed2998dce",
+  "results": {
+    "HuggingFaceTB/SmolLM2-135M-Instruct (0-shot)": {
+      "label": "HuggingFaceTB/SmolLM2-135M-Instruct (0-shot)",
+      "split": "selection",
+      "items": 61,
+      "overall": {
+        "k": 22,
+        "n": 60,
+        "accuracy_pct": 36.67,
+        "ci95": [
+          25.62,
+          49.32
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 0,
+          "n": 7,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            35.43
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {
+            "hallucinated_instead_of_abstaining": 7
+          }
+        },
+        "calculation": {
+          "k": 0,
+          "n": 6,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            39.03
+          ],
+          "categories": {
+            "wrong_value": 6
+          }
+        },
+        "copy": {
+          "k": 14,
+          "n": 15,
+          "accuracy_pct": 93.33,
+          "ci95": [
+            70.18,
+            98.81
+          ],
+          "categories": {
+            "wrong_text": 1
+          }
+        },
+        "extraction": {
+          "k": 3,
+          "n": 15,
+          "accuracy_pct": 20.0,
+          "ci95": [
+            7.05,
+            45.19
+          ],
+          "categories": {
+            "wrong_field": 5,
+            "ambiguous_multiple_values": 5,
+            "no_number": 2
+          }
+        },
+        "wording": {
+          "k": 5,
+          "n": 17,
+          "accuracy_pct": 29.41,
+          "ci95": [
+            13.28,
+            53.13
+          ],
+          "categories": {
+            "wrong_field": 9,
+            "ambiguous_multiple_values": 1,
+            "invented_value": 1,
+            "no_number": 1
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 0,
+        "n": 1,
+        "pct": 0.0
+      },
+      "hallucination_invented_values": {
+        "k": 1,
+        "n": 53,
+        "pct": 1.89
+      },
+      "handwritten_only": {},
+      "seconds": 148.4,
+      "seconds_per_item": 2.43,
+      "licence": "Apache-2.0",
+      "shots": 0
+    },
+    "HuggingFaceTB/SmolLM2-135M-Instruct (3-shot)": {
+      "label": "HuggingFaceTB/SmolLM2-135M-Instruct (3-shot)",
+      "split": "selection",
+      "items": 61,
+      "overall": {
+        "k": 22,
+        "n": 60,
+        "accuracy_pct": 36.67,
+        "ci95": [
+          25.62,
+          49.32
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 7,
+          "n": 7,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            64.57,
+            100.0
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {}
+        },
+        "calculation": {
+          "k": 0,
+          "n": 6,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            39.03
+          ],
+          "categories": {
+            "incorrect_abstention": 6
+          }
+        },
+        "copy": {
+          "k": 12,
+          "n": 15,
+          "accuracy_pct": 80.0,
+          "ci95": [
+            54.81,
+            92.95
+          ],
+          "categories": {
+            "wrong_text": 3
+          }
+        },
+        "extraction": {
+          "k": 2,
+          "n": 15,
+          "accuracy_pct": 13.33,
+          "ci95": [
+            3.74,
+            37.88
+          ],
+          "categories": {
+            "incorrect_abstention": 11,
+            "wrong_field": 2
+          }
+        },
+        "wording": {
+          "k": 1,
+          "n": 17,
+          "accuracy_pct": 5.88,
+          "ci95": [
+            1.05,
+            26.98
+          ],
+          "categories": {
+            "incorrect_abstention": 14,
+            "wrong_field": 2
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 1,
+        "n": 1,
+        "pct": 100.0
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 53,
+        "pct": 0.0
+      },
+      "handwritten_only": {},
+      "seconds": 28.6,
+      "seconds_per_item": 0.47,
+      "licence": "Apache-2.0",
+      "shots": 3
+    },
+    "HuggingFaceTB/SmolLM2-360M-Instruct (0-shot)": {
+      "label": "HuggingFaceTB/SmolLM2-360M-Instruct (0-shot)",
+      "split": "selection",
+      "items": 61,
+      "overall": {
+        "k": 41,
+        "n": 60,
+        "accuracy_pct": 68.33,
+        "ci95": [
+          55.77,
+          78.69
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 0,
+          "n": 7,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            35.43
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {
+            "hallucinated_instead_of_abstaining": 7
+          }
+        },
+        "calculation": {
+          "k": 1,
+          "n": 6,
+          "accuracy_pct": 16.67,
+          "ci95": [
+            3.01,
+            56.35
+          ],
+          "categories": {
+            "wrong_value": 4,
+            "no_number": 1
+          }
+        },
+        "copy": {
+          "k": 13,
+          "n": 15,
+          "accuracy_pct": 86.67,
+          "ci95": [
+            62.12,
+            96.26
+          ],
+          "categories": {
+            "wrong_text": 2
+          }
+        },
+        "extraction": {
+          "k": 15,
+          "n": 15,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            79.61,
+            100.0
+          ],
+          "categories": {}
+        },
+        "wording": {
+          "k": 12,
+          "n": 17,
+          "accuracy_pct": 70.59,
+          "ci95": [
+            46.87,
+            86.72
+          ],
+          "categories": {
+            "wrong_field": 4,
+            "ambiguous_multiple_values": 1
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 0,
+        "n": 1,
+        "pct": 0.0
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 53,
+        "pct": 0.0
+      },
+      "handwritten_only": {},
+      "seconds": 54.1,
+      "seconds_per_item": 0.89,
+      "licence": "Apache-2.0",
+      "shots": 0
+    },
+    "HuggingFaceTB/SmolLM2-360M-Instruct (3-shot)": {
+      "label": "HuggingFaceTB/SmolLM2-360M-Instruct (3-shot)",
+      "split": "selection",
+      "items": 61,
+      "overall": {
+        "k": 9,
+        "n": 60,
+        "accuracy_pct": 15.0,
+        "ci95": [
+          8.1,
+          26.11
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 7,
+          "n": 7,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            64.57,
+            100.0
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {}
+        },
+        "calculation": {
+          "k": 0,
+          "n": 6,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            39.03
+          ],
+          "categories": {
+            "incorrect_abstention": 6
+          }
+        },
+        "copy": {
+          "k": 1,
+          "n": 15,
+          "accuracy_pct": 6.67,
+          "ci95": [
+            1.19,
+            29.82
+          ],
+          "categories": {
+            "incorrect_abstention": 13,
+            "wrong_text": 1
+          }
+        },
+        "extraction": {
+          "k": 0,
+          "n": 15,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            20.39
+          ],
+          "categories": {
+            "incorrect_abstention": 15
+          }
+        },
+        "wording": {
+          "k": 1,
+          "n": 17,
+          "accuracy_pct": 5.88,
+          "ci95": [
+            1.05,
+            26.98
+          ],
+          "categories": {
+            "incorrect_abstention": 16
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 1,
+        "n": 1,
+        "pct": 100.0
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 53,
+        "pct": 0.0
+      },
+      "handwritten_only": {},
+      "seconds": 33.2,
+      "seconds_per_item": 0.54,
+      "licence": "Apache-2.0",
+      "shots": 3
+    },
+    "Qwen/Qwen2.5-0.5B-Instruct (0-shot)": {
+      "label": "Qwen/Qwen2.5-0.5B-Instruct (0-shot)",
+      "split": "selection",
+      "items": 61,
+      "overall": {
+        "k": 39,
+        "n": 60,
+        "accuracy_pct": 65.0,
+        "ci95": [
+          52.36,
+          75.83
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 0,
+          "n": 7,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            35.43
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {
+            "hallucinated_instead_of_abstaining": 7
+          }
+        },
+        "calculation": {
+          "k": 0,
+          "n": 6,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            39.03
+          ],
+          "categories": {
+            "wrong_value": 6
+          }
+        },
+        "copy": {
+          "k": 14,
+          "n": 15,
+          "accuracy_pct": 93.33,
+          "ci95": [
+            70.18,
+            98.81
+          ],
+          "categories": {
+            "wrong_text": 1
+          }
+        },
+        "extraction": {
+          "k": 11,
+          "n": 15,
+          "accuracy_pct": 73.33,
+          "ci95": [
+            48.05,
+            89.1
+          ],
+          "categories": {
+            "invented_value": 3,
+            "wrong_field": 1
+          }
+        },
+        "wording": {
+          "k": 14,
+          "n": 17,
+          "accuracy_pct": 82.35,
+          "ci95": [
+            58.97,
+            93.81
+          ],
+          "categories": {
+            "wrong_field": 3
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 0,
+        "n": 1,
+        "pct": 0.0
+      },
+      "hallucination_invented_values": {
+        "k": 3,
+        "n": 53,
+        "pct": 5.66
+      },
+      "handwritten_only": {},
+      "seconds": 24.6,
+      "seconds_per_item": 0.4,
+      "licence": "Apache-2.0",
+      "shots": 0
+    },
+    "Qwen/Qwen2.5-0.5B-Instruct (3-shot)": {
+      "label": "Qwen/Qwen2.5-0.5B-Instruct (3-shot)",
+      "split": "selection",
+      "items": 61,
+      "overall": {
+        "k": 41,
+        "n": 60,
+        "accuracy_pct": 68.33,
+        "ci95": [
+          55.77,
+          78.69
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 0,
+          "n": 7,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            35.43
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {
+            "hallucinated_instead_of_abstaining": 7
+          }
+        },
+        "calculation": {
+          "k": 1,
+          "n": 6,
+          "accuracy_pct": 16.67,
+          "ci95": [
+            3.01,
+            56.35
+          ],
+          "categories": {
+            "wrong_value": 5
+          }
+        },
+        "copy": {
+          "k": 15,
+          "n": 15,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            79.61,
+            100.0
+          ],
+          "categories": {}
+        },
+        "extraction": {
+          "k": 11,
+          "n": 15,
+          "accuracy_pct": 73.33,
+          "ci95": [
+            48.05,
+            89.1
+          ],
+          "categories": {
+            "incorrect_abstention": 2,
+            "wrong_field": 1,
+            "invented_value": 1
+          }
+        },
+        "wording": {
+          "k": 14,
+          "n": 17,
+          "accuracy_pct": 82.35,
+          "ci95": [
+            58.97,
+            93.81
+          ],
+          "categories": {
+            "wrong_field": 2,
+            "no_number": 1
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 0,
+        "n": 1,
+        "pct": 0.0
+      },
+      "hallucination_invented_values": {
+        "k": 1,
+        "n": 53,
+        "pct": 1.89
+      },
+      "handwritten_only": {},
+      "seconds": 27.6,
+      "seconds_per_item": 0.45,
+      "licence": "Apache-2.0",
+      "shots": 3
+    },
+    "Qwen/Qwen2.5-1.5B-Instruct (0-shot)": {
+      "label": "Qwen/Qwen2.5-1.5B-Instruct (0-shot)",
+      "split": "selection",
+      "items": 61,
+      "overall": {
+        "k": 51,
+        "n": 60,
+        "accuracy_pct": 85.0,
+        "ci95": [
+          73.89,
+          91.9
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 6,
+          "n": 7,
+          "accuracy_pct": 85.71,
+          "ci95": [
+            48.69,
+            97.43
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {
+            "hallucinated_instead_of_abstaining": 1
+          }
+        },
+        "calculation": {
+          "k": 2,
+          "n": 6,
+          "accuracy_pct": 33.33,
+          "ci95": [
+            9.68,
+            70.0
+          ],
+          "categories": {
+            "wrong_value": 4
+          }
+        },
+        "copy": {
+          "k": 15,
+          "n": 15,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            79.61,
+            100.0
+          ],
+          "categories": {}
+        },
+        "extraction": {
+          "k": 13,
+          "n": 15,
+          "accuracy_pct": 86.67,
+          "ci95": [
+            62.12,
+            96.26
+          ],
+          "categories": {
+            "incorrect_abstention": 1,
+            "wrong_field": 1
+          }
+        },
+        "wording": {
+          "k": 15,
+          "n": 17,
+          "accuracy_pct": 88.24,
+          "ci95": [
+            65.66,
+            96.71
+          ],
+          "categories": {
+            "wrong_field": 1,
+            "no_number": 1
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 0,
+        "n": 1,
+        "pct": 0.0
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 53,
+        "pct": 0.0
+      },
+      "handwritten_only": {},
+      "seconds": 20.7,
+      "seconds_per_item": 0.34,
+      "licence": "Apache-2.0",
+      "shots": 0
+    },
+    "Qwen/Qwen2.5-1.5B-Instruct (3-shot)": {
+      "label": "Qwen/Qwen2.5-1.5B-Instruct (3-shot)",
+      "split": "selection",
+      "items": 61,
+      "overall": {
+        "k": 54,
+        "n": 60,
+        "accuracy_pct": 90.0,
+        "ci95": [
+          79.85,
+          95.34
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 7,
+          "n": 7,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            64.57,
+            100.0
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {}
+        },
+        "calculation": {
+          "k": 2,
+          "n": 6,
+          "accuracy_pct": 33.33,
+          "ci95": [
+            9.68,
+            70.0
+          ],
+          "categories": {
+            "wrong_value": 4
+          }
+        },
+        "copy": {
+          "k": 15,
+          "n": 15,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            79.61,
+            100.0
+          ],
+          "categories": {}
+        },
+        "extraction": {
+          "k": 15,
+          "n": 15,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            79.61,
+            100.0
+          ],
+          "categories": {}
+        },
+        "wording": {
+          "k": 15,
+          "n": 17,
+          "accuracy_pct": 88.24,
+          "ci95": [
+            65.66,
+            96.71
+          ],
+          "categories": {
+            "no_number": 1,
+            "wrong_field": 1
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 0,
+        "n": 1,
+        "pct": 0.0
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 53,
+        "pct": 0.0
+      },
+      "handwritten_only": {},
+      "seconds": 26.7,
+      "seconds_per_item": 0.44,
+      "licence": "Apache-2.0",
+      "shots": 3
+    },
+    "HuggingFaceTB/SmolLM2-1.7B-Instruct (0-shot)": {
+      "label": "HuggingFaceTB/SmolLM2-1.7B-Instruct (0-shot)",
+      "split": "selection",
+      "items": 61,
+      "overall": {
+        "k": 44,
+        "n": 60,
+        "accuracy_pct": 73.33,
+        "ci95": [
+          60.99,
+          82.87
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 0,
+          "n": 7,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            35.43
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {
+            "hallucinated_instead_of_abstaining": 7
+          }
+        },
+        "calculation": {
+          "k": 0,
+          "n": 6,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            39.03
+          ],
+          "categories": {
+            "wrong_value": 6
+          }
+        },
+        "copy": {
+          "k": 15,
+          "n": 15,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            79.61,
+            100.0
+          ],
+          "categories": {}
+        },
+        "extraction": {
+          "k": 13,
+          "n": 15,
+          "accuracy_pct": 86.67,
+          "ci95": [
+            62.12,
+            96.26
+          ],
+          "categories": {
+            "incorrect_abstention": 1,
+            "wrong_field": 1
+          }
+        },
+        "wording": {
+          "k": 16,
+          "n": 17,
+          "accuracy_pct": 94.12,
+          "ci95": [
+            73.02,
+            98.95
+          ],
+          "categories": {
+            "wrong_field": 1
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 0,
+        "n": 1,
+        "pct": 0.0
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 53,
+        "pct": 0.0
+      },
+      "handwritten_only": {},
+      "seconds": 21.5,
+      "seconds_per_item": 0.35,
+      "licence": "Apache-2.0",
+      "shots": 0
+    },
+    "HuggingFaceTB/SmolLM2-1.7B-Instruct (3-shot)": {
+      "label": "HuggingFaceTB/SmolLM2-1.7B-Instruct (3-shot)",
+      "split": "selection",
+      "items": 61,
+      "overall": {
+        "k": 43,
+        "n": 60,
+        "accuracy_pct": 71.67,
+        "ci95": [
+          59.23,
+          81.49
+        ],
+        "note": "answerable abstention controls excluded; they are reported as over_refusal"
+      },
+      "by_gate": {
+        "abstention": {
+          "k": 7,
+          "n": 7,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            64.57,
+            100.0
+          ],
+          "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+          "categories": {}
+        },
+        "calculation": {
+          "k": 0,
+          "n": 6,
+          "accuracy_pct": 0.0,
+          "ci95": [
+            0.0,
+            39.03
+          ],
+          "categories": {
+            "incorrect_abstention": 6
+          }
+        },
+        "copy": {
+          "k": 15,
+          "n": 15,
+          "accuracy_pct": 100.0,
+          "ci95": [
+            79.61,
+            100.0
+          ],
+          "categories": {}
+        },
+        "extraction": {
+          "k": 9,
+          "n": 15,
+          "accuracy_pct": 60.0,
+          "ci95": [
+            35.75,
+            80.18
+          ],
+          "categories": {
+            "incorrect_abstention": 6
+          }
+        },
+        "wording": {
+          "k": 12,
+          "n": 17,
+          "accuracy_pct": 70.59,
+          "ci95": [
+            46.87,
+            86.72
+          ],
+          "categories": {
+            "incorrect_abstention": 4,
+            "wrong_field": 1
+          }
+        }
+      },
+      "over_refusal": {
+        "k": 1,
+        "n": 1,
+        "pct": 100.0
+      },
+      "hallucination_invented_values": {
+        "k": 0,
+        "n": 53,
+        "pct": 0.0
+      },
+      "handwritten_only": {},
+      "seconds": 18.0,
+      "seconds_per_item": 0.3,
+      "licence": "Apache-2.0",
+      "shots": 3
+    }
+  },
+  "failures": {},
+  "aivora_reference_frozen_split": {
+    "note": "frozen split, NOT comparable item-for-item with the rows above",
+    "baseline": {
+      "copy": 13.04,
+      "extraction": 1.45,
+      "wording": 2.67,
+      "calculation": 0.0,
+      "abstention": 0.0,
+      "invented_values_pct": 42.91
+    },
+    "sft_002": {
+      "copy": 34.78,
+      "extraction": 13.04,
+      "wording": 13.33,
+      "calculation": 2.08,
+      "abstention": 16.67,
+      "invented_values_pct": 36.78
+    }
+  }
+}

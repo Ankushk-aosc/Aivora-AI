@@ -1,0 +1,712 @@
+{
+  "summary": {
+    "label": "HuggingFaceTB/SmolLM2-135M-Instruct (0-shot)",
+    "split": "selection",
+    "items": 61,
+    "overall": {
+      "k": 22,
+      "n": 60,
+      "accuracy_pct": 36.67,
+      "ci95": [
+        25.62,
+        49.32
+      ],
+      "note": "answerable abstention controls excluded; they are reported as over_refusal"
+    },
+    "by_gate": {
+      "abstention": {
+        "k": 0,
+        "n": 7,
+        "accuracy_pct": 0.0,
+        "ci95": [
+          0.0,
+          35.43
+        ],
+        "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+        "categories": {
+          "hallucinated_instead_of_abstaining": 7
+        }
+      },
+      "calculation": {
+        "k": 0,
+        "n": 6,
+        "accuracy_pct": 0.0,
+        "ci95": [
+          0.0,
+          39.03
+        ],
+        "categories": {
+          "wrong_value": 6
+        }
+      },
+      "copy": {
+        "k": 14,
+        "n": 15,
+        "accuracy_pct": 93.33,
+        "ci95": [
+          70.18,
+          98.81
+        ],
+        "categories": {
+          "wrong_text": 1
+        }
+      },
+      "extraction": {
+        "k": 3,
+        "n": 15,
+        "accuracy_pct": 20.0,
+        "ci95": [
+          7.05,
+          45.19
+        ],
+        "categories": {
+          "wrong_field": 5,
+          "ambiguous_multiple_values": 5,
+          "no_number": 2
+        }
+      },
+      "wording": {
+        "k": 5,
+        "n": 17,
+        "accuracy_pct": 29.41,
+        "ci95": [
+          13.28,
+          53.13
+        ],
+        "categories": {
+          "wrong_field": 9,
+          "ambiguous_multiple_values": 1,
+          "invented_value": 1,
+          "no_number": 1
+        }
+      }
+    },
+    "over_refusal": {
+      "k": 0,
+      "n": 1,
+      "pct": 0.0
+    },
+    "hallucination_invented_values": {
+      "k": 1,
+      "n": 53,
+      "pct": 1.89
+    },
+    "handwritten_only": {},
+    "seconds": 902.7,
+    "seconds_per_item": 14.8,
+    "licence": "Apache-2.0",
+    "shots": 0
+  },
+  "records": [
+    {
+      "id": "copy_sel_000",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The dispatch code is 9L-UW.",
+      "expected": "9L-UW",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "copy_sel_001",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The audit reference is X867-6DK.",
+      "expected": "X867-6DK",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "copy_sel_002",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_text",
+      "answer": "The dispatch code is YR2-S8.",
+      "expected": "4V-Y7VY",
+      "note": "3 distractor codes"
+    },
+    {
+      "id": "copy_sel_003",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The consignment code is 42.",
+      "expected": "42",
+      "note": "3 distractor codes"
+    },
+    {
+      "id": "copy_sel_004",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The route number is VXUR.",
+      "expected": "VXUR",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "copy_sel_005",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The permit number is EN5R-H9A.",
+      "expected": "EN5R-H9A",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "copy_sel_006",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The badge id is MMT.",
+      "expected": "MMT",
+      "note": "3 distractor codes"
+    },
+    {
+      "id": "copy_sel_007",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The permit number is MR-YPT.",
+      "expected": "MR-YPT",
+      "note": "1 distractor codes"
+    },
+    {
+      "id": "copy_sel_008",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The route number is 38V.",
+      "expected": "38V",
+      "note": "3 distractor codes"
+    },
+    {
+      "id": "copy_sel_009",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The badge id is GABM-CB.",
+      "expected": "GABM-CB",
+      "note": "1 distractor codes"
+    },
+    {
+      "id": "copy_sel_010",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The berth number is ZT-YA4.",
+      "expected": "ZT-YA4",
+      "note": "1 distractor codes"
+    },
+    {
+      "id": "copy_sel_011",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The badge id is TCXN-2Y.",
+      "expected": "TCXN-2Y",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "copy_sel_012",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The sample code is 5VPJ.",
+      "expected": "5VPJ",
+      "note": "1 distractor codes"
+    },
+    {
+      "id": "copy_sel_013",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The berth number is RM-R7.",
+      "expected": "RM-R7",
+      "note": "3 distractor codes"
+    },
+    {
+      "id": "copy_sel_014",
+      "gate": "copy",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The badge id is JQ6Z-CZ-ESXH.",
+      "expected": "JQ6Z-CZ-ESXH",
+      "note": "2 distractor codes"
+    },
+    {
+      "id": "extraction_sel_000",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "Current tax liability: 9,231.80\nDividend per share: 9,107.86\nOther revenue: 4,789.98\nDiluted earnings per share: 8,350.41\nCash used in financing: 9,344.93\nNet debt excluding leases: 7,053.40\nTotal assets: 8,826.25\n\nCurrent tax liability: 9,231.80\nDividend per share: 9,107.86\nOther revenue: 4,789.98\nDiluted earnings per share: 8,35",
+      "expected": "8,656.34",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "extraction_sel_001",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "ambiguous_multiple_values",
+      "answer": "Total cash and cash equivalents: 3,406.98\nTotal assets: 3,406.98\nTotal current assets: 7,087.57\nTotal non-current assets: 4,685.49\n\nTotal cash and cash equivalents: 3,406.98\nTotal assets: 3,406.98\nTotal non-current assets: 4,685.49\n\nTotal cash and cash equivalents: 3,406.98\nTotal assets: 3,406.98\nTotal non-current assets: 4,685.49\n\nTotal cash and cash equivalents: 3",
+      "expected": "7,087.57",
+      "note": "6 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "extraction_sel_002",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "no_number",
+      "answer": "Gross debt is the total amount of debt a company has, including the debt from leases, contracts, and other sources. It is calculated by adding the debt from leases, contracts, and other sources to the gross debt.",
+      "expected": "8,859.46",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "extraction_sel_003",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "ambiguous_multiple_values",
+      "answer": "Other revenue: 6,328.08\nCash generated from operations: 3,237.78\nTotal non-current assets: 4,714.86\nDeferred tax liability: 6,943.13\nDeferred tax asset: 7,378.81\nOther operating costs: 9,084.58\nOperating profit: 7,325.74\nCurrent tax liability: 9,800.50\n\nState other revenue: 6,328.08\nCash generated from operations: 3,237.78\nTotal non-current assets: 4,714.",
+      "expected": "6,328.08",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "extraction_sel_004",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "ambiguous_multiple_values",
+      "answer": "Gross debt: 7,119.64\nBasic earnings per share: 3,804.74\nOther operating costs: 5,415.39\nCash used in financing: 6,736.58\nDiluted earnings per share: 5,067.97\nDividend per share: 4,826.85\nOther revenue: 1,215.67\n\nThe dividend per share is 4,826.85.",
+      "expected": "4,826.85",
+      "note": "7 fields, similar labels, asked field at position 6"
+    },
+    {
+      "id": "extraction_sel_005",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "3,794.15\n\nThe cash generated from operations is $3,794.15.",
+      "expected": "3,267.77",
+      "note": "6 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "extraction_sel_006",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The total current assets are 7,129.56.",
+      "expected": "7,129.56",
+      "note": "5 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "extraction_sel_007",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "ambiguous_multiple_values",
+      "answer": "Total current assets: 385.23\nTotal non-current assets: 6,720.06\nGross debt: 7,993.27\nRevenue: 3,821.54\nOperating profit before exceptionals: 5,898.44\nTotal assets: 521.38\n\nTotal current assets: 385.23\nTotal non-current assets: 6,720.06\nGross debt: 7,993.27\nRevenue: 3,821.54\nOperating profit before exceptionals: 5,898.44\nTotal assets: 52",
+      "expected": "385.23",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "extraction_sel_008",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "Current tax liability: 7,247.54\n\nThe company has a total revenue of $8,676,040.",
+      "expected": "8,676.04",
+      "note": "8 fields, similar labels, asked field at position 6"
+    },
+    {
+      "id": "extraction_sel_009",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "ambiguous_multiple_values",
+      "answer": "Operating profit is the profit generated by the company from its primary activities, including operating, investing, and financing. It is calculated by subtracting operating expenses from net income.\n\nOperating profit = Net income - Operating expenses\nOperating profit = 2,758.27 - 6,885.36 - 6,243.60 - 6,885.30\nOperating profit = 1,449.50\n\nOperating profit is the primary source of income for the company, and it provides a clear picture of its financial performance.",
+      "expected": "2,758.27",
+      "note": "6 fields, similar labels, asked field at position 3"
+    },
+    {
+      "id": "extraction_sel_010",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "Cash generated from operations is $7,833.31.",
+      "expected": "7,053.29",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "extraction_sel_011",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The net debt is 5,594.97.",
+      "expected": "5,594.97",
+      "note": "5 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "extraction_sel_012",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "Revenue is the amount of money earned from selling goods or services. It is the total amount of money earned from the sale of goods or services. In this case, revenue is $5,652.71.",
+      "expected": "5,652.71",
+      "note": "7 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "extraction_sel_013",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "no_number",
+      "answer": "Gross debt is the total amount of debt that a company has, including its current assets and liabilities. It represents the total amount of debt that a company has outstanding against its outstanding assets.",
+      "expected": "5,390.49",
+      "note": "5 fields, similar labels, asked field at position 2"
+    },
+    {
+      "id": "extraction_sel_014",
+      "gate": "extraction",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "The other operating costs are:\n- Employee benefit expense: 8,789.34\n- Cash generated from operations: 8,280.57\n- Total non-current assets: 9,028.72\n- Diluted earnings per share: 2,847.37\n\nThe other operating costs are:\n- Employee benefit expense: 8,789.34\n- Cash generated from operations: 8,280.57\n- Total non-current assets: 9,028.72\n- Diluted earnings per share: 2,847.37\n\nSo, the other operating costs are:\n- Employee benefit",
+      "expected": "4,796.40",
+      "note": "8 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "wording_sel_000",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The value against gross debt is 1,234.47.",
+      "expected": "1,234.47",
+      "note": "7 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "wording_sel_001",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "The value against total assets is 2,482.28.",
+      "expected": "5,749.93",
+      "note": "8 fields, similar labels, asked field at position 3"
+    },
+    {
+      "id": "wording_sel_002",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "ambiguous_multiple_values",
+      "answer": "Looking at the extract, the value against other operating costs is 2,662.70. This value represents the total revenue minus the costs of operating the business. The other operating costs are 5,080.88, 4,371.53, and 9,395.73. These costs are not directly related to the revenue, but they are related to the business's overall profitability.",
+      "expected": "5,080.88",
+      "note": "5 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "wording_sel_003",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "Operating cash flow is recorded as follows:\n\nOperating cash flow = Operating profit before exceptionals + Operating profit\nOperating cash flow = 6,817.06 + 5,913.46\nOperating cash flow = 14,720.62\n\nSo, operating cash flow is $14,720.62.",
+      "expected": "846.74",
+      "note": "7 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "wording_sel_004",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "The statement indicates that the other operating costs are:\n\n- Diluted earnings per share: 3,115.42\n- Employee benefit expense: 4,650.02\n- Employee costs: 4,575.69\n- Diluted earnings per share: 3,115.42\n\nSo, the other operating costs are:\n\n- Diluted earnings per share: 3,115.42\n- Employee benefit expense: 4,650.02\n- Employee costs: 4,575.69\n- Diluted earnings per share: 3,115.42\n\nTherefore, the other operating costs are:",
+      "expected": "1,508.86",
+      "note": "6 fields, similar labels, asked field at position 2"
+    },
+    {
+      "id": "wording_sel_005",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "The statement shows that the dividend per share is 1,074.34, which is the basic earnings per share.",
+      "expected": "948.33",
+      "note": "5 fields, similar labels, asked field at position 2"
+    },
+    {
+      "id": "wording_sel_006",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "To calculate the total operating profit, we need to add the total assets and the total non-current assets. \n\nTotal assets = Total current assets + Total non-current assets\nTotal assets = 6,896.44 + 3,218.40\nTotal assets = 10,109.84\n\nTotal operating profit = Total assets - Total non-current assets\nTotal operating profit = 10,109.84 - 3,218.40\nTotal operating profit = 6,896.44\n\nSo, the total operating profit is 6,896.44.",
+      "expected": "1,506.16",
+      "note": "5 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "wording_sel_007",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The total employee costs are $2,837.00.",
+      "expected": "2,837.00",
+      "note": "5 fields, similar labels, asked field at position 1"
+    },
+    {
+      "id": "wording_sel_008",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The statement shows that the company has used 7,870.31 of the company's cash in financing.",
+      "expected": "7,870.31",
+      "note": "7 fields, similar labels, asked field at position 6"
+    },
+    {
+      "id": "wording_sel_009",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "To find the amount of cash used in financing, we need to calculate the total amount of cash and cash equivalents.\n\nTotal cash and cash equivalents = Cash used in financing + Cash and cash equivalents\n= 9,026.65 + 577.35\n= 10,009.75\n\nSo, the amount of cash used in financing is 10,009.75.",
+      "expected": "8,758.20",
+      "note": "5 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "wording_sel_010",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "The cash used in financing is $6,099.69.",
+      "expected": "8,532.40",
+      "note": "8 fields, similar labels, asked field at position 6"
+    },
+    {
+      "id": "wording_sel_011",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The value against gross debt is 9,813.43.",
+      "expected": "9,813.43",
+      "note": "5 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "wording_sel_012",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "invented_value",
+      "answer": "The statement indicates that the total revenue from contracts is $126,080.",
+      "expected": "126.08",
+      "note": "5 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "wording_sel_013",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "no_number",
+      "answer": "From the provided numbers, we can calculate the deferred tax liability for cash and cash equivalents.\n\nDeferred tax liability = Cash and cash equivalents * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share * Gross profit per share *",
+      "expected": "574.39",
+      "note": "6 fields, similar labels, asked field at position 4"
+    },
+    {
+      "id": "wording_sel_014",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "Looking at the extract, the value against other revenue is 574.23. This is the total amount of revenue earned by the company over the given period.",
+      "expected": "8,133.34",
+      "note": "6 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "wording_sel_015",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_field",
+      "answer": "Looking at the extract, the value against operating profit is 671.92.",
+      "expected": "7,345.27",
+      "note": "5 fields, similar labels, asked field at position 3"
+    },
+    {
+      "id": "wording_sel_016",
+      "gate": "wording",
+      "origin": "generated",
+      "correct": true,
+      "category": "correct",
+      "answer": "The statement indicates that the total operating profit is $3,477.07.",
+      "expected": "3,477.07",
+      "note": "7 fields, similar labels, asked field at position 5"
+    },
+    {
+      "id": "calculation_sel_000",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "To calculate the return on equity as a percentage, we need to divide the net income by the shareholders' equity and then multiply by 100.\n\nReturn on equity = Net income / shareholders' equity\n= 2,551.17 / 637.79\n= 38.6%\n\nSo, the return on equity as a percentage is 38.6%. This means that for every dollar invested in the company, the company generates a return of 38.6% on that investment.",
+      "expected": 400.0,
+      "note": "return on equity as a percentage from two stated figures"
+    },
+    {
+      "id": "calculation_sel_001",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "Gross margin is the percentage of revenue that is left over after subtracting the cost of sales from the revenue. In this case, the gross margin is 1848.43% (1,848.43 - 3,696.87).",
+      "expected": 50.0,
+      "note": "gross margin as a percentage from two stated figures"
+    },
+    {
+      "id": "calculation_sel_002",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "To calculate the return on equity as a percentage, we need to divide the net income by the shareholders' equity and then multiply by 100.\n\nReturn on equity = Net income / shareholders' equity\n= 651.00 / 434.00\n= 1.56%\n\nSo, the return on equity as a percentage is approximately 1.56%. This means that for every dollar invested in the company, the company generates a return of 1.56% on that investment.",
+      "expected": 150.0,
+      "note": "return on equity as a percentage from two stated figures"
+    },
+    {
+      "id": "calculation_sel_003",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "Current ratio: 1.00\n\nThe current ratio is a financial ratio that measures the liquidity of a company's current assets. It indicates how quickly a company can meet its short-term obligations, such as paying bills and making payments on debts. A current ratio of 1.00 means that a company has a very short-term financial position, and its current assets are easily converted into cash.\n\nIn this case, the current ratio of 1.00 suggests that the company has a relatively short-term financial position, and its current assets are relatively short-term. This could be due to various reasons, such as a short-term cash flow, a high level of debt, or a high level of liquidity.",
+      "expected": 1.5,
+      "note": "the current ratio from two stated figures"
+    },
+    {
+      "id": "calculation_sel_004",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "Current ratio: 1.00\n\nThe current ratio is a financial ratio that measures the liquidity of a company's current assets. It indicates how easily a company can meet its short-term obligations, such as paying bills and making payments on debts. A current ratio of 1.00 means that a company has a very short-term financial position, meaning it can only meet its short-term obligations with ease.\n\nIn this case, the current ratio of 1.00 suggests that the company has a relatively short-term financial position, but it is not very liquid, meaning it is not easily liquidated or converted into cash.",
+      "expected": 5.0,
+      "note": "the current ratio from two stated figures"
+    },
+    {
+      "id": "calculation_sel_005",
+      "gate": "calculation",
+      "origin": "generated",
+      "correct": false,
+      "category": "wrong_value",
+      "answer": "To calculate the return on equity as a percentage, we need to divide the net income by the shareholders' equity and then multiply by 100.\n\nReturn on equity = Net income / shareholders' equity\n= 5,381.40 / 3,587.60\n= 1.76%\n\nSo, the return on equity as a percentage is approximately 1.76%. This means that the company's net income is 1.76% higher than its shareholders' equity.",
+      "expected": 150.0,
+      "note": "return on equity as a percentage from two stated figures"
+    },
+    {
+      "id": "abstention_sel_000",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "Net profit margin = (Net profit / Total revenue) x 100\nNet profit margin = (7,477.20 / 1,000,000) x 100\nNet profit margin = 7.47%\n\nThe net profit margin is 7.47%.",
+      "expected": null,
+      "note": "net income withheld"
+    },
+    {
+      "id": "abstention_sel_001",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "Return on Assets (ROA) is the ratio of net income to total assets. It is calculated by dividing net income by total assets.\n\nROA = Net Income / Total Assets\n\nROA = 3,650.49 / 100,000\n\nROA = 0.365\n\nROA is a useful metric to evaluate a company's financial performance, as it shows how effectively the company is using its assets to generate revenue. A higher ROA indicates that the company is using its assets more efficiently, which can be beneficial for investors and financial analysts.",
+      "expected": null,
+      "note": "total assets withheld"
+    },
+    {
+      "id": "abstention_sel_002",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": true,
+      "category": "answered_control",
+      "answer": "Net profit margin = Net income / Revenue\nNet profit margin = 791.88 / 3,959.38\nNet profit margin \u2248 1.69%\n\nThe net profit margin is approximately 1.69%, indicating that the company's net income is relatively high compared to its revenue.",
+      "expected": false,
+      "note": "control: answerable, must not abstain"
+    },
+    {
+      "id": "abstention_sel_003",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "Net profit margin = (Net profit / Total revenue) x 100\nNet profit margin = (5,429.31 / 1,000,000) x 100\nNet profit margin = 5.42%\n\nThe net profit margin is 5.42%.",
+      "expected": null,
+      "note": "net income withheld"
+    },
+    {
+      "id": "abstention_sel_004",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "Asset turnover is the ratio of the total revenue generated by a business to its total assets. It is calculated by dividing the total revenue by the total assets of a business. In this case, the total revenue is $3,834.93 and the total assets are $1,200,000.\n\nAsset turnover is calculated as:\n\nAsset turnover = Total revenue / Total assets\nAsset turnover = $3,834.93 / $1,200,000\nAsset turnover = 0.003834 or 3.83%\n\nSo, asset turnover is approximately 0.003834 or 3.83% of the",
+      "expected": null,
+      "note": "total assets withheld"
+    },
+    {
+      "id": "abstention_sel_005",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "Return on Assets (ROA) is a measure of a company's profitability, calculated by dividing net income by total assets. It is a key metric used to evaluate a company's efficiency in generating profits. A higher ROA indicates that a company is more efficient in its use of its assets, which can lead to higher profitability.",
+      "expected": null,
+      "note": "total assets withheld"
+    },
+    {
+      "id": "abstention_sel_006",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "The payout ratio is the ratio of the total amount paid to the total amount received. In this case, the payout ratio is 6,013.33 / 6,013.33 = 0.9999.",
+      "expected": null,
+      "note": "net income withheld"
+    },
+    {
+      "id": "abstention_sel_007",
+      "gate": "abstention",
+      "origin": "generated",
+      "correct": false,
+      "category": "hallucinated_instead_of_abstaining",
+      "answer": "Net profit margin = (Net profit / Total revenue) x 100\nNet profit margin = (7,456.77 / 1,000,000) x 100\nNet profit margin = 7.45%\n\nThe net profit margin is 7.45%.",
+      "expected": null,
+      "note": "net income withheld"
+    }
+  ]
+}

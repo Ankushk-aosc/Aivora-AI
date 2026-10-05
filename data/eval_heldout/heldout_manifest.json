@@ -16,13 +16,18 @@
       "wording": 22,
       "calculation": 27,
       "abstention": 28
-    }
+    },
+    "content_sha256": "0e50dbfd51c43c40f33f5137c15a95378caac64288344788bff991375baac7a6",
+    "content_sha256_source": "computed from the freeze commit 2c8673b and verified equal to the working tree; line-ending independent",
+    "sha256_note": "byte hash - PLATFORM DEPENDENT (CRLF vs LF). The Phase 3 Kaggle run reported f55cdda1 for this same set because Linux checks it out with LF. Verify with content_sha256 instead."
   },
   "selection": {
     "path": "data\\eval_heldout\\selection.jsonl",
     "items": 61,
     "sha256": "2fc076fb010ea747109d64f57153731173e410b52b87a255b61aa641daeae077",
-    "purpose": "checkpoint choice only; never used for reporting"
+    "purpose": "checkpoint choice only; never used for reporting",
+    "content_sha256": "09a363bfb8619ec3855a35d2a484b324dfef280974056100236a05462094f5b0",
+    "content_sha256_source": "computed from the freeze commit 2c8673b and verified equal to the working tree; line-ending independent"
   },
   "seed": 424242,
   "overlap_removed": {
