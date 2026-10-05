@@ -1,0 +1,15 @@
+{
+  "id": "aoscjkjhh/aivora-phase4-tool-pipeline",
+  "title": "Aivora Phase4 Tool Pipeline",
+  "code_file": "Aivora_Phase4_ToolPipeline.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}
