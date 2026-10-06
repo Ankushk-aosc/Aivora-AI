@@ -149,6 +149,33 @@ else:
     print(f"  {time.time() - started:.0f}s")
 ''')
 
+md("""## Task 5b — captions the vocabulary does NOT have
+
+44 items whose every operand caption is verified absent from `SYNONYMS`. When
+resolution fails the pipeline asks the model for the canonical operand name
+against an unfamiliar caption, so this measures whether the **model** bridges
+the gap the vocabulary does not cover. The outcome to watch is wrong values
+rather than refusals: a span can be valid while the line it cites is the wrong
+one.""")
+
+code('''started = time.time()
+proc = subprocess.run(["python", "scripts/run_tool_pipeline_eval.py",
+                       "--model", MODEL,
+                       "--items-file", "data/eval_fresh/calculation_uncovered.jsonl",
+                       "--tag", "uncovered", "--force"],
+                      capture_output=True, text=True)
+print(proc.stdout[-3000:])
+if proc.returncode != 0:
+    print("FAILED:", proc.stderr[-2000:])
+    task5b = None
+else:
+    import glob
+    hits = glob.glob("reports/heldout/*uncovered*.json")
+    with open(sorted(hits)[-1]) as handle:
+        task5b = json.load(handle)
+    print(f"  {time.time() - started:.0f}s")
+''')
+
 md("""## Results""")
 
 code('''out = {"repo_commit": head, "branch": BRANCH, "model": MODEL}
@@ -206,6 +233,40 @@ if task5:
 else:
     print("FAILED")
 
+print()
+print("=" * 72)
+print("TASK 5b - the pipeline on UNCOVERED captions")
+print("=" * 72)
+if task5b:
+    s = task5b["summary"]
+    out["task5b_uncovered_captions"] = s
+    o = s["overall"]
+    cats = s["by_gate"].get("calculation", {}).get("categories", {})
+    wrong = cats.get("wrong_value", 0)
+    refused = cats.get("incorrect_abstention", 0)
+    print(f"accuracy   {o['k']}/{o['n']} = {o['accuracy_pct']:.1f}%")
+    print(f"abstained  {s['abstained_pct']}%")
+    print(f"span rule  {s['span_audit']['span_validated_pct']}% of "
+          f"{s['span_audit']['answers_checked']}, "
+          f"{s['span_audit']['violation_count']} violations")
+    print(f"failure split: refused {refused}, WRONG VALUES {wrong}")
+    print()
+    print("  covered captions  (first fresh split): 44/44 = 100.0%")
+    print(f"  uncovered captions (this split)      : {o['k']}/{o['n']} = "
+          f"{o['accuracy_pct']:.1f}%")
+    if wrong > 0:
+        print(f"\\n  WATCH: {wrong} wrong values returned rather than refusals. "
+              f"A valid span does not mean the right line.")
+    elif o["accuracy_pct"] > 80:
+        print("\\n  READING: the model bridges the gap unaided. The caption "
+              "table is doing less work than its size suggests.")
+    else:
+        print("\\n  READING: the vocabulary is load-bearing, and uncovered "
+              "captions degrade to refusal rather than error - the safe "
+              "failure.")
+else:
+    print("FAILED")
+
 with open("/kaggle/working/audit_gpu_results.json", "w") as handle:
     json.dump(out, handle, indent=2)
 print("\\nwrote /kaggle/working/audit_gpu_results.json")
@@ -218,7 +279,8 @@ directory.""")
 
 code('''import shutil, glob
 for src in glob.glob("reports/heldout/*frozen*.json") + \\
-           glob.glob("reports/heldout/*fresh*.json"):
+           glob.glob("reports/heldout/*fresh*.json") + \
+           glob.glob("reports/heldout/*uncovered*.json"):
     if "Qwen" in src:
         dst = "/kaggle/working/" + os.path.basename(src)
         shutil.copy(src, dst)
