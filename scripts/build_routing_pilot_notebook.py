@@ -111,24 +111,60 @@ print("  bias bounded              :", "clamp_" in source)
 
 md("""## Training data
 
-The repository carries the tokenised shards it has; the full 120.9M-token
-corpus is not in version control. Expert balance is a property of routing rather
-than of corpus size, so the pilot cycles the available shards. The limitation is
-recorded in the result rather than worked around.""")
+`data/shards/*/` is gitignored, so the clone carries no tokenised corpus - the
+first attempt at this pilot stopped here, correctly. The corpus is therefore
+built on the machine from a public dataset. Expert collapse is a property of the
+routing mechanism rather than of any particular domain, so a general corpus
+tests it just as well; what matters is that both arms see exactly the same
+tokens in the same order.""")
 
-code('''import glob
-import numpy as np
+code('''import numpy as np, glob, os
 
+TARGET_TOKENS = int(os.environ.get("PILOT_TOKENS", "18000000"))
+corpus = None
+
+# 1. Shards, if a future clone ever carries them.
 shards = sorted(glob.glob("data/shards/*/train/*.bin"))
-tokens = []
-for path in shards:
-    tokens.append(np.fromfile(path, dtype=np.uint16))
-corpus = np.concatenate(tokens) if tokens else None
-if corpus is None or len(corpus) < 100000:
-    raise RuntimeError("STATUS = BLOCKED: no training shards in the clone")
-print(f"{len(shards)} shards, {len(corpus):,} tokens")
-print("NOTE: the model was trained on 120,857,129 unique tokens; this is "
-      f"{100 * len(corpus) / 120857129:.1f}% of that.")
+if shards:
+    corpus = np.concatenate([np.fromfile(p, dtype=np.uint16) for p in shards])
+    source = f"repository shards ({len(shards)} files)"
+
+# 2. Otherwise build one with the project's own tokeniser.
+if corpus is None or len(corpus) < TARGET_TOKENS // 4:
+    import tiktoken
+    enc = tiktoken.get_encoding("gpt2")
+    from datasets import load_dataset
+
+    pieces, total = [], 0
+    for name, kwargs in (
+            ("HuggingFaceFW/fineweb-edu", {"name": "sample-10BT", "split": "train"}),
+            ("wikitext", {"name": "wikitext-103-raw-v1", "split": "train"})):
+        try:
+            print(f"streaming {name} ...", flush=True)
+            ds = load_dataset(name, streaming=True, **kwargs)
+            for row in ds:
+                text = row.get("text") or ""
+                if not text.strip():
+                    continue
+                ids = enc.encode_ordinary(text)
+                ids.append(enc.eot_token)
+                pieces.append(np.array(ids, dtype=np.uint16))
+                total += len(ids)
+                if total >= TARGET_TOKENS:
+                    break
+            if total >= TARGET_TOKENS // 2:
+                source = name
+                break
+        except Exception as error:
+            print(f"  {name} unavailable: {type(error).__name__}: {error}")
+            pieces, total = [], 0
+    if total == 0:
+        raise RuntimeError("STATUS = BLOCKED: no corpus could be obtained")
+    corpus = np.concatenate(pieces)
+
+print(f"corpus: {len(corpus):,} tokens from {source}")
+print("NOTE: the model was originally trained on 120,857,129 unique tokens. "
+      "This pilot tests routing balance, not model quality.")
 ''')
 
 md("""## The A/B
@@ -141,8 +177,8 @@ from models.config import DeepSeekConfig
 from models.moe import MoELayer
 from models.model import DeepSeekV3
 
-STEPS = int(os.environ.get("PILOT_STEPS", "6000"))
-BATCH = 8
+STEPS = int(os.environ.get("PILOT_STEPS", "4000"))
+BATCH = 4
 SEED = 1234
 device = "cuda"
 
