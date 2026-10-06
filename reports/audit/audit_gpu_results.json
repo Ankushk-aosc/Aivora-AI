@@ -1,0 +1,199 @@
+{
+  "repo_commit": "494c638",
+  "branch": "audit/nivora-v1.1",
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "task4_baseline_no_pipeline": {
+    "label": "Qwen/Qwen2.5-1.5B-Instruct (0-shot)",
+    "split": "frozen",
+    "items": 313,
+    "overall": {
+      "k": 249,
+      "n": 297,
+      "accuracy_pct": 83.84,
+      "ci95": [
+        79.22,
+        87.59
+      ],
+      "note": "answerable abstention controls excluded; they are reported as over_refusal"
+    },
+    "by_gate": {
+      "abstention": {
+        "k": 23,
+        "n": 36,
+        "accuracy_pct": 63.89,
+        "ci95": [
+          47.57,
+          77.52
+        ],
+        "note": "refusals on items that MUST be refused; the answerable controls are reported as over_refusal, never mixed in",
+        "categories": {
+          "hallucinated_instead_of_abstaining": 13
+        }
+      },
+      "calculation": {
+        "k": 25,
+        "n": 48,
+        "accuracy_pct": 52.08,
+        "ci95": [
+          38.33,
+          65.53
+        ],
+        "categories": {
+          "wrong_value": 23
+        }
+      },
+      "copy": {
+        "k": 67,
+        "n": 69,
+        "accuracy_pct": 97.1,
+        "ci95": [
+          90.03,
+          99.2
+        ],
+        "categories": {
+          "invented_value": 1,
+          "wrong_text": 1
+        }
+      },
+      "extraction": {
+        "k": 68,
+        "n": 69,
+        "accuracy_pct": 98.55,
+        "ci95": [
+          92.24,
+          99.74
+        ],
+        "categories": {
+          "no_number": 1
+        }
+      },
+      "wording": {
+        "k": 66,
+        "n": 75,
+        "accuracy_pct": 88.0,
+        "ci95": [
+          78.74,
+          93.56
+        ],
+        "categories": {
+          "wrong_field": 5,
+          "no_number": 3,
+          "invented_value": 1
+        }
+      }
+    },
+    "over_refusal": {
+      "k": 0,
+      "n": 16,
+      "pct": 0.0
+    },
+    "hallucination_invented_values": {
+      "k": 2,
+      "n": 261,
+      "pct": 0.77
+    },
+    "handwritten_only": {
+      "abstention": {
+        "k": 22,
+        "n": 28,
+        "accuracy_pct": 78.57
+      },
+      "calculation": {
+        "k": 20,
+        "n": 27,
+        "accuracy_pct": 74.07
+      },
+      "copy": {
+        "k": 22,
+        "n": 24,
+        "accuracy_pct": 91.67
+      },
+      "extraction": {
+        "k": 23,
+        "n": 24,
+        "accuracy_pct": 95.83
+      },
+      "wording": {
+        "k": 19,
+        "n": 22,
+        "accuracy_pct": 86.36
+      }
+    },
+    "eval_set_integrity": {
+      "split": "frozen",
+      "content_sha256": "0e50dbfd51c43c40f33f5137c15a95378caac64288344788bff991375baac7a6",
+      "status": "VERIFIED"
+    },
+    "seconds": 94.3,
+    "seconds_per_item": 0.3,
+    "licence": "Apache-2.0",
+    "shots": 0
+  },
+  "task5_fresh_split": {
+    "label": "tool pipeline + Qwen/Qwen2.5-1.5B-Instruct (0-shot) [fresh]",
+    "split": "selection",
+    "items": 44,
+    "overall": {
+      "k": 44,
+      "n": 44,
+      "accuracy_pct": 100.0,
+      "ci95": [
+        91.97,
+        100.0
+      ],
+      "note": "answerable abstention controls excluded; they are reported as over_refusal"
+    },
+    "by_gate": {
+      "calculation": {
+        "k": 44,
+        "n": 44,
+        "accuracy_pct": 100.0,
+        "ci95": [
+          91.97,
+          100.0
+        ],
+        "categories": {}
+      }
+    },
+    "over_refusal": {
+      "k": 0,
+      "n": 0,
+      "pct": 0.0
+    },
+    "hallucination_invented_values": {
+      "k": 0,
+      "n": 44,
+      "pct": 0.0
+    },
+    "handwritten_only": {},
+    "eval_set_integrity": {
+      "split": "data/eval_fresh/calculation_fresh.jsonl",
+      "content_sha256": null,
+      "status": "not a manifested split",
+      "verified_by": "/kaggle/working/Aivora-AI/scripts/run_tool_pipeline_eval.py"
+    },
+    "seconds": 173.5,
+    "seconds_per_item": 3.94,
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "shots": 0,
+    "llm_calls": 88,
+    "llm_calls_per_item": 2.0,
+    "span_audit": {
+      "answers_checked": 44,
+      "violations": [],
+      "violation_count": 0,
+      "span_validated_pct": 100.0,
+      "rule": "100% required; any violation blocks ship"
+    },
+    "components": {
+      "calculation": 44
+    },
+    "abstained_pct": 0.0,
+    "arithmetic_done_by": "python (pipeline/tool_pipeline.py OPERATIONS)",
+    "configuration_tag": "fresh",
+    "operands_resolved_by_synonym": {
+      "answers": 34,
+      "note": "calculations where at least one operand was found under a caption other than the formula's own name"
+    }
+  }
+}
