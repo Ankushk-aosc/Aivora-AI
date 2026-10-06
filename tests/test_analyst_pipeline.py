@@ -82,17 +82,51 @@ def unparseable_llm(_prompt):
     return "Revenue = $5,200,000 - the EBIT entry."
 
 
-def test_disabled_by_default():
+def test_enabled_by_default():
+    """The guarded path is the default. A default install must not answer
+    financial questions through the unguarded one."""
     analyst_pipeline.reset()
     os.environ.pop("AIVORA_ANALYST_PIPELINE", None)
     state = analyst_pipeline.readiness()
-    check("the switch is off unless set", state["enabled"] is False)
-    check("it does not serve when off", state["serving"] is False)
-    check("it says how to turn it on", "AIVORA_ANALYST_PIPELINE=1" in state["reason"])
-    check("the Analyst keeps its existing engine",
-          state["engine"] == "existing analyst")
-    check("answer() yields to the existing engine",
-          analyst_pipeline.answer("What is revenue?", CONTEXT) is None)
+    check("the pipeline is on unless switched off", state["enabled"] is True)
+
+
+def test_refuses_rather_than_falling_back():
+    """Enabled but unable to serve must REFUSE, never hand the question to the
+    unguarded engine. Silent fallback would mean a user receives a figure with
+    none of the product's guarantees and is not told."""
+    analyst_pipeline.reset()
+    os.environ.pop("AIVORA_ANALYST_PIPELINE", None)      # default: on
+    original = analyst_pipeline.free_memory_gb
+    try:
+        analyst_pipeline.free_memory_gb = lambda: 0.5    # cannot host the model
+        result = analyst_pipeline.answer("What is revenue?", CONTEXT)
+        check("it does not yield to the legacy engine", result is not None)
+        check("it refuses", result["abstained"] is True)
+        check("the refusal is marked unavailable", result.get("unavailable") is True)
+        check("no value is returned", result["value"] is None)
+        check("no arithmetic is claimed", result["arithmetic"] == "not performed")
+        check("it explains why", bool(result["reason"]))
+        check("it states the remedy", "AIVORA_ANALYST_PIPELINE=0" in result["remedy"])
+    finally:
+        analyst_pipeline.free_memory_gb = original
+        analyst_pipeline.reset()
+
+
+def test_explicit_opt_out_yields_to_the_legacy_engine():
+    """Opting out is still allowed - but it must be explicit."""
+    analyst_pipeline.reset()
+    os.environ["AIVORA_ANALYST_PIPELINE"] = "0"
+    try:
+        state = analyst_pipeline.readiness()
+        check("opting out switches it off", state["enabled"] is False)
+        check("the Analyst keeps its existing engine",
+              state["engine"] == "existing analyst")
+        check("answer() yields to the existing engine",
+              analyst_pipeline.answer("What is revenue?", CONTEXT) is None)
+    finally:
+        os.environ.pop("AIVORA_ANALYST_PIPELINE", None)
+        analyst_pipeline.reset()
 
 
 def test_refuses_when_the_model_cannot_be_hosted():
@@ -109,7 +143,9 @@ def test_refuses_when_the_model_cannot_be_hosted():
               "7.0 GB" in state["reason"] and "1.2 GB" in state["reason"],
               state["reason"])
         check("it explains why refusing beats degrading",
-              "abstains on every question" in state["reason"])
+              "refuses rather than answering" in state["reason"], state["reason"])
+        check("the status does not claim the legacy engine is serving",
+              state["engine"] == "none - refusing", state["engine"])
         check("it reports what it needs",
               state["needed_memory_gb"] == 7.0 and state["free_memory_gb"] == 1.2)
 
@@ -189,7 +225,9 @@ def test_an_abstention_is_an_answer_not_a_fallthrough():
 
 
 def main():
-    test_disabled_by_default()
+    test_enabled_by_default()
+    test_refuses_rather_than_falling_back()
+    test_explicit_opt_out_yields_to_the_legacy_engine()
     test_refuses_when_the_model_cannot_be_hosted()
     test_extraction_carries_a_validated_span()
     test_arithmetic_is_pythons()

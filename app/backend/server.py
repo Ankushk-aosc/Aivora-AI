@@ -840,7 +840,15 @@ def h_copilot_chat(payload, _query):
             "arithmetic": pipeline_answer["arithmetic"],
             "guarantee": pipeline_answer["guarantee"],
             "reason": pipeline_answer["reason"],
-            "badges": (["ABSTAINED - NOT IN SOURCE"] if pipeline_answer["abstained"]
+            # Present only when the pipeline could not serve at all. Dropping
+            # them left the caller with a refusal and no way to act on it.
+            "unavailable": pipeline_answer.get("unavailable", False),
+            "remedy": pipeline_answer.get("remedy"),
+            # "NOT IN SOURCE" would be false when the refusal is an unavailable
+            # pipeline: nothing was looked for, so nothing was found missing.
+            "badges": (["EVIDENCE PIPELINE UNAVAILABLE"]
+                       if pipeline_answer.get("unavailable")
+                       else ["ABSTAINED - NOT IN SOURCE"] if pipeline_answer["abstained"]
                        else ["SOURCE SPAN VALIDATED"]),
             "sources": [workspace.manifest().get("company", "")],
             "latency_ms": int((time.time() - t0) * 1000),
