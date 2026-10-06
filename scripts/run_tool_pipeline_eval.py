@@ -116,6 +116,11 @@ def audit_spans(answers, items):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
+    parser.add_argument("--items-file", default=None,
+                        help="score an arbitrary JSONL item file instead of a "
+                             "named split - used for the fresh calculation "
+                             "split, which is not a frozen-set split and has no "
+                             "manifest entry")
     parser.add_argument("--split", default="selection",
                         choices=("frozen", "selection"))
     parser.add_argument("--limit", type=int, default=None)
@@ -131,16 +136,28 @@ def main():
     from scripts.eval_heldout import (FROZEN, SELECTION, evaluate, print_summary,
                                       verify_split)
 
-    source = FROZEN if args.split == "frozen" else SELECTION
-    # evaluate() verifies the split itself, but only when it loads the items.
-    # This script hands it a list (so --limit works), which would skip the
-    # check - so it is done here, explicitly, before anything is scored.
-    digest, status = verify_split(source, args.split)
-    print(f"{args.split} set: {status}, content_sha256 {digest[:16]}...")
-    with open(source, encoding="utf-8") as handle:
-        items = [json.loads(line) for line in handle if line.strip()]
-    if args.limit:
-        items = items[:args.limit]
+    if args.items_file:
+        # A split outside the frozen set: there is no manifest hash to verify
+        # against, and that is stated rather than silently skipped.
+        with open(args.items_file, encoding="utf-8") as handle:
+            items = [json.loads(line) for line in handle if line.strip()]
+        if args.limit:
+            items = items[:args.limit]
+        print(f"items: {len(items)} from {args.items_file}")
+        print("integrity: NOT VERIFIED - this file is not a manifested split")
+        digest, status = None, "not a manifested split"
+        source = args.items_file
+    else:
+        source = FROZEN if args.split == "frozen" else SELECTION
+        # evaluate() verifies the split itself, but only when it loads the
+        # items. This script hands it a list (so --limit works), which would
+        # skip the check - so it is done here, explicitly, before scoring.
+        digest, status = verify_split(source, args.split)
+        print(f"{args.split} set: {status}, content_sha256 {digest[:16]}...")
+        with open(source, encoding="utf-8") as handle:
+            items = [json.loads(line) for line in handle if line.strip()]
+        if args.limit:
+            items = items[:args.limit]
 
     if args.stub:
         # Proves the wiring end to end without a 3 GB download: a model that
@@ -201,8 +218,9 @@ def main():
     summary["span_audit"] = audit_spans(produced, items)
     # evaluate() records this only when it loads the items itself; this script
     # hands it a list, so the digest verified above is recorded here.
-    summary["eval_set_integrity"] = {"split": args.split, "content_sha256": digest,
-                                     "status": status, "verified_by": __file__}
+    summary["eval_set_integrity"] = {
+        "split": args.items_file or args.split,
+        "content_sha256": digest, "status": status, "verified_by": __file__}
     summary["components"] = dict(
         Counter(a.component for a in produced).most_common())
     summary["abstained_pct"] = round(

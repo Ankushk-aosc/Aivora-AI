@@ -174,8 +174,11 @@ def build():
             "origin": "generated_fresh",
             "question": question,
             "context": context,
-            "expected": render(expected_value, unit),
-            "expected_numeric": round(expected_value, 6),
+            # The frozen set stores a calculation's expected answer as a
+            # number, and the shared scorer compares numerically. A formatted
+            # string here would be scored against float() and raise.
+            "expected": round(expected_value, 2),
+            "expected_display": render(expected_value, unit),
             "operand_captions": [c for c, _ in operands],
             "unit": unit,
             "note": "expected computed independently of pipeline.tool_pipeline",
