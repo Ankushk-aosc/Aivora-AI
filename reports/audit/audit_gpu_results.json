@@ -1,5 +1,5 @@
 {
-  "repo_commit": "494c638",
+  "repo_commit": "dac6693",
   "branch": "audit/nivora-v1.1",
   "model": "Qwen/Qwen2.5-1.5B-Instruct",
   "task4_baseline_no_pipeline": {
@@ -124,8 +124,8 @@
       "content_sha256": "0e50dbfd51c43c40f33f5137c15a95378caac64288344788bff991375baac7a6",
       "status": "VERIFIED"
     },
-    "seconds": 94.3,
-    "seconds_per_item": 0.3,
+    "seconds": 103.9,
+    "seconds_per_item": 0.33,
     "licence": "Apache-2.0",
     "shots": 0
   },
@@ -172,8 +172,8 @@
       "status": "not a manifested split",
       "verified_by": "/kaggle/working/Aivora-AI/scripts/run_tool_pipeline_eval.py"
     },
-    "seconds": 173.5,
-    "seconds_per_item": 3.94,
+    "seconds": 193.1,
+    "seconds_per_item": 4.39,
     "model": "Qwen/Qwen2.5-1.5B-Instruct",
     "shots": 0,
     "llm_calls": 88,
@@ -193,6 +193,75 @@
     "configuration_tag": "fresh",
     "operands_resolved_by_synonym": {
       "answers": 34,
+      "note": "calculations where at least one operand was found under a caption other than the formula's own name"
+    }
+  },
+  "task5b_uncovered_captions": {
+    "label": "tool pipeline + Qwen/Qwen2.5-1.5B-Instruct (0-shot) [uncovered]",
+    "split": "selection",
+    "items": 44,
+    "overall": {
+      "k": 5,
+      "n": 44,
+      "accuracy_pct": 11.36,
+      "ci95": [
+        4.95,
+        23.98
+      ],
+      "note": "answerable abstention controls excluded; they are reported as over_refusal"
+    },
+    "by_gate": {
+      "calculation": {
+        "k": 5,
+        "n": 44,
+        "accuracy_pct": 11.36,
+        "ci95": [
+          4.95,
+          23.98
+        ],
+        "categories": {
+          "incorrect_abstention": 39
+        }
+      }
+    },
+    "over_refusal": {
+      "k": 0,
+      "n": 0,
+      "pct": 0.0
+    },
+    "hallucination_invented_values": {
+      "k": 0,
+      "n": 44,
+      "pct": 0.0
+    },
+    "handwritten_only": {},
+    "eval_set_integrity": {
+      "split": "data/eval_fresh/calculation_uncovered.jsonl",
+      "content_sha256": null,
+      "status": "not a manifested split",
+      "verified_by": "/kaggle/working/Aivora-AI/scripts/run_tool_pipeline_eval.py"
+    },
+    "seconds": 117.3,
+    "seconds_per_item": 2.67,
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "shots": 0,
+    "llm_calls": 58,
+    "llm_calls_per_item": 1.32,
+    "span_audit": {
+      "answers_checked": 5,
+      "violations": [],
+      "violation_count": 0,
+      "span_validated_pct": 100.0,
+      "rule": "100% required; any violation blocks ship"
+    },
+    "components": {
+      "calculation": 44
+    },
+    "abstained_pct": 88.64,
+    "arithmetic_done_by": "python (pipeline/tool_pipeline.py OPERATIONS)",
+    "configuration_tag": "uncovered",
+    "operands_resolved_by_synonym": {
+      "answers": 0,
       "note": "calculations where at least one operand was found under a caption other than the formula's own name"
     }
   }

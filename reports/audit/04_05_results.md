@@ -80,3 +80,66 @@ generalise to captions nobody wrote into it?"
 The two entries marked `TAILORED` in the source remain tailored. A split built
 deliberately from captions *outside* the table would answer the remaining
 question, and would be expected to score lower.
+
+---
+
+## Task 5b — captions the vocabulary does NOT have
+
+44 items, 34 distinct captions, every one verified absent from `SYNONYMS`.
+
+| | Result |
+|---|---|
+| accuracy | **5/44 = 11.4%** CI [5.0, 24.0] |
+| abstained | 88.6% |
+| **wrong values** | **0** |
+| invented values | **0/44** |
+| span violations | **0** (100% of the 5 answered) |
+
+### The same capability, measured three ways
+
+| Measurement | Score |
+|---|---|
+| Frozen set — captions written *after* seeing its failures | 48/48 = **100.0%** |
+| Fresh contexts, captions the vocabulary **has** | 44/44 = **100.0%** |
+| Fresh contexts, captions the vocabulary **lacks** | 5/44 = **11.4%** |
+
+### What this settles
+
+**The calculation capability is the caption table, not the model.** When the
+table knows the wording, the pipeline is perfect. When it does not, the model
+bridges the gap 5 times in 44 — it does not generalise. The 147 captions are
+carrying essentially the whole result.
+
+This reframes the earlier synonym fix. Operand resolution took calculation from
+83.3% to 100% on the frozen set, and that was read as a capability improvement.
+It was coverage. The same change on wording outside the table buys nothing.
+
+It also settles the leakage question properly. The first fresh split showed the
+vocabulary did not overfit to the eight items it was written from. This one
+shows why that was never the real risk: the risk is that **every** reported
+calculation figure is conditional on the filing using wording someone already
+entered, and no reported figure has ever tested otherwise.
+
+### What is genuinely reassuring
+
+**Zero wrong values. Zero invented values. Zero span violations.** 39 of 39
+failures are refusals. This is the safe failure mode, and it is the one the
+architecture was built for: faced with wording it does not know, the system
+declines rather than picking a plausible-looking wrong line. Task 3 found two
+wrong-line cases on the frozen set, so this was a real possibility, not a
+foregone conclusion.
+
+### What it means for a real filing
+
+A real 10-K or ASX report will use wording outside the table. On this evidence
+the system will **refuse** those calculations rather than answer them wrongly —
+safe, and much less useful than 100% suggests. The honest statement of the
+capability is:
+
+> Calculation is 100% accurate on statement wordings the operand vocabulary
+> covers, and refuses most of what it does not cover. Coverage, not arithmetic,
+> is the limit.
+
+**Recommendation.** Stop reporting calculation as a single number. Report it as
+coverage × accuracy-within-coverage, and measure coverage against real filings —
+which is Task 6, still blocked on a filing.
