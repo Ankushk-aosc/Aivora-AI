@@ -102,11 +102,31 @@ and for cash generated from operations (`Other revenue`); an ordinal miscount on
 "the fourth item"; and an inventory figure returned for an inventory-turnover
 question that should have been refused.
 
-## 5. Baseline without the pipeline (Task 4)
+## 5. Baseline without the pipeline (Task 4) — MEASURED
 
-**NOT MEASURED.** Requires the same 1.5B model on the same 297 items, and this
-machine cannot host it. Everything needed to run it is committed; it takes one
-GPU session.
+| Gate | Model alone | + pipeline | Delta |
+|---|---|---|---|
+| copy | 97.1% | 98.6% | +1.5 |
+| **extraction** | **98.5%** | **87.0%** | **−11.6 (−8 items)** |
+| **wording** | **88.0%** | **85.3%** | **−2.7 (−2 items)** |
+| calculation | 52.1% | 100.0% | **+47.9 (+23)** |
+| abstention | 63.9% | 97.2% | **+33.3 (+12)** |
+| **OVERALL** | **249/297 = 83.84%** | **275/297 = 92.59%** | **+8.75** |
+| invented values | 0.77% (2/261) | 0.00% | −0.77 |
+
+**The pipeline makes extraction worse.** The same model unaided scores 98.5%
+where the pipeline scores 87.0%. The documentation presents 87.0% as the
+pipeline's extraction capability and never states the comparison.
+
+The whole +8.75 comes from calculation (+23 items) and abstention (+12), partly
+spent paying for the losses. **The pipeline is a trade, not a general
+improvement**: it buys arithmetic (the plain model gets half of all calculation
+wrong) and refusal (it answers 13 of 36 questions it should decline), at the
+cost of refusing eight extraction items the model would have got right.
+
+Recommended, not implemented: route extraction-only questions around the
+pipeline, keep it for calculation and refusal — roughly 283/297 on these
+numbers, guarantees intact.
 
 ## 6. Leakage verdict (Task 5)
 
@@ -123,10 +143,18 @@ GPU session.
 Two captions remain marked `TAILORED` in the source because they came from
 frozen items. **The 100% calculation figure is not a clean held-out result.**
 
-A fresh split of **44 calculation items** is built in `data/eval_fresh/` —
-expected answers computed in the builder, not by the pipeline; 15 distinct
-questions, 30 distinct captions written from statement terminology. **Scoring it
-is NOT MEASURED**, for the same hardware reason as Task 4.
+A fresh split of **44 calculation items** was built and **scored: 44/44 =
+100.0%**, CI [92.0, 100.0], span rule 100% of 44 with zero violations.
+
+**The leakage did not inflate the result.** The capability reproduces exactly on
+items the pipeline has never seen, with expected answers computed independently
+of it.
+
+The caveat: the fresh split tests new instances of captions the vocabulary
+*already covers* (44 of 44). It closes "did the vocabulary overfit to those eight
+frozen items" — it did not. It does **not** close "does the vocabulary generalise
+to captions nobody wrote into it". A split built from captions outside the table
+would answer that, and would be expected to score lower.
 
 ## 7. Real filing (Task 6)
 
@@ -168,6 +196,8 @@ forbids.
 | `35425da` | `pipeline/tool_pipeline.py`, `scripts/build_fresh_calculation_split.py`, `data/eval_fresh/*`, `reports/audit/03_misses.csv`, `ASSUMPTIONS.md` |
 | `e91fb3e` | `data/real_filings/README.md`, `reports/audit/07_counts.md`, `07_dependencies.md` |
 | `696043d` | `app/backend/server.py`, `app/backend/services/analyst_pipeline.py`, `tests/test_analyst_pipeline.py`, `reports/audit/tests_after.txt` |
+| `be68eeb` | `scripts/run_tool_pipeline_eval.py` (`--items-file`), `scripts/build_fresh_calculation_split.py`, `data/eval_fresh/*` |
+| `762e21a` | `reports/audit/04_05_results.md`, `audit_gpu_results.json` |
 
 ### Two defects fixed in the code
 
@@ -185,14 +215,14 @@ forbids.
 
 | Item | Why |
 |---|---|
-| End-to-end regeneration of 275/297 | ~7 GB model, ~1 GB free |
-| Task 4 baseline without the pipeline | same |
-| Fresh-split score (Task 5) | same |
+| End-to-end regeneration of 275/297 | ~7 GB model, ~1 GB free locally. Task 4 did re-run the model on these items unaided, so the hardware path is proven; the pipeline configuration was not re-generated. |
 | Task 6 real filing | no filing supplied |
-| Whether the fix prevents full MoE collapse | 4,000-step pilot vs 247,850; onset reproduced, endpoint extrapolated |
+| Whether the vocabulary generalises to captions outside the table | the fresh split happened to use only covered captions |
+| Whether the routing fix prevents full MoE collapse | 4,000-step pilot against 247,850; onset reproduced, endpoint extrapolated |
 
-Three of these five clear with one GPU session. The fourth needs one file from
-you. The fifth needs a longer run.
+Tasks 4 and 5 are now measured. The remaining four need, in order: one file from
+you, a second fresh split built from uncovered captions, and a longer training
+run.
 
 ---
 
