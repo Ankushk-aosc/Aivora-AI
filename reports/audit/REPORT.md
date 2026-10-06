@@ -143,8 +143,29 @@ numbers, guarantees intact.
 Two captions remain marked `TAILORED` in the source because they came from
 frozen items. **The 100% calculation figure is not a clean held-out result.**
 
-A fresh split of **44 calculation items** was built and **scored: 44/44 =
-100.0%**, CI [92.0, 100.0], span rule 100% of 44 with zero violations.
+**The calculation capability is the caption table, not the model.** The same
+capability, measured three ways:
+
+| Measurement | Score |
+|---|---|
+| Frozen set — captions written *after* seeing its failures | 48/48 = **100.0%** |
+| Fresh contexts, captions the vocabulary **has** | 44/44 = **100.0%** |
+| Fresh contexts, captions the vocabulary **lacks** | **5/44 = 11.4%** |
+
+When the table knows the wording the pipeline is perfect; when it does not, the
+model bridges the gap 5 times in 44. The 147 captions carry essentially the
+whole result, and the earlier 83.3% → 100% "capability improvement" was coverage.
+
+**The failure is the safe one.** Zero wrong values, zero invented values, zero
+span violations — 39 of 39 failures are refusals. Faced with unknown wording the
+system declines rather than picking a plausible-looking wrong line. Task 3 found
+two wrong-line cases on the frozen set, so this was a real possibility.
+
+A real filing will use wording outside the table, so it will meet refusals, not
+errors. The honest statement is: **calculation is 100% on wordings the
+vocabulary covers and refuses most of what it does not. Coverage, not
+arithmetic, is the limit.** Calculation should be reported as coverage ×
+accuracy-within-coverage, with coverage measured against real filings.
 
 **The leakage did not inflate the result.** The capability reproduces exactly on
 items the pipeline has never seen, with expected answers computed independently
@@ -198,6 +219,7 @@ forbids.
 | `696043d` | `app/backend/server.py`, `app/backend/services/analyst_pipeline.py`, `tests/test_analyst_pipeline.py`, `reports/audit/tests_after.txt` |
 | `be68eeb` | `scripts/run_tool_pipeline_eval.py` (`--items-file`), `scripts/build_fresh_calculation_split.py`, `data/eval_fresh/*` |
 | `762e21a` | `reports/audit/04_05_results.md`, `audit_gpu_results.json` |
+| `4b9ee82` | Task 5b: `scripts/build_uncovered_caption_split.py`, `data/eval_fresh/calculation_uncovered.jsonl` |
 
 ### Two defects fixed in the code
 
@@ -217,12 +239,10 @@ forbids.
 |---|---|
 | End-to-end regeneration of 275/297 | ~7 GB model, ~1 GB free locally. Task 4 did re-run the model on these items unaided, so the hardware path is proven; the pipeline configuration was not re-generated. |
 | Task 6 real filing | no filing supplied |
-| Whether the vocabulary generalises to captions outside the table | the fresh split happened to use only covered captions |
 | Whether the routing fix prevents full MoE collapse | 4,000-step pilot against 247,850; onset reproduced, endpoint extrapolated |
 
-Tasks 4 and 5 are now measured. The remaining four need, in order: one file from
-you, a second fresh split built from uncovered captions, and a longer training
-run.
+Tasks 4, 5 and 5b are now measured. The remaining gaps need one file from you
+(a real filing) and a longer training run.
 
 ---
 
