@@ -1,0 +1,14 @@
+test_product_views            exit=1
+test_alerts_and_analyses      53/58 passed
+test_analyst_pipeline         28/28 passed
+test_tool_pipeline            55/55 passed
+test_intent_routing           80/80 passed
+test_response_pipeline        26/26 passed
+test_api_security             25/25 passed
+test_knowledge_retrieval      11/11 passed
+test_scorer_regressions       23/23 passed
+test_numbers_in               19/19 passed
+test_benchmark                47/47 passed
+test_training_format          23/23 passed
+test_aivora_system            OK
+verify_frontend_clean         exit=1
