@@ -244,10 +244,35 @@ def build():
          "therefore exceed activated parameters: most of the feed-forward "
          "capacity is idle for any given token.")
     callout(document,
-            "Auxiliary load-balancing loss weight is set to 0.0 in this "
-            "configuration, so expert balance is not actively encouraged. "
-            "Whether routing collapsed onto a subset of experts has not been "
-            "measured. (unverified)")
+            "MEASURED DEFECT. The auxiliary load-balancing loss weight is 0.0, "
+            "so nothing penalised an unbalanced router - and the router "
+            "collapsed. 28 of the 64 routed expert slots receive under 1% of "
+            "traffic. In blocks 5, 6 and 7 the top-2 router sends 100% of "
+            "traffic to the same two experts regardless of input.")
+    body(document,
+         "This was verified across five diverse inputs - a financial filing, "
+         "technology news, narrative prose, source code and general questions - "
+         "so it is collapse rather than domain specialisation: the routing does "
+         "not change when the input does. The effect worsens with depth, which "
+         "is the signature of a router that lost its gradient signal early and "
+         "never recovered. (measured, 6 October 2026)")
+    table(document, ["Block", "Experts receiving >= 1% of traffic",
+                     "Share taken by the top 2"], [
+        ("h.0", "7 of 8", "71.7%"),
+        ("h.1", "7 of 8", "52.3%"),
+        ("h.2", "5 of 8", "67.9%"),
+        ("h.3", "5 of 8", "73.8%"),
+        ("h.4", "6 of 8", "66.6%"),
+        ("h.5", "2 of 8", "100.0%"),
+        ("h.6", "2 of 8", "99.2%"),
+        ("h.7", "2 of 8", "100.0%"),
+    ], widths=[1.1, 2.9, 2.6])
+    body(document,
+         "Cost: at 0.788M parameters per routed expert, 28 dead slots are "
+         "22.06M parameters that never activate - 21.7% of the model. Its "
+         "effective size is approximately 79.7M, not 101.7M. This is "
+         "independent of, and additional to, the under-training described in "
+         "section 3. (measured)")
 
     document.add_heading("2.3 Multi-Token Prediction", level=2)
     body(document,
@@ -438,6 +463,9 @@ def build():
         ("Loss-based early stopping",
          "Accepted SFT_001, which had lost the ability to copy",
          "Capability gates A-E"),
+        ("MoE router collapse (open)",
+         "28 of 64 expert slots dead; 21.7% of parameters never activate",
+         "Not yet fixed - requires aux_loss_weight > 0 and retraining"),
         ("Byte-level eval-set hash",
          "Platform-dependent; raised a false alarm and could not detect real "
          "change",
@@ -492,6 +520,10 @@ def build():
         "If a from-scratch model remains a goal, the binding constraint is the "
         "token budget: approximately 2B unique tokens would be needed to reach "
         "a compute-optimal ratio at this parameter count, against 120.9M today.",
+        "Set the auxiliary load-balancing loss weight above zero before any "
+        "retraining. At 0.0 the router collapsed and 21.7% of the model is "
+        "dead weight; this is the cheapest single correction available and it "
+        "costs one configuration value.",
         "Retain gate-based checkpoint selection. It caught a regression that "
         "loss endorsed.",
         "Commission a fresh held-out set before any further capability claim. "
