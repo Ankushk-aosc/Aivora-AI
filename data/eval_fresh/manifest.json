@@ -1,0 +1,9 @@
+{
+  "items": 44,
+  "seed": 20261006,
+  "source": "generated fresh",
+  "expected_computed_by": "scripts/build_fresh_calculation_split.py",
+  "covered_items": 44,
+  "uncovered_items": 0,
+  "uncovered_captions": []
+}

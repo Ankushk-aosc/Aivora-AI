@@ -279,13 +279,26 @@ class ToolPipeline:
     # ----------------------------------------------------- operand vocabulary
     @staticmethod
     def context_labels(context):
-        """The label part of each 'Label: value' line in the context."""
+        """The label part of each 'Label: value' line in the context.
+
+        Split on the LAST colon when what follows it is a number. Splitting on
+        the first colon truncates any caption that contains one - and the
+        Companies Act balance-sheet wording "Creditors: amounts falling due
+        within one year" does. That caption is in the vocabulary, but the label
+        extracted from it was "Creditors", so it never matched and the value was
+        unreachable. Falling back to the first colon keeps lines whose tail is
+        not a value, such as a bare section heading, behaving as before.
+        """
         labels = []
         for line in (context or "").splitlines():
-            if ":" in line:
-                label = line.split(":", 1)[0].strip()
-                if label:
-                    labels.append(label)
+            if ":" not in line:
+                continue
+            head, tail = line.rsplit(":", 1)
+            if numeric(tail) is None:
+                head = line.split(":", 1)[0]
+            label = head.strip()
+            if label:
+                labels.append(label)
         return labels
 
     @staticmethod
