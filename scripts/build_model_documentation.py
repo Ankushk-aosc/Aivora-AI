@@ -395,10 +395,11 @@ def build():
 
     table(document, ["Gate", "Base model", "SFT_002", "Tool pipeline + Qwen2.5-1.5B"], [
         ("Copy", "13.0%", "34.8%", "98.6%"),
-        ("Extraction", "1.4%", "13.0%", "87.0%"),
-        ("Wording", "2.7%", "13.3%", "85.3%"),
+        ("Extraction", "1.4%", "13.0%", "97.1%"),
+        ("Wording", "2.7%", "13.3%", "96.0%"),
         ("Calculation", "0.0%", "2.1%", "100%"),
         ("Abstention", "0.0%", "16.7%", "97.2%"),
+        ("Overall", "4.0%", "16.8%", "97.6%"),
         ("Invented values", "42.9%", "36.8%", "0.0%"),
     ], widths=[1.4, 1.3, 1.3, 2.6])
 
@@ -408,6 +409,7 @@ def build():
         ("SFT_002 vs base model", "10", "0", "0.0020"),
         ("SmolLM2-135M vs SFT_002", "14", "4", "0.0309"),
         ("Tool pipeline vs SFT_002", "44", "0", "< 0.0001"),
+        ("Pipeline after the 2026-10-07 audit vs before", "15", "0", "0.0001"),
     ], widths=[2.8, 1.1, 1.1, 1.6])
 
     document.add_heading("6.2 The Parameter-Matched Result", level=2)

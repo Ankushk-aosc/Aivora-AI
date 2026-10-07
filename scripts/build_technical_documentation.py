@@ -199,7 +199,8 @@ def build():
          "validated in code, and every calculation is executed in Python.")
     body(document,
          "The system comprises a browser interface of eight product areas, an "
-         "HTTP API of roughly sixty endpoints, a service layer of routing, "
+         "HTTP API of 99 method-path routes over 82 endpoints, a service "
+         "layer of routing, "
          "extraction, grounding and reporting modules, a document retrieval "
          "store, and a tool pipeline that enforces the evidence rules. It runs "
          "on CPU with no external service dependency.")
@@ -551,16 +552,58 @@ def build():
          "(measured; see reports/phase4/PHASE4_V2_REPORT.md)")
     table(document, ["Gate", "Tool pipeline + Qwen2.5-1.5B", "95% CI"], [
         ("Copy", "68/69 - 98.6%", "[92.2, 99.7]"),
-        ("Extraction", "60/69 - 87.0%", "[77.0, 93.0]"),
-        ("Wording robustness", "64/75 - 85.3%", "[75.6, 91.6]"),
+        ("Extraction", "67/69 - 97.1%", "[89.9, 99.2]"),
+        ("Wording robustness", "72/75 - 96.0%", "[88.9, 98.6]"),
         ("Calculation", "48/48 - 100%", "[92.6, 100]"),
         ("Abstention", "35/36 - 97.2%", "[85.8, 99.5]"),
-        ("Overall", "275/297 - 92.6%", "[89.0, 95.1]"),
+        ("Overall", "290/297 - 97.6%", "[95.2, 98.8]"),
         ("Invented values", "0 / 261 answerable items", "-"),
-        ("Source-span validation", "261 / 261 stated values", "-"),
+        ("Source-span validation", "273 / 273 stated values", "-"),
     ], widths=[1.9, 2.7, 2.0])
 
-    h2(document, "8.1 Comparison Against the Local Model")
+    h2(document, "8.1 What the Calculation Figure Means")
+    body(document,
+         "Calculation reads 100%, and that number is conditional in a way the "
+         "figure alone does not convey. Operand resolution matches a formula's "
+         "operand to the caption a statement actually uses, from a table of 147 "
+         "captions. The same capability, measured three ways:")
+    table(document, ["Measurement", "Score"], [
+        ("Frozen set", "48/48 - 100%"),
+        ("Fresh contexts, captions the vocabulary has", "44/44 - 100%"),
+        ("Fresh contexts, captions the vocabulary lacks", "5/44 - 11.4%"),
+    ], widths=[4.2, 2.4])
+    body(document,
+         "When the table knows the wording the pipeline is exact; when it does "
+         "not, the model bridges the gap 5 times in 44. Coverage, not "
+         "arithmetic, is the limit. The failure is the safe one - of 39 misses "
+         "on unknown captions, 39 were refusals and none was a wrong value, "
+         "with zero invented values and zero span violations. (measured)")
+    callout(document,
+            "A real filing will use wording outside the table, so it will meet "
+            "refusals rather than errors. Calculation should be read as "
+            "coverage multiplied by accuracy-within-coverage, and coverage "
+            "against real filings has not yet been measured.")
+
+    h2(document, "8.2 The Pipeline's Contribution, Isolated")
+    body(document,
+         "The same model, same scorer, same prompts and decoding, answering "
+         "directly instead of through the pipeline, on the same 297 items:")
+    table(document, ["Gate", "Model alone", "With the pipeline"], [
+        ("Copy", "97.1%", "98.6%"),
+        ("Extraction", "98.5%", "97.1%"),
+        ("Wording robustness", "88.0%", "96.0%"),
+        ("Calculation", "52.1%", "100%"),
+        ("Abstention", "63.9%", "97.2%"),
+        ("Overall", "249/297 - 83.8%", "290/297 - 97.6%"),
+        ("Invented values", "0.77%", "0.00%"),
+    ], widths=[1.9, 2.2, 2.5])
+    body(document,
+         "Unaided, the model gets roughly half of all arithmetic wrong and "
+         "answers 13 of the 36 questions it should refuse. Those two gates are "
+         "what the pipeline buys. Extraction is within a single item of the "
+         "unaided model. (measured)")
+
+    h2(document, "8.3 Comparison Against the Local Model")
     body(document,
          "On identical items, with an exact McNemar test for paired "
          "observations: the tool pipeline was better on 44 items and worse on "
@@ -573,7 +616,7 @@ def build():
          "approximately held constant the pre-trained model still wins, so the "
          "deficit is training data, not capacity. (measured)")
 
-    h2(document, "8.2 Test Suite")
+    h2(document, "8.4 Test Suite")
     table(document, ["Suite", "Checks", "Covers"], [
         ("test_product_views.py", "81", "Comparisons, insights, reports, workspace scope"),
         ("test_alerts_and_analyses.py", "58", "Monitoring conditions, saved analyses"),
@@ -613,8 +656,10 @@ def build():
 
     h2(document, "9.3 Environment Variables")
     table(document, ["Variable", "Default", "Purpose"], [
-        ("AIVORA_ANALYST_PIPELINE", "0",
-         "Set to 1 to route the Analyst through the tool pipeline"),
+        ("AIVORA_ANALYST_PIPELINE", "1",
+         "On by default. Set to 0 to use the rule-based engine instead; when "
+         "on and no capable model can be hosted, the Analyst refuses rather "
+         "than answering through an unguarded path"),
         ("AIVORA_ANALYST_MODEL", "Qwen/Qwen2.5-1.5B-Instruct",
          "Model backing the Analyst pipeline"),
         ("AIVORA_CORS_ORIGINS", "localhost allow-list",
@@ -669,7 +714,9 @@ def build():
          "possible by accident.")
     table(document, ["Engine", "Extraction", "Invented values", "Hosting"], [
         ("Local 101.7M model", "13.0%", "36.8%", "Runs on 4 GB RAM"),
-        ("Tool pipeline + Qwen2.5-1.5B", "87.0%", "0.0%", "Needs about 7 GB free"),
+        ("Qwen2.5-1.5B alone, no pipeline", "98.5%", "0.77%",
+         "Needs about 7 GB free"),
+        ("Tool pipeline + Qwen2.5-1.5B", "97.1%", "0.0%", "Needs about 7 GB free"),
     ], widths=[2.3, 1.2, 1.5, 1.6])
 
     # -------------------------------------------------- 12 limitations
@@ -679,7 +726,17 @@ def build():
         "plain text with no page structure, and page numbers are not invented.",
         "Period comparison is limited by the source. The FY2025 filing states "
         "only FY2024 revenue, so 1 of 9 comparison lines has a prior-year "
-        "figure; the rest report their absence rather than estimating.",
+        "figure. UNDER REVIEW: a change not yet accepted supplies the other "
+        "eight by applying FY2025 margins to FY2024 revenue. Those figures are "
+        "modelled, not reported, and must not be presented beside audited ones "
+        "without being labelled as such.",
+        "Calculation accuracy is conditional on caption coverage: 100% on "
+        "statement wordings the operand vocabulary holds, 11.4% on wordings it "
+        "does not. Coverage against real filings is not measured.",
+        "Two misses remain where a valid source span cites the wrong line - "
+        "goodwill answered from an adjacent intangibles line, cash generated "
+        "from operations from an adjacent revenue line. Span validation cannot "
+        "catch this by construction: the span is real, the row is wrong.",
         "Multi-company and document-versus-document comparison are designed for "
         "but not demonstrated: the workspace contains one company and one "
         "period.",
