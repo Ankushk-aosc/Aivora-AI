@@ -279,13 +279,26 @@ class ToolPipeline:
     # ----------------------------------------------------- operand vocabulary
     @staticmethod
     def context_labels(context):
-        """The label part of each 'Label: value' line in the context."""
+        """The label part of each 'Label: value' line in the context.
+
+        Split on the LAST colon when what follows it is a number. Splitting on
+        the first colon truncates any caption that contains one - and the
+        Companies Act balance-sheet wording "Creditors: amounts falling due
+        within one year" does. That caption is in the vocabulary, but the label
+        extracted from it was "Creditors", so it never matched and the value was
+        unreachable. Falling back to the first colon keeps lines whose tail is
+        not a value, such as a bare section heading, behaving as before.
+        """
         labels = []
         for line in (context or "").splitlines():
-            if ":" in line:
-                label = line.split(":", 1)[0].strip()
-                if label:
-                    labels.append(label)
+            if ":" not in line:
+                continue
+            head, tail = line.rsplit(":", 1)
+            if numeric(tail) is None:
+                head = line.split(":", 1)[0]
+            label = head.strip()
+            if label:
+                labels.append(label)
         return labels
 
     @staticmethod
@@ -360,6 +373,11 @@ class ToolPipeline:
     # ------------------------------------------------------------- routing
     @staticmethod
     def _formula_for(question):
+        """(operation, operands, matched_trigger) for a question, or Nones.
+
+        The trigger is returned so the caller can ask whether the statement
+        already states the thing this formula would compute.
+        """
         lowered = question.lower()
         best = None
         for triggers, operation, operands in FORMULAS:
@@ -367,8 +385,52 @@ class ToolPipeline:
                 if trigger in lowered:
                     # Longest trigger wins, so "debt-to-ebitda" beats "debt to".
                     if best is None or len(trigger) > best[0]:
-                        best = (len(trigger), operation, operands)
-        return (best[1], best[2]) if best else (None, None)
+                        best = (len(trigger), operation, operands, trigger)
+        return (best[1], best[2], best[3]) if best else (None, None, None)
+
+    @classmethod
+    def _stated_label_for(cls, context, trigger, question=""):
+        """A context label that states the quantity `trigger` would compute.
+
+        A filing that already reports basic EPS should be read, not
+        recalculated. Before this, "What is basic EPS?" against a context whose
+        first line is "Basic EPS: 1.42" matched the EPS formula, went looking
+        for net income and shares outstanding, found no net income and refused -
+        with the answer sitting in front of it. Twelve of the twenty
+        extraction and wording misses on the frozen set were this.
+
+        The test is deliberately narrow: a label must contain the matched
+        trigger as a whole phrase at a word boundary. "Diluted earnings per
+        share" states "earnings per share", so it is read. "Revenue" does not
+        state "revenue growth", and "Current assets" does not state "current
+        ratio", so those are still computed.
+        """
+        if not trigger:
+            return None
+        pattern = re.compile(r"(?<![a-z0-9])" + re.escape(normalise(trigger))
+                             + r"(?![a-z0-9])")
+        asked = normalise(question)
+        best, best_score = None, None
+        for label in cls.context_labels(context):
+            if not pattern.search(normalise(label)):
+                continue
+            # Several lines can state the same quantity - a statement carries
+            # both "Basic EPS" and "Diluted EPS". Preferring the longest label
+            # picked Diluted for a question asking Basic. Prefer the line the
+            # question actually names, and fall back to length only when the
+            # question distinguishes neither.
+            named = normalise(label) in asked
+            score = (1 if named else 0, len(label))
+            if best_score is None or score > best_score:
+                best, best_score = label, score
+        # If no label is named in the question and more than one states the
+        # quantity, there is no basis to choose: compute instead of guessing.
+        if best is not None and best_score[0] == 0:
+            matches = [l for l in cls.context_labels(context)
+                       if pattern.search(normalise(l))]
+            if len(matches) > 1:
+                return None
+        return best
 
     @staticmethod
     def _is_current_data(question):
@@ -386,8 +448,21 @@ class ToolPipeline:
                 component="current_data_rule", abstained=True,
                 reason="question asks for a value that changes over time")
 
-        operation, operand_fields = self._formula_for(question)
+        operation, operand_fields, trigger = self._formula_for(question)
         if operation is not None and context:
+            # A stated figure beats a derived one. If the statement already
+            # reports this quantity, read it; only compute what is absent.
+            stated = self._stated_label_for(context, trigger, question)
+            if stated is not None:
+                result = self._extract(context, field=stated)
+                if not result.abstained:
+                    return PipelineAnswer(
+                        answer=result.value, component="extraction",
+                        value=numeric(result.value),
+                        source_spans=[result.source_span],
+                        detail={**result.to_dict(), "read_not_computed": True,
+                                "stated_as": stated})
+                # Could not read it after all - fall through and compute.
             return self._calculate(question, context, operation, operand_fields)
 
         result = self._extract(context, question=question)

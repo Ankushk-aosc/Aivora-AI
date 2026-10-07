@@ -279,6 +279,70 @@ def test_synonym_cannot_invent_an_answer():
           str(answer.operands))
 
 
+def test_a_stated_figure_is_read_not_recomputed():
+    """A filing that already reports a quantity should be read, not derived.
+
+    Twelve of the twenty extraction and wording misses on the frozen set were
+    this: "What is basic EPS?" against a context whose first line reads
+    "Basic EPS: 1.42" matched the EPS formula, went looking for net income,
+    found none, and refused - with the answer in front of it.
+    """
+    context = "Basic EPS: 1.42\nDiluted EPS: 1.37\nShares outstanding: 3,000.00"
+
+    def llm(prompt):
+        field = ""
+        if "Find the value for:" in prompt:
+            field = prompt.split("Find the value for:")[1].split("\n")[0].strip()
+        if field.lower() == "basic eps":
+            return json.dumps({"field": "Basic EPS", "value": "1.42",
+                               "source_span": "Basic EPS: 1.42", "found": True})
+        return json.dumps({"found": False, "value": None})
+
+    answer = ToolPipeline(llm).answer("What is basic EPS?", context)
+    check("a stated figure is read", answer.answer == "1.42", str(answer.answer))
+    check("it is attributed to extraction", answer.component == "extraction",
+          answer.component)
+    check("it carries its span",
+          answer.source_spans == ["Basic EPS: 1.42"], str(answer.source_spans))
+    check("it records that it was read, not computed",
+          answer.detail.get("read_not_computed") is True)
+
+
+def test_the_right_stated_line_is_chosen():
+    """A statement carries both Basic and Diluted EPS. Preferring the longest
+    matching label picked Diluted for a question asking Basic."""
+    resolve = ToolPipeline._stated_label_for
+    context = "Basic EPS: 1.42\nDiluted EPS: 1.37"
+    _op, _fields, trigger = ToolPipeline._formula_for("What is basic EPS?")
+    check("the question's own line wins",
+          resolve(context, trigger, "What is basic EPS?") == "Basic EPS",
+          str(resolve(context, trigger, "What is basic EPS?")))
+    check("and the other when that is asked",
+          resolve(context, trigger, "How much is diluted EPS?") == "Diluted EPS")
+    check("an ambiguous question computes instead of guessing",
+          resolve(context, trigger, "What is EPS?") is None)
+
+
+def test_a_quantity_not_stated_is_still_computed():
+    """The preference must not swallow the calculation path."""
+    resolve = ToolPipeline._stated_label_for
+    cases = [
+        ("Revenue: 12,000.00\nCost of sales: 7,400.00",
+         "What is the gross margin?"),
+        ("Revenue this year: 10.00\nRevenue last year: 8.00",
+         "What is the revenue growth rate?"),
+        ("Current assets: 5.00\nCurrent liabilities: 2.00",
+         "What is the current ratio?"),
+        ("Total debt: 5.00\nTotal equity: 10.00",
+         "What is the debt-to-equity ratio?"),
+    ]
+    for context, question in cases:
+        _op, _fields, trigger = ToolPipeline._formula_for(question)
+        check(f"still computed: {question[:36]}",
+              resolve(context, trigger, question) is None,
+              str(resolve(context, trigger, question)))
+
+
 def main():
     test_parsing()
     test_span_rule()
@@ -290,6 +354,9 @@ def main():
     test_numeric_parsing()
     test_operand_vocabulary()
     test_synonym_cannot_invent_an_answer()
+    test_a_stated_figure_is_read_not_recomputed()
+    test_the_right_stated_line_is_chosen()
+    test_a_quantity_not_stated_is_still_computed()
     print(f"\n{len(PASSED)}/{len(PASSED) + len(FAILED)} passed")
     sys.exit(1 if FAILED else 0)
 

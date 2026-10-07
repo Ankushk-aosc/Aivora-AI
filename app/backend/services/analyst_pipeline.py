@@ -62,8 +62,18 @@ def configured_model():
 
 
 def enabled():
-    """Opt-in. Unset or '0' leaves the existing Analyst untouched."""
-    return os.environ.get("AIVORA_ANALYST_PIPELINE", "0").lower() in (
+    """On by default. Set AIVORA_ANALYST_PIPELINE=0 to opt out.
+
+    This defaulted to off, which meant a default install answered financial
+    questions through the unguarded path - no span validation, no Python-only
+    arithmetic - while the documentation described the guarantees of the
+    pipeline. The safe default is the guarded one.
+
+    Opting out is still possible, because a machine that cannot host a capable
+    model may prefer the rule-based engine to refusing. That is now a decision
+    someone has to make explicitly rather than inherit.
+    """
+    return os.environ.get("AIVORA_ANALYST_PIPELINE", "1").lower() in (
         "1", "true", "yes", "on")
 
 
@@ -134,10 +144,16 @@ def readiness():
         return state
 
     if free < needed:
+        # Enabled but unable to serve means the Analyst REFUSES. Reporting the
+        # legacy engine here would contradict what actually happens: the status
+        # endpoint said "existing analyst" while every question came back
+        # refused.
+        state["engine"] = "none - refusing"
         state["reason"] = (
             f"{model} needs about {needed} GB and {free:.1f} GB is free. The "
-            f"Analyst keeps its existing engine rather than becoming one that "
-            f"abstains on every question.")
+            f"Analyst refuses rather than answering through the unguarded "
+            f"engine. Set AIVORA_ANALYST_PIPELINE=0 to accept the rule-based "
+            f"engine and its weaker guarantees.")
         return state
 
     state["serving"] = True
@@ -218,7 +234,34 @@ def answer(question, context, llm=None):
     """
     pipeline = get_pipeline(llm=llm)
     if pipeline is None:
-        return None
+        if not enabled():
+            # Explicitly opted out: the legacy engine takes the question.
+            return None
+        # Enabled but unable to serve. Refuse. Falling through here would hand
+        # the question to a path with none of the guarantees the product is
+        # described by, and the user would not be told. A refusal that explains
+        # itself is the honest failure.
+        state = readiness()
+        return {
+            "answer": ("The evidence pipeline is not available, so this "
+                       "question has not been answered. Answering without it "
+                       "would mean returning a figure with no validated source "
+                       "span and no guarantee the arithmetic was done in code."),
+            "abstained": True,
+            "unavailable": True,
+            "component": "analyst_pipeline_unavailable",
+            "value": None,
+            "operation": None,
+            "source_spans": [],
+            "reason": state.get("reason"),
+            "engine": "none - pipeline unavailable",
+            "arithmetic": "not performed",
+            "guarantee": ("refused rather than answered through an unguarded "
+                          "path"),
+            "remedy": ("host a model the pipeline can drive, or set "
+                       "AIVORA_ANALYST_PIPELINE=0 to accept the rule-based "
+                       "engine and its weaker guarantees"),
+        }
     result = pipeline.answer(question, context or "")
     return {
         "answer": result.answer,
