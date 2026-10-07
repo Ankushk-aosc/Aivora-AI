@@ -726,10 +726,11 @@ def build():
         "plain text with no page structure, and page numbers are not invented.",
         "Period comparison is limited by the source. The FY2025 filing states "
         "only FY2024 revenue, so 1 of 9 comparison lines has a prior-year "
-        "figure. UNDER REVIEW: a change not yet accepted supplies the other "
-        "eight by applying FY2025 margins to FY2024 revenue. Those figures are "
-        "modelled, not reported, and must not be presented beside audited ones "
-        "without being labelled as such.",
+        "figure; the other eight report their absence rather than estimating. "
+        "A change supplying them by applying FY2025 margins to FY2024 revenue "
+        "was reviewed and REJECTED: the figures were modelled, not reported, "
+        "and would have shown identical margins in both years as though that "
+        "were a finding about the business.",
         "Calculation accuracy is conditional on caption coverage: 100% on "
         "statement wordings the operand vocabulary holds, 11.4% on wordings it "
         "does not. Coverage against real filings is not measured.",

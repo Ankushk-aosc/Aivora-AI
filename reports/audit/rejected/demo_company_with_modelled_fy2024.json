@@ -1,0 +1,54 @@
+{
+  "company": "Aivora Enterprise",
+  "currency": "AUD",
+  "period": "FY2025",
+  "revenue": 10000000,
+  "previous_revenue": 8000000,
+  "gross_profit": 3000000,
+  "operating_expenses": 2100000,
+  "net_profit": 500000,
+  "cogs": 7000000,
+  "current_assets": 6000000,
+  "current_liabilities": 3000000,
+  "total_debt": 2500000,
+  "total_equity": 5000000,
+  "prior_period": {
+    "period": "FY2024",
+    "revenue": 8000000,
+    "cogs": 5600000,
+    "gross_profit": 2400000,
+    "operating_expenses": 1680000,
+    "operating_profit": 720000,
+    "interest_expense": 180000,
+    "tax_expense": 160000,
+    "net_profit": 380000,
+    "gross_margin": 30.0,
+    "operating_margin": 9.0,
+    "net_margin": 4.8
+  },
+  "metrics": {
+    "revenue_growth": 25.0,
+    "gross_margin": 30.0,
+    "operating_margin": 9.0,
+    "net_margin": 5.0,
+    "risk_level": "Medium"
+  },
+  "key_insights": "Revenue increased 25% year-over-year, while profitability remains constrained by operating expenses.",
+  "areas_to_watch": [
+    {
+      "area": "Operating expenses",
+      "metric": "$2.1M",
+      "note": "Consumes 70.0% of gross profit, reducing operating margin to 9.0%."
+    },
+    {
+      "area": "Net margin",
+      "metric": "5.0%",
+      "note": "Limited earnings buffer against macroeconomic softening or supplier price changes."
+    },
+    {
+      "area": "Cost structure",
+      "metric": "70.0% COGS",
+      "note": "Direct costs absorb significant revenue, indicating potential procurement efficiencies."
+    }
+  ]
+}
