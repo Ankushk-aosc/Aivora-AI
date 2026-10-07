@@ -129,6 +129,31 @@ else:
     print(f"  {time.time() - started:.0f}s")
 ''')
 
+md("""## Task 3b — the pipeline on the FROZEN split, with the current code
+
+The change under test reads a stated figure instead of recomputing it. It
+affects the pipeline on the frozen split, which the first version of this
+notebook never re-ran - so the change was committed and described as measured
+when it was not. This runs it.
+
+Baseline to beat: 275/297 overall, extraction 60/69.""")
+
+code('''started = time.time()
+proc = subprocess.run(["python", "scripts/run_tool_pipeline_eval.py",
+                       "--model", MODEL, "--split", "frozen",
+                       "--tag", "stated", "--force"],
+                      capture_output=True, text=True)
+print(proc.stdout[-3000:])
+if proc.returncode != 0:
+    print("FAILED:", proc.stderr[-2000:])
+    task3b = None
+else:
+    with open("reports/heldout/"
+              f"{MODEL.replace('/', '_')}_pipeline_frozen_stated.json") as handle:
+        task3b = json.load(handle)
+    print(f"  {time.time() - started:.0f}s")
+''')
+
 md("""## Task 5 — the pipeline on the fresh split""")
 
 code('''started = time.time()
@@ -180,6 +205,31 @@ md("""## Results""")
 
 code('''out = {"repo_commit": head, "branch": BRANCH, "model": MODEL}
 
+print("=" * 72)
+print("TASK 3b - pipeline on frozen, reading stated figures")
+print("=" * 72)
+if task3b:
+    s3 = task3b["summary"]
+    out["task3b_stated_preference"] = s3
+    o3 = s3["overall"]
+    before = {"copy": (68, 69), "extraction": (60, 69), "wording": (64, 75),
+              "calculation": (48, 48), "abstention": (35, 36)}
+    print(f"{'gate':<14}{'before':>10}{'after':>10}{'delta':>8}")
+    for gate, (bk, bn) in before.items():
+        st = s3["by_gate"].get(gate, {})
+        ak = st.get("k", 0)
+        print(f"{gate:<14}{bk:>5}/{bn:<4}{ak:>5}/{st.get('n', bn):<4}{ak - bk:>+8}")
+    print(f"{'OVERALL':<14}{275:>5}/297 {o3['k']:>5}/{o3['n']:<4}"
+          f"{o3['k'] - 275:>+8}")
+    print(f"invented values {s3['hallucination_invented_values']['k']}"
+          f"/{s3['hallucination_invented_values']['n']}")
+    print(f"span rule {s3['span_audit']['span_validated_pct']}% of "
+          f"{s3['span_audit']['answers_checked']}, "
+          f"{s3['span_audit']['violation_count']} violations")
+else:
+    print("FAILED")
+
+print()
 print("=" * 72)
 print("TASK 4 - the model WITHOUT the pipeline, frozen split")
 print("=" * 72)
@@ -280,7 +330,8 @@ directory.""")
 code('''import shutil, glob
 for src in glob.glob("reports/heldout/*frozen*.json") + \\
            glob.glob("reports/heldout/*fresh*.json") + \
-           glob.glob("reports/heldout/*uncovered*.json"):
+           glob.glob("reports/heldout/*uncovered*.json") + \
+           glob.glob("reports/heldout/*stated*.json"):
     if "Qwen" in src:
         dst = "/kaggle/working/" + os.path.basename(src)
         shutil.copy(src, dst)
